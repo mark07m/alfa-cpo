@@ -1,0 +1,65 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield background with gradient -->
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Main shield -->
+  <path d="M8 6 L32 6 L32 34 L20 38 L8 34 Z" fill="url(#shieldGradient)" stroke="url(#goldGradient)" stroke-width="1.5"/>
+  
+  <!-- Quarter divisions -->
+  <path d="M20 6L20 34" stroke="url(#goldGradient)" stroke-width="1"/>
+  <path d="M8 20L32 20" stroke="url(#goldGradient)" stroke-width="1"/>
+  
+  <!-- Top-left quarter (light blue) -->
+  <path d="M8 6 L20 6 L20 20 L8 20 Z" fill="#3b82f6"/>
+  
+  <!-- Top-right quarter (dark blue) -->
+  <path d="M20 6 L32 6 L32 20 L20 20 Z" fill="#1e3a8a"/>
+  
+  <!-- Bottom-left quarter (dark blue) -->
+  <path d="M8 20 L20 20 L20 34 L8 34 Z" fill="#1e3a8a"/>
+  
+  <!-- Bottom-right quarter (light blue) -->
+  <path d="M20 20 L32 20 L32 34 L20 34 Z" fill="#3b82f6"/>
+  
+  <!-- Small lions in quarters (simplified) -->
+  <g fill="url(#goldGradient)" stroke="url(#goldGradient)" stroke-width="0.5">
+    <!-- Top-left lion -->
+    <circle cx="12" cy="10" r="1.8"/>
+    <path d="M10.2 11.8L13.8 11.8M12 8.2L12 12.8"/>
+    
+    <!-- Top-right lion -->
+    <circle cx="28" cy="10" r="1.8"/>
+    <path d="M26.2 11.8L29.8 11.8M28 8.2L28 12.8"/>
+    
+    <!-- Bottom-left lion -->
+    <circle cx="12" cy="30" r="1.8"/>
+    <path d="M10.2 31.8L13.8 31.8M12 28.2L12 32.8"/>
+    
+    <!-- Bottom-right lion -->
+    <circle cx="28" cy="30" r="1.8"/>
+    <path d="M26.2 31.8L29.8 31.8M28 28.2L28 32.8"/>
+  </g>
+  
+  <!-- Central gem with shine -->
+  <circle cx="20" cy="20" r="2.5" fill="#3b82f6" stroke="url(#goldGradient)" stroke-width="0.8"/>
+  <circle cx="20" cy="20" r="1.5" fill="#60a5fa"/>
+  <circle cx="19" cy="19" r="0.5" fill="#93c5fd" opacity="0.8"/>
+  
+  <!-- Crown on top -->
+  <g fill="url(#goldGradient)" stroke="url(#goldGradient)" stroke-width="0.5">
+    <path d="M6 4L8 6L10 4L12 6L14 4L16 6L18 4L20 6L22 4L24 6L26 4L28 6L30 4L32 6L34 4"/>
+    <path d="M6 4L8 2L10 4L12 2L14 4L16 2L18 4L20 2L22 4L24 2L26 4L28 2L30 4L32 2L34 4"/>
+  </g>
+  
+  <!-- Decorative border -->
+  <path d="M8 6 L32 6 L32 34 L20 38 L8 34 Z" fill="none" stroke="url(#goldGradient)" stroke-width="0.5" opacity="0.6"/>
+</svg>

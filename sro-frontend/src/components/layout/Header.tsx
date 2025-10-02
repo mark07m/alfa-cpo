@@ -70,8 +70,12 @@ const Header: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center group">
-              <div className="h-10 w-10 bg-beige-600 rounded-lg flex items-center justify-center group-hover:bg-beige-700 transition-colors duration-200">
-                <span className="text-white font-bold text-lg">А</span>
+              <div className="h-12 w-12 bg-white rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm border border-neutral-200">
+                <img 
+                  src="/images/logo.jpg" 
+                  alt="Герб СРО АУ Альфа" 
+                  className="h-12 w-12 rounded-lg object-cover"
+                />
               </div>
               <div className="ml-3">
                 <div className="text-lg font-bold text-neutral-900">
