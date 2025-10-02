@@ -1,7 +1,11 @@
+'use client';
+
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { DocumentList, DocumentViewer } from '@/components/documents';
+import { Document } from '@/types';
 import { 
   AcademicCapIcon, 
   BuildingOfficeIcon, 
@@ -10,8 +14,67 @@ import {
   MagnifyingGlassIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 export default function AccreditationPage() {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+
+  const documents: Document[] = [
+    {
+      id: 'accreditation-rules',
+      title: 'Правила аккредитации',
+      description: 'Положение о порядке аккредитации организаций и специалистов',
+      category: 'accreditation' as const,
+      fileUrl: '/documents/pravila-akkreditacii.pdf',
+      fileSize: 250880,
+      fileType: 'pdf',
+      uploadedAt: '2023-06-15T00:00:00Z',
+      updatedAt: '2023-06-15T00:00:00Z',
+      version: '2.0'
+    },
+    {
+      id: 'accreditation-application',
+      title: 'Заявление на аккредитацию',
+      description: 'Образец заявления для подачи документов',
+      category: 'accreditation' as const,
+      fileUrl: '/documents/zayavlenie-akkreditaciya.doc',
+      fileSize: 91136,
+      fileType: 'doc',
+      uploadedAt: '2023-05-20T00:00:00Z',
+      updatedAt: '2023-05-20T00:00:00Z',
+      version: '1.1'
+    },
+    {
+      id: 'document-list',
+      title: 'Перечень документов',
+      description: 'Список необходимых документов для аккредитации',
+      category: 'accreditation' as const,
+      fileUrl: '/documents/perechen-dokumentov-akkreditaciya.pdf',
+      fileSize: 159744,
+      fileType: 'pdf',
+      uploadedAt: '2023-04-10T00:00:00Z',
+      updatedAt: '2023-04-10T00:00:00Z',
+      version: '1.0'
+    }
+  ];
+
+  const handleDownload = (document: Document) => {
+    const link = document.createElement('a');
+    link.href = document.fileUrl;
+    link.download = document.title;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = (document: Document) => {
+    window.open(document.fileUrl, '_blank');
+  };
+
+  const handlePreview = (document: Document) => {
+    setSelectedDocument(document);
+  };
+
   return (
     <Layout
       title="Аккредитация - СРО АУ"
@@ -302,55 +365,24 @@ export default function AccreditationPage() {
         </Card>
 
         {/* Documents */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Документы для аккредитации
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Правила аккредитации
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Положение о порядке аккредитации организаций и специалистов
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (245 КБ)
-                </button>
-              </div>
+        <DocumentList
+          documents={documents}
+          onDownload={handleDownload}
+          onPrint={handlePrint}
+          onPreview={handlePreview}
+          showSearch={true}
+          showFilters={true}
+        />
 
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Заявление на аккредитацию
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Образец заявления для подачи документов
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать DOC (89 КБ)
-                </button>
-              </div>
-
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Перечень документов
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Список необходимых документов для аккредитации
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (156 КБ)
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Document Viewer Modal */}
+        {selectedDocument && (
+          <DocumentViewer
+            document={selectedDocument}
+            onClose={() => setSelectedDocument(null)}
+            showDownload={true}
+            showPrint={true}
+          />
+        )}
       </div>
     </Layout>
   );

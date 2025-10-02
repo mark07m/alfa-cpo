@@ -1,5 +1,9 @@
+'use client';
+
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
+import { DocumentList, DocumentViewer } from '@/components/documents';
+import { Document } from '@/types';
 import { 
   BriefcaseIcon, 
   DocumentTextIcon, 
@@ -8,8 +12,103 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 export default function LaborActivityPage() {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+
+  const documents: Document[] = [
+    {
+      id: 'placement-instruction',
+      title: 'Инструкция по размещению сведений',
+      description: 'Пошаговая инструкция по размещению сведений о трудовой деятельности',
+      category: 'labor-activity' as const,
+      fileUrl: '/documents/instrukciya-razmeschenie-svedenij.pdf',
+      fileSize: 1258291,
+      fileType: 'pdf',
+      uploadedAt: '2023-12-01T00:00:00Z',
+      updatedAt: '2023-12-01T00:00:00Z',
+      version: '1.0'
+    },
+    {
+      id: 'labor-certificate-template',
+      title: 'Образец справки о трудовой деятельности',
+      description: 'Шаблон справки для получения у работодателя',
+      category: 'labor-activity' as const,
+      fileUrl: '/documents/obrazec-spravki-trudovaya-deyatelnost.doc',
+      fileSize: 91136,
+      fileType: 'doc',
+      uploadedAt: '2023-11-15T00:00:00Z',
+      updatedAt: '2023-11-15T00:00:00Z',
+      version: '2.0'
+    },
+    {
+      id: 'document-requirements',
+      title: 'Требования к документам',
+      description: 'Список требований к оформлению документов',
+      category: 'labor-activity' as const,
+      fileUrl: '/documents/trebovaniya-k-dokumentam.pdf',
+      fileSize: 466944,
+      fileType: 'pdf',
+      uploadedAt: '2023-10-20T00:00:00Z',
+      updatedAt: '2023-10-20T00:00:00Z',
+      version: '1.1'
+    },
+    {
+      id: 'faq-labor-activity',
+      title: 'Часто задаваемые вопросы',
+      description: 'Ответы на наиболее частые вопросы по трудовой деятельности',
+      category: 'labor-activity' as const,
+      fileUrl: '/documents/faq-trudovaya-deyatelnost.pdf',
+      fileSize: 239616,
+      fileType: 'pdf',
+      uploadedAt: '2023-09-10T00:00:00Z',
+      updatedAt: '2023-09-10T00:00:00Z',
+      version: '1.0'
+    },
+    {
+      id: 'labor-activity-regulation',
+      title: 'Положение о трудовой деятельности',
+      description: 'Внутреннее положение СРО о требованиях к трудовой деятельности',
+      category: 'labor-activity' as const,
+      fileUrl: '/documents/polozhenie-trudovaya-deyatelnost.pdf',
+      fileSize: 694272,
+      fileType: 'pdf',
+      uploadedAt: '2023-08-05T00:00:00Z',
+      updatedAt: '2023-08-05T00:00:00Z',
+      version: '3.0'
+    },
+    {
+      id: 'contact-information',
+      title: 'Контактная информация',
+      description: 'Контакты ответственных лиц для консультаций',
+      category: 'labor-activity' as const,
+      fileUrl: '/documents/kontaktnaya-informaciya.pdf',
+      fileSize: 125952,
+      fileType: 'pdf',
+      uploadedAt: '2023-07-20T00:00:00Z',
+      updatedAt: '2023-07-20T00:00:00Z',
+      version: '1.0'
+    }
+  ];
+
+  const handleDownload = (document: Document) => {
+    const link = document.createElement('a');
+    link.href = document.fileUrl;
+    link.download = document.title;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = (document: Document) => {
+    window.open(document.fileUrl, '_blank');
+  };
+
+  const handlePreview = (document: Document) => {
+    setSelectedDocument(document);
+  };
+
   return (
     <Layout
       title="Трудовая деятельность - СРО АУ"
@@ -254,94 +353,24 @@ export default function LaborActivityPage() {
         </Card>
 
         {/* Documents */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Документы и инструкции
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Инструкция по размещению сведений
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Пошаговая инструкция по размещению сведений о трудовой деятельности
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (1.2 МБ)
-                </button>
-              </div>
+        <DocumentList
+          documents={documents}
+          onDownload={handleDownload}
+          onPrint={handlePrint}
+          onPreview={handlePreview}
+          showSearch={true}
+          showFilters={true}
+        />
 
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Образец справки о трудовой деятельности
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Шаблон справки для получения у работодателя
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать DOC (89 КБ)
-                </button>
-              </div>
-
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Требования к документам
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Список требований к оформлению документов
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (456 КБ)
-                </button>
-              </div>
-
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Часто задаваемые вопросы
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Ответы на наиболее частые вопросы по трудовой деятельности
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (234 КБ)
-                </button>
-              </div>
-
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Положение о трудовой деятельности
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Внутреннее положение СРО о требованиях к трудовой деятельности
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (678 КБ)
-                </button>
-              </div>
-
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Контактная информация
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Контакты ответственных лиц для консультаций
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (123 КБ)
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Document Viewer Modal */}
+        {selectedDocument && (
+          <DocumentViewer
+            document={selectedDocument}
+            onClose={() => setSelectedDocument(null)}
+            showDownload={true}
+            showPrint={true}
+          />
+        )}
       </div>
     </Layout>
   );

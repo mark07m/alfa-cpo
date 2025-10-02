@@ -1,8 +1,71 @@
+'use client';
+
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
+import { DocumentList, DocumentViewer } from '@/components/documents';
+import { Document } from '@/types';
 import { BanknotesIcon, DocumentTextIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 export default function CompensationFundPage() {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+
+  const documents: Document[] = [
+    {
+      id: 'fund-statement',
+      title: 'Справка о размере фонда',
+      description: 'Справка банка о размере компенсационного фонда на 01.01.2024',
+      category: 'compensation-fund' as const,
+      fileUrl: '/documents/spravka-razmer-fonda.pdf',
+      fileSize: 250880,
+      fileType: 'pdf',
+      uploadedAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+      version: '1.0'
+    },
+    {
+      id: 'fund-regulation',
+      title: 'Положение о фонде',
+      description: 'Положение о компенсационном фонде СРО',
+      category: 'compensation-fund' as const,
+      fileUrl: '/documents/polozhenie-fond.pdf',
+      fileSize: 159744,
+      fileType: 'pdf',
+      uploadedAt: '2023-05-20T00:00:00Z',
+      updatedAt: '2023-05-20T00:00:00Z',
+      version: '2.1'
+    },
+    {
+      id: 'activity-report',
+      title: 'Отчет о деятельности',
+      description: 'Отчет о деятельности СРО за 2023 год',
+      category: 'compensation-fund' as const,
+      fileUrl: '/documents/otchet-deyatelnost-2023.pdf',
+      fileSize: 1258291,
+      fileType: 'pdf',
+      uploadedAt: '2024-01-15T00:00:00Z',
+      updatedAt: '2024-01-15T00:00:00Z',
+      version: '1.0'
+    }
+  ];
+
+  const handleDownload = (document: Document) => {
+    const link = document.createElement('a');
+    link.href = document.fileUrl;
+    link.download = document.title;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handlePrint = (document: Document) => {
+    window.open(document.fileUrl, '_blank');
+  };
+
+  const handlePreview = (document: Document) => {
+    setSelectedDocument(document);
+  };
+
   return (
     <Layout
       title="Компенсационный фонд - СРО АУ"
@@ -217,55 +280,24 @@ export default function CompensationFundPage() {
         </Card>
 
         {/* Documents */}
-        <Card>
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Документы
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Справка о размере фонда
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Справка банка о размере компенсационного фонда на 01.01.2024
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (245 КБ)
-                </button>
-              </div>
+        <DocumentList
+          documents={documents}
+          onDownload={handleDownload}
+          onPrint={handlePrint}
+          onPreview={handlePreview}
+          showSearch={true}
+          showFilters={true}
+        />
 
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Положение о фонде
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Положение о компенсационном фонде СРО
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (156 КБ)
-                </button>
-              </div>
-
-              <div className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
-                <DocumentTextIcon className="h-8 w-8 text-beige-600 mb-3" />
-                <h3 className="font-semibold text-neutral-900 mb-2">
-                  Отчет о деятельности
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Отчет о деятельности СРО за 2023 год
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF (1.2 МБ)
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Document Viewer Modal */}
+        {selectedDocument && (
+          <DocumentViewer
+            document={selectedDocument}
+            onClose={() => setSelectedDocument(null)}
+            showDownload={true}
+            showPrint={true}
+          />
+        )}
       </div>
     </Layout>
   );

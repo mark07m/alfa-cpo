@@ -115,7 +115,7 @@ export interface Document {
   id: string;
   title: string;
   description?: string;
-  category: 'regulatory' | 'rules' | 'reports' | 'other';
+  category: 'regulatory' | 'rules' | 'reports' | 'compensation-fund' | 'labor-activity' | 'accreditation' | 'other';
   fileUrl: string;
   fileSize: number;
   fileType: string;
