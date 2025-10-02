@@ -25,6 +25,22 @@ export interface ArbitraryManager {
   joinDate: string;
   excludeDate?: string;
   excludeReason?: string;
+  birthDate?: string;
+  birthPlace?: string;
+  registrationDate?: string;
+  decisionNumber?: string;
+  education?: string;
+  workExperience?: string;
+  internship?: string;
+  examCertificate?: string;
+  disqualification?: string;
+  criminalRecord?: string;
+  insurance?: string;
+  compensationFundContribution?: string;
+  penalties?: string;
+  complianceStatus?: string;
+  lastInspection?: string;
+  postalAddress?: string;
 }
 
 // Типы для новостей

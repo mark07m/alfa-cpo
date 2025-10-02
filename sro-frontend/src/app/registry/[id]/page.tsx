@@ -16,7 +16,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ArrowLeftIcon,
-  PrinterIcon
+  PrinterIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { ArbitraryManager } from '@/types';
 
@@ -24,17 +25,60 @@ import { ArbitraryManager } from '@/types';
 const mockManagers: ArbitraryManager[] = [
   {
     id: '1',
-    fullName: 'Иванов Иван Иванович',
-    inn: '123456789012',
-    registryNumber: 'АУ-001',
-    phone: '+7 (495) 123-45-67',
-    email: 'ivanov@example.com',
-    region: 'Москва',
+    fullName: 'Александрова Алина Вячеславовна',
+    inn: '470419750751',
+    registryNumber: '22207',
+    phone: '8-916-530-05-55',
+    email: 'arbitr.aav@gmail.com',
+    region: 'Ленинградская область',
     status: 'active',
-    joinDate: '2020-01-15',
+    joinDate: '2023-04-20',
+    birthDate: '1995-08-06',
+    birthPlace: 'п. Перово, Выборгский р-н Ленинградская область',
+    registrationDate: '2023-04-20',
+    decisionNumber: 'Протокол №10',
+    education: 'Санкт-Петербургский университет Государственной противопожарной службы МЧС России, диплом 107805 0617367 от 25.06.2020г., специальность "Правовое обеспечение национальной безопасности", квалификация юрист',
+    workExperience: 'стаж более года справка от 10.03.2021г. ООО "РЕНКАР" (ИНН 5904102238)',
+    internship: 'свидетельство №585 от 03.04.2023г. Выдано НПС СОПАУ "Альянс управляющих"',
+    examCertificate: 'свидетельство №11/038406 от 29.03.2023г.',
+    disqualification: 'Дисквалификации не имеет',
+    criminalRecord: 'Судимости не имеет',
+    insurance: 'Полис ОАУ №14909/700/25 ООО "Страховой дом "БСД" (17.04.2025 - 16.04.2026), страховая сумма 10 000 000 рублей',
+    compensationFundContribution: 'взнос в размере 200 000 рублей внесен на счет компенсационного фонда',
+    penalties: 'отсутствует',
+    complianceStatus: 'соответствует',
+    lastInspection: '01.12.2024 - декабрь 2024 (Нарушений не выявлено)',
+    postalAddress: '121352, а/я 55'
   },
   {
     id: '2',
+    fullName: 'Саргсян Левон Арменович',
+    inn: '343002792470',
+    registryNumber: '14090',
+    phone: '624882673',
+    email: 'sargsyanlevon12@gmail.com',
+    region: 'Республика Татарстан',
+    status: 'active',
+    joinDate: '2020-12-16',
+    birthDate: '1980-12-16',
+    birthPlace: 'пос. Депутатский Усть-Янского р-на Якутской АССР',
+    registrationDate: '2020-12-16',
+    decisionNumber: 'Протокол заседания Совета от 15.04.2014г.',
+    education: 'ГОУ ВПО "Волгоградский государственный университет" №РГ-001 31.07.2004 регионоведение, ФГБОУ ВО "Всероссийский государственный университет юстиции" №005572 29.11.2019',
+    workExperience: 'Руководитель Юридического Лица ООО "Юридическая контора", с 10.01.2013г. по 10.01.2016г.',
+    internship: 'в НП СРО АУ "СИНЕРГИЯ"',
+    examCertificate: 'Росреестр №11/021340 17.02.2014',
+    disqualification: 'Нет',
+    criminalRecord: 'Нет',
+    insurance: 'LG Club (16.12.2020 - 16.12.2020), сумма 123 руб.',
+    compensationFundContribution: 'Build 16.12.2020 400 руб.',
+    penalties: 'no',
+    complianceStatus: 'соответствует',
+    lastInspection: 'ok 16.12.2020 - 16.12.2020',
+    postalAddress: '420012, Россия, Республика Татарстан, г. Казань, а/я 253'
+  },
+  {
+    id: '3',
     fullName: 'Петров Петр Петрович',
     inn: '234567890123',
     registryNumber: 'АУ-002',
@@ -43,9 +87,25 @@ const mockManagers: ArbitraryManager[] = [
     region: 'Санкт-Петербург',
     status: 'active',
     joinDate: '2020-03-20',
+    birthDate: '1985-03-15',
+    birthPlace: 'г. Санкт-Петербург',
+    registrationDate: '2020-03-20',
+    decisionNumber: 'Протокол №15',
+    education: 'Санкт-Петербургский государственный университет, диплом 123456 от 15.06.2007г., специальность "Юриспруденция"',
+    workExperience: 'стаж 3 года в ООО "Юридическая фирма"',
+    internship: 'свидетельство №123 от 01.03.2020г.',
+    examCertificate: 'свидетельство №12/045678 от 15.02.2020г.',
+    disqualification: 'Дисквалификации не имеет',
+    criminalRecord: 'Судимости не имеет',
+    insurance: 'Полис №12345 от 01.01.2024, страховая сумма 5 000 000 рублей',
+    compensationFundContribution: 'взнос в размере 150 000 рублей',
+    penalties: 'отсутствует',
+    complianceStatus: 'соответствует',
+    lastInspection: '15.11.2024 (Нарушений не выявлено)',
+    postalAddress: '191002, г. Санкт-Петербург, ул. Невский проспект, д. 1'
   },
   {
-    id: '3',
+    id: '4',
     fullName: 'Сидоров Сидор Сидорович',
     inn: '345678901234',
     registryNumber: 'АУ-003',
@@ -55,10 +115,26 @@ const mockManagers: ArbitraryManager[] = [
     status: 'excluded',
     joinDate: '2019-06-10',
     excludeDate: '2023-12-15',
-    excludeReason: 'Нарушение профессиональной этики'
+    excludeReason: 'Нарушение профессиональной этики',
+    birthDate: '1980-06-10',
+    birthPlace: 'г. Москва',
+    registrationDate: '2019-06-10',
+    decisionNumber: 'Протокол №8',
+    education: 'Московский государственный университет, диплом 789012 от 10.06.2002г., специальность "Право"',
+    workExperience: 'стаж 5 лет в различных организациях',
+    internship: 'свидетельство №456 от 01.05.2019г.',
+    examCertificate: 'свидетельство №13/056789 от 20.04.2019г.',
+    disqualification: 'Дисквалификации не имеет',
+    criminalRecord: 'Судимости не имеет',
+    insurance: 'Полис №67890 от 01.01.2023, страховая сумма 3 000 000 рублей',
+    compensationFundContribution: 'взнос в размере 100 000 рублей',
+    penalties: 'выговор от 15.12.2023',
+    complianceStatus: 'не соответствует',
+    lastInspection: '10.12.2023 (Выявлены нарушения)',
+    postalAddress: '141000, Московская область, г. Мытищи, ул. Центральная, д. 10'
   },
   {
-    id: '4',
+    id: '5',
     fullName: 'Козлов Козьма Козьмович',
     inn: '456789012345',
     registryNumber: 'АУ-004',
@@ -67,17 +143,22 @@ const mockManagers: ArbitraryManager[] = [
     region: 'Москва',
     status: 'suspended',
     joinDate: '2021-02-28',
-  },
-  {
-    id: '5',
-    fullName: 'Морозов Мороз Морозович',
-    inn: '567890123456',
-    registryNumber: 'АУ-005',
-    phone: '+7 (495) 567-89-01',
-    email: 'morozov@example.com',
-    region: 'Москва',
-    status: 'active',
-    joinDate: '2020-11-05',
+    birthDate: '1975-02-28',
+    birthPlace: 'г. Москва',
+    registrationDate: '2021-02-28',
+    decisionNumber: 'Протокол №12',
+    education: 'Российская академия народного хозяйства и государственной службы, диплом 345678 от 28.02.1997г., специальность "Экономика"',
+    workExperience: 'стаж 8 лет в финансовых организациях',
+    internship: 'свидетельство №789 от 01.02.2021г.',
+    examCertificate: 'свидетельство №14/067890 от 15.01.2021г.',
+    disqualification: 'Дисквалификации не имеет',
+    criminalRecord: 'Судимости не имеет',
+    insurance: 'Полис №23456 от 01.01.2024, страховая сумма 7 000 000 рублей',
+    compensationFundContribution: 'взнос в размере 180 000 рублей',
+    penalties: 'отсутствует',
+    complianceStatus: 'соответствует',
+    lastInspection: '20.10.2024 (Нарушений не выявлено)',
+    postalAddress: '101000, г. Москва, ул. Тверская, д. 15'
   }
 ];
 
@@ -290,6 +371,22 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
                     </label>
                     <p className="text-neutral-900">{formatDate(manager.joinDate)}</p>
                   </div>
+                  {manager.registrationDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Дата регистрации в реестре
+                      </label>
+                      <p className="text-neutral-900">{formatDate(manager.registrationDate)}</p>
+                    </div>
+                  )}
+                  {manager.decisionNumber && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Номер решения о приеме
+                      </label>
+                      <p className="text-neutral-900">{manager.decisionNumber}</p>
+                    </div>
+                  )}
                   {manager.excludeDate && (
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -304,6 +401,188 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
                         Причина исключения
                       </label>
                       <p className="text-neutral-900">{manager.excludeReason}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Личные данные */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold text-neutral-900 flex items-center">
+                  <UserIcon className="h-5 w-5 mr-2" />
+                  Личные данные
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {manager.birthDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Дата рождения
+                      </label>
+                      <p className="text-neutral-900">{formatDate(manager.birthDate)}</p>
+                    </div>
+                  )}
+                  {manager.birthPlace && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Место рождения
+                      </label>
+                      <p className="text-neutral-900">{manager.birthPlace}</p>
+                    </div>
+                  )}
+                  {manager.postalAddress && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Почтовый адрес
+                      </label>
+                      <p className="text-neutral-900">{manager.postalAddress}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Образование и опыт */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold text-neutral-900 flex items-center">
+                  <DocumentTextIcon className="h-5 w-5 mr-2" />
+                  Образование и опыт
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {manager.education && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Образование
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.education}</p>
+                    </div>
+                  )}
+                  {manager.workExperience && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Стаж руководящей работы
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.workExperience}</p>
+                    </div>
+                  )}
+                  {manager.internship && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Стажировка помощником АУ
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.internship}</p>
+                    </div>
+                  )}
+                  {manager.examCertificate && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Сведения об экзамене
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.examCertificate}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Правовые сведения */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold text-neutral-900 flex items-center">
+                  <ShieldCheckIcon className="h-5 w-5 mr-2" />
+                  Правовые сведения
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {manager.disqualification && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Дисквалификация
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.disqualification}</p>
+                    </div>
+                  )}
+                  {manager.criminalRecord && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Судимость
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.criminalRecord}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Страхование и взносы */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold text-neutral-900 flex items-center">
+                  <DocumentTextIcon className="h-5 w-5 mr-2" />
+                  Страхование и взносы
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {manager.insurance && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Сведения о страховании
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.insurance}</p>
+                    </div>
+                  )}
+                  {manager.compensationFundContribution && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Взносы в компенсационный фонд
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.compensationFundContribution}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Проверки и соответствие */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-xl font-semibold text-neutral-900 flex items-center">
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  Проверки и соответствие
+                </h2>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {manager.complianceStatus && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Соответствие условиям членства
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.complianceStatus}</p>
+                    </div>
+                  )}
+                  {manager.lastInspection && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Последняя проверка
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.lastInspection}</p>
+                    </div>
+                  )}
+                  {manager.penalties && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Дисциплинарные взыскания
+                      </label>
+                      <p className="text-neutral-900 text-sm">{manager.penalties}</p>
                     </div>
                   )}
                 </div>
