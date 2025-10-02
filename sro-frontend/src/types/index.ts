@@ -52,10 +52,62 @@ export interface NewsItem {
   publishedAt: string;
   updatedAt: string;
   author: string;
-  category?: string;
+  category: NewsCategory;
   tags?: string[];
   featured?: boolean;
   imageUrl?: string;
+  cover?: string;
+  views?: number;
+  status: 'published' | 'draft' | 'archived';
+}
+
+export interface NewsCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  order: number;
+}
+
+export interface NewsFilter {
+  query?: string;
+  category?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  featured?: boolean;
+  status?: string;
+  tags?: string[];
+}
+
+export interface NewsListProps {
+  news: NewsItem[];
+  loading?: boolean;
+  error?: string;
+  onNewsClick?: (news: NewsItem) => void;
+  showFeatured?: boolean;
+  showCategories?: boolean;
+  showPagination?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+}
+
+export interface NewsDetailProps {
+  news: NewsItem;
+  relatedNews?: NewsItem[];
+  onBack?: () => void;
+  onShare?: (news: NewsItem) => void;
+  onPrint?: (news: NewsItem) => void;
+}
+
+export interface NewsFilterProps {
+  filters: NewsFilter;
+  categories: NewsCategory[];
+  onFiltersChange: (filters: NewsFilter) => void;
+  onReset: () => void;
+  loading?: boolean;
 }
 
 // Типы для документов
@@ -72,20 +124,156 @@ export interface Document {
   version?: string;
 }
 
+// Расширенные типы для системы документов
+export interface DocumentCategory {
+  id: string;
+  name: string;
+  description: string;
+  icon?: string;
+  color?: string;
+  documents: Document[];
+  order: number;
+}
+
+export interface DocumentSection {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+  parentId?: string;
+}
+
+export interface DocumentRule {
+  id: string;
+  name: string;
+  description: string;
+  lastUpdated: string;
+  size: string;
+  sections: DocumentSection[];
+  fileUrl: string;
+  version: string;
+}
+
+export interface DocumentViewerProps {
+  document: Document;
+  onClose: () => void;
+  showDownload?: boolean;
+  showPrint?: boolean;
+}
+
+export interface DocumentSearchFilters {
+  query: string;
+  category?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  fileType?: string;
+}
+
 // Типы для мероприятий
 export interface Event {
   id: string;
   title: string;
   description: string;
+  content?: string;
   startDate: string;
   endDate?: string;
   location: string;
-  type: 'seminar' | 'conference' | 'training' | 'meeting';
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  type: EventType;
+  status: EventStatus;
   maxParticipants?: number;
   currentParticipants?: number;
   registrationRequired: boolean;
+  registrationDeadline?: string;
   materials?: Document[];
+  imageUrl?: string;
+  cover?: string;
+  featured?: boolean;
+  tags?: string[];
+  organizer?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  price?: number;
+  currency?: string;
+  requirements?: string;
+  agenda?: EventAgendaItem[];
+}
+
+export interface EventType {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  order: number;
+}
+
+export interface EventStatus {
+  id: string;
+  name: string;
+  slug: string;
+  color?: string;
+  description?: string;
+}
+
+export interface EventAgendaItem {
+  id: string;
+  time: string;
+  title: string;
+  description?: string;
+  speaker?: string;
+  duration?: number;
+}
+
+export interface EventFilter {
+  query?: string;
+  type?: string;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  location?: string;
+  featured?: boolean;
+  registrationRequired?: boolean;
+  tags?: string[];
+}
+
+export interface EventsListProps {
+  events: Event[];
+  loading?: boolean;
+  error?: string;
+  onEventClick?: (event: Event) => void;
+  showFeatured?: boolean;
+  showCalendar?: boolean;
+  showPagination?: boolean;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+}
+
+export interface EventCardProps {
+  event: Event;
+  onClick?: (event: Event) => void;
+  variant?: 'default' | 'compact' | 'featured';
+  showRegistration?: boolean;
+  onRegister?: (event: Event) => void;
+}
+
+export interface EventDetailProps {
+  event: Event;
+  relatedEvents?: Event[];
+  onBack?: () => void;
+  onShare?: (event: Event) => void;
+  onRegister?: (event: Event) => void;
+  onAddToCalendar?: (event: Event) => void;
+}
+
+export interface EventCalendarProps {
+  events: Event[];
+  currentDate?: Date;
+  onDateSelect?: (date: Date) => void;
+  onEventClick?: (event: Event) => void;
+  view?: 'month' | 'week' | 'day';
+  onViewChange?: (view: 'month' | 'week' | 'day') => void;
 }
 
 // Типы для компенсационного фонда
@@ -222,6 +410,6 @@ export interface SortConfig {
 
 export interface FilterConfig {
   key: string;
-  value: any;
+  value: string | number | boolean | Date;
   operator: 'equals' | 'contains' | 'startsWith' | 'endsWith' | 'gt' | 'lt' | 'gte' | 'lte';
 }

@@ -1,83 +1,134 @@
+'use client';
+
 import Layout from '@/components/layout/Layout';
-import Card, { CardContent, CardHeader } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { NewsCard } from '@/components/cards';
-import { 
-  MagnifyingGlassIcon,
-  CalendarIcon,
-  TagIcon,
-  NewspaperIcon,
-  FunnelIcon
-} from '@heroicons/react/24/outline';
+import { NewsList, NewsFilter } from '@/components/news';
+import { NewsItem, NewsCategory, NewsFilter as NewsFilterType } from '@/types';
+import { useState } from 'react';
 
 export default function NewsPage() {
-  const news = [
+  const [filters, setFilters] = useState<NewsFilterType>({});
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const categories: NewsCategory[] = [
+    { id: '1', name: 'Законодательство', slug: 'legislation', order: 1, color: '#3B82F6' },
+    { id: '2', name: 'Мероприятия', slug: 'events', order: 2, color: '#10B981' },
+    { id: '3', name: 'Реестр', slug: 'registry', order: 3, color: '#8B5CF6' },
+    { id: '4', name: 'Отчеты', slug: 'reports', order: 4, color: '#F59E0B' },
+    { id: '5', name: 'Компенсационный фонд', slug: 'compensation-fund', order: 5, color: '#EF4444' },
+    { id: '6', name: 'Объявления', slug: 'announcements', order: 6, color: '#6B7280' }
+  ];
+
+  const news: NewsItem[] = [
     {
-      id: 1,
+      id: '1',
       title: 'Изменения в законодательстве о банкротстве с 1 января 2024 года',
+      content: '<p>С 1 января 2024 года вступают в силу новые положения Федерального закона "О несостоятельности (банкротстве)", касающиеся процедуры наблюдения. Основные изменения включают:</p><ul><li>Увеличение срока наблюдения до 7 месяцев</li><li>Новые требования к арбитражным управляющим</li><li>Изменения в порядке подачи заявлений</li></ul><p>Подробная информация о нововведениях доступна в разделе "Нормативные документы".</p>',
       excerpt: 'С 1 января 2024 года вступают в силу новые положения Федерального закона "О несостоятельности (банкротстве)", касающиеся процедуры наблюдения.',
-      date: '15.01.2024',
-      category: 'Законодательство',
+      publishedAt: '2024-01-15T10:00:00Z',
+      updatedAt: '2024-01-15T10:00:00Z',
+      author: 'Администрация СРО',
+      category: categories[0],
+      tags: ['законодательство', 'банкротство', 'изменения'],
+      featured: true,
       cover: '/assets/news_cover_beige.png',
-      featured: true
+      views: 156,
+      status: 'published'
     },
     {
-      id: 2,
+      id: '2',
       title: 'Семинар "Новеллы в законодательстве о банкротстве"',
+      content: '<p>15 февраля 2024 года состоится семинар для членов СРО по обсуждению последних изменений в законодательстве о несостоятельности.</p><p>В программе семинара:</p><ul><li>Обзор изменений в ФЗ "О несостоятельности (банкротстве)"</li><li>Практические аспекты применения новых норм</li><li>Ответы на вопросы участников</li></ul>',
       excerpt: '15 февраля 2024 года состоится семинар для членов СРО по обсуждению последних изменений в законодательстве о несостоятельности.',
-      date: '10.01.2024',
-      category: 'Мероприятия',
+      publishedAt: '2024-01-10T14:30:00Z',
+      updatedAt: '2024-01-10T14:30:00Z',
+      author: 'Администрация СРО',
+      category: categories[1],
+      tags: ['семинар', 'обучение', 'законодательство'],
+      featured: false,
       cover: '/assets/news_cover_beige.png',
-      featured: false
+      views: 89,
+      status: 'published'
     },
     {
-      id: 3,
+      id: '3',
       title: 'Обновление реестра арбитражных управляющих',
+      content: '<p>В реестр СРО добавлены 5 новых арбитражных управляющих. Общее количество членов организации составляет 155 человек.</p><p>Новые члены СРО прошли все необходимые процедуры аккредитации и готовы к профессиональной деятельности.</p>',
       excerpt: 'В реестр СРО добавлены 5 новых арбитражных управляющих. Общее количество членов организации составляет 155 человек.',
-      date: '08.01.2024',
-      category: 'Реестр',
+      publishedAt: '2024-01-08T09:15:00Z',
+      updatedAt: '2024-01-08T09:15:00Z',
+      author: 'Администрация СРО',
+      category: categories[2],
+      tags: ['реестр', 'новые члены', 'аккредитация'],
+      featured: false,
       cover: '/assets/news_cover_beige.png',
-      featured: false
+      views: 234,
+      status: 'published'
     },
     {
-      id: 4,
+      id: '4',
       title: 'Отчет о деятельности СРО за 2023 год',
+      content: '<p>Опубликован годовой отчет о деятельности саморегулируемой организации арбитражных управляющих за 2023 год.</p><p>В отчете представлена полная информация о деятельности СРО, включая статистику, финансовые показатели и планы на будущее.</p>',
       excerpt: 'Опубликован годовой отчет о деятельности саморегулируемой организации арбитражных управляющих за 2023 год.',
-      date: '05.01.2024',
-      category: 'Отчеты',
+      publishedAt: '2024-01-05T11:00:00Z',
+      updatedAt: '2024-01-05T11:00:00Z',
+      author: 'Администрация СРО',
+      category: categories[3],
+      tags: ['отчет', '2023', 'деятельность'],
+      featured: false,
       cover: '/assets/news_cover_beige.png',
-      featured: false
+      views: 178,
+      status: 'published'
     },
     {
-      id: 5,
+      id: '5',
       title: 'Конференция "Современные тенденции в банкротстве"',
+      content: '<p>15 декабря 2023 года состоялась ежегодная конференция, в которой приняли участие более 150 арбитражных управляющих.</p><p>На конференции обсуждались актуальные вопросы развития института банкротства в России.</p>',
       excerpt: '15 декабря 2023 года состоялась ежегодная конференция, в которой приняли участие более 150 арбитражных управляющих.',
-      date: '20.12.2023',
-      category: 'Мероприятия',
+      publishedAt: '2023-12-20T16:45:00Z',
+      updatedAt: '2023-12-20T16:45:00Z',
+      author: 'Администрация СРО',
+      category: categories[1],
+      tags: ['конференция', '2023', 'тенденции'],
+      featured: false,
       cover: '/assets/news_cover_beige.png',
-      featured: false
+      views: 312,
+      status: 'published'
     },
     {
-      id: 6,
+      id: '6',
       title: 'Изменения в размере компенсационного фонда',
+      content: '<p>Размер компенсационного фонда СРО увеличен до 7 500 000 рублей в соответствии с требованиями законодательства.</p><p>Обновленная информация о фонде доступна в соответствующем разделе сайта.</p>',
       excerpt: 'Размер компенсационного фонда СРО увеличен до 7 500 000 рублей в соответствии с требованиями законодательства.',
-      date: '15.12.2023',
-      category: 'Компенсационный фонд',
+      publishedAt: '2023-12-15T13:20:00Z',
+      updatedAt: '2023-12-15T13:20:00Z',
+      author: 'Администрация СРО',
+      category: categories[4],
+      tags: ['компенсационный фонд', 'изменения', 'финансы'],
+      featured: false,
       cover: '/assets/news_cover_beige.png',
-      featured: false
+      views: 145,
+      status: 'published'
     }
   ];
 
-  const categories = [
-    'Все категории',
-    'Законодательство',
-    'Мероприятия',
-    'Реестр',
-    'Отчеты',
-    'Компенсационный фонд',
-    'Объявления'
-  ];
+  const handleFiltersChange = (newFilters: NewsFilterType) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({});
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleNewsClick = (newsItem: NewsItem) => {
+    // Переход на детальную страницу новости
+    window.location.href = `/news/${newsItem.id}`;
+  };
 
   return (
     <Layout
@@ -97,194 +148,25 @@ export default function NewsPage() {
           </p>
         </div>
 
-        {/* Search and Filter */}
-        <Card className="mb-8">
-          <CardHeader>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-              Поиск и фильтрация
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Input
-                label="Поиск по тексту"
-                placeholder="Введите ключевые слова"
-                leftIcon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Категория
-                </label>
-                <select className="form-input">
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
-                  Период
-                </label>
-                <select className="form-input">
-                  <option>За все время</option>
-                  <option>За последний месяц</option>
-                  <option>За последние 3 месяца</option>
-                  <option>За последний год</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="flex-1 sm:flex-none">
-                <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-                Найти
-              </Button>
-              <Button variant="outline" className="flex-1 sm:flex-none">
-                <FunnelIcon className="h-5 w-5 mr-2" />
-                Сбросить фильтры
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Фильтры */}
+        <NewsFilter
+          filters={filters}
+          categories={categories}
+          onFiltersChange={handleFiltersChange}
+          onReset={handleResetFilters}
+        />
 
-        {/* Featured News */}
-        <Card className="mb-8">
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Важные новости
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {news.filter(item => item.featured).map((item) => (
-                <div key={item.id} className="relative">
-                  <NewsCard
-                    title={item.title}
-                    excerpt={item.excerpt}
-                    date={item.date}
-                    category={item.category}
-                    cover={item.cover}
-                    href={`/news/${item.id}`}
-                    featured={true}
-                  />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* All News */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-semibold text-neutral-900">
-                Все новости
-              </h2>
-              <span className="text-sm text-neutral-600">
-                Найдено: {news.length} новостей
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {news.map((item) => (
-                <NewsCard
-                  key={item.id}
-                  title={item.title}
-                  excerpt={item.excerpt}
-                  date={item.date}
-                  category={item.category}
-                  cover={item.cover}
-                  href={`/news/${item.id}`}
-                  featured={false}
-                />
-              ))}
-            </div>
-
-            {/* Pagination */}
-            <div className="mt-8 flex justify-center">
-              <nav className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" disabled>
-                  Предыдущая
-                </Button>
-                <Button size="sm">1</Button>
-                <Button variant="outline" size="sm">2</Button>
-                <Button variant="outline" size="sm">3</Button>
-                <Button variant="outline" size="sm">
-                  Следующая
-                </Button>
-              </nav>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Categories */}
-        <Card className="mb-8">
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Категории новостей
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              {categories.slice(1).map((category) => (
-                <div 
-                  key={category}
-                  className="border border-neutral-200 rounded-lg p-4 text-center hover:shadow-md transition-shadow duration-200 cursor-pointer"
-                >
-                  <TagIcon className="h-8 w-8 text-beige-600 mx-auto mb-2" />
-                  <h3 className="font-semibold text-neutral-900 text-sm">
-                    {category}
-                  </h3>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card>
-            <CardContent className="text-center">
-              <NewspaperIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                Всего новостей
-              </h3>
-              <p className="text-2xl font-bold text-beige-700">{news.length}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="text-center">
-              <CalendarIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                За этот месяц
-              </h3>
-              <p className="text-2xl font-bold text-beige-700">4</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="text-center">
-              <TagIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                Категорий
-              </h3>
-              <p className="text-2xl font-bold text-beige-700">6</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="text-center">
-              <NewspaperIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                Важных новостей
-              </h3>
-              <p className="text-2xl font-bold text-beige-700">1</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Список новостей */}
+        <NewsList
+          news={news}
+          onNewsClick={handleNewsClick}
+          showFeatured={true}
+          showCategories={true}
+          showPagination={true}
+          currentPage={currentPage}
+          totalPages={Math.ceil(news.length / 9)}
+          onPageChange={handlePageChange}
+        />
       </div>
     </Layout>
   );
