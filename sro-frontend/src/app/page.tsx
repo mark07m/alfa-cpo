@@ -3,7 +3,9 @@ import {
   HeroSection, 
   AboutPreview, 
   NewsSection, 
-  QuickLinksSection 
+  QuickLinksSection,
+  AssociationInfo,
+  FAQSection
 } from '@/components/sections';
 
 export default function Home() {
@@ -51,6 +53,12 @@ export default function Home() {
           defaultCover="/assets/news_cover_beige.png"
         />
       </div>
+
+      {/* Association Info Section */}
+      <AssociationInfo />
+
+      {/* FAQ Section */}
+      <FAQSection />
     </Layout>
   );
 }
