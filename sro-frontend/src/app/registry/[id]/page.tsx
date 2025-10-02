@@ -1,7 +1,7 @@
 'use client';
 
 import { use } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -88,6 +88,7 @@ interface ManagerDetailPageProps {
 }
 
 export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
+  const router = useRouter();
   const { id } = use(params);
   const manager = mockManagers.find(m => m.id === id);
 
@@ -140,7 +141,7 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
   };
 
   const handleBack = () => {
-    window.close();
+    router.back();
   };
 
   return (
@@ -159,7 +160,7 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
               className="hidden print:hidden"
             >
               <ArrowLeftIcon className="h-4 w-4 mr-2" />
-              Назад
+              К реестру
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-neutral-900">

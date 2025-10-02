@@ -224,9 +224,8 @@ export default function RegistryPage() {
   };
 
   const handleManagerClick = (manager: ArbitraryManager) => {
-    // Открываем в новом окне
-    const url = `/registry/${manager.id}`;
-    window.open(url, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+    // Переходим на детальную страницу в том же окне
+    router.push(`/registry/${manager.id}`);
   };
 
   const handlePageChange = (page: number) => {
