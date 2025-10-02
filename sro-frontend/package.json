@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
@@ -28,6 +28,7 @@
     "react-select": "^5.10.2",
     "react-table": "^7.8.0",
     "swr": "^2.3.6",
+    "xlsx": "^0.18.5",
     "zod": "^4.1.11",
     "zustand": "^5.0.8"
   },

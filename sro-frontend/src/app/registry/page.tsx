@@ -1,10 +1,267 @@
+'use client';
+
+import { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { MagnifyingGlassIcon, UserGroupIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { 
+  MagnifyingGlassIcon, 
+  UserGroupIcon, 
+  DocumentTextIcon,
+  ArrowDownTrayIcon,
+  FunnelIcon
+} from '@heroicons/react/24/outline';
+import { SearchForm, RegistryTable, Pagination, FilterPanel, SearchFilters } from '@/components/registry';
+import { ArbitraryManager } from '@/types';
+
+// Моковые данные для демонстрации
+const mockManagers: ArbitraryManager[] = [
+  {
+    id: '1',
+    fullName: 'Иванов Иван Иванович',
+    inn: '123456789012',
+    registryNumber: 'АУ-001',
+    phone: '+7 (495) 123-45-67',
+    email: 'ivanov@example.com',
+    region: 'Москва',
+    status: 'active',
+    joinDate: '2020-01-15',
+  },
+  {
+    id: '2',
+    fullName: 'Петров Петр Петрович',
+    inn: '234567890123',
+    registryNumber: 'АУ-002',
+    phone: '+7 (812) 234-56-78',
+    email: 'petrov@example.com',
+    region: 'Санкт-Петербург',
+    status: 'active',
+    joinDate: '2020-03-20',
+  },
+  {
+    id: '3',
+    fullName: 'Сидоров Сидор Сидорович',
+    inn: '345678901234',
+    registryNumber: 'АУ-003',
+    phone: '+7 (495) 345-67-89',
+    email: 'sidorov@example.com',
+    region: 'Московская область',
+    status: 'excluded',
+    joinDate: '2019-06-10',
+    excludeDate: '2023-12-15',
+    excludeReason: 'Нарушение профессиональной этики'
+  },
+  {
+    id: '4',
+    fullName: 'Козлов Козьма Козьмович',
+    inn: '456789012345',
+    registryNumber: 'АУ-004',
+    phone: '+7 (495) 456-78-90',
+    email: 'kozlov@example.com',
+    region: 'Москва',
+    status: 'suspended',
+    joinDate: '2021-02-28',
+  },
+  {
+    id: '5',
+    fullName: 'Морозов Мороз Морозович',
+    inn: '567890123456',
+    registryNumber: 'АУ-005',
+    phone: '+7 (495) 567-89-01',
+    email: 'morozov@example.com',
+    region: 'Москва',
+    status: 'active',
+    joinDate: '2020-11-05',
+  },
+  {
+    id: '6',
+    fullName: 'Волков Волк Волкович',
+    inn: '678901234567',
+    registryNumber: 'АУ-006',
+    phone: '+7 (495) 678-90-12',
+    email: 'volkov@example.com',
+    region: 'Краснодарский край',
+    status: 'active',
+    joinDate: '2021-05-10',
+  },
+  {
+    id: '7',
+    fullName: 'Новиков Новик Новикович',
+    inn: '789012345678',
+    registryNumber: 'АУ-007',
+    phone: '+7 (495) 789-01-23',
+    email: 'novikov@example.com',
+    region: 'Свердловская область',
+    status: 'active',
+    joinDate: '2021-08-15',
+  },
+  {
+    id: '8',
+    fullName: 'Соколов Сокол Соколович',
+    inn: '890123456789',
+    registryNumber: 'АУ-008',
+    phone: '+7 (495) 890-12-34',
+    email: 'sokolov@example.com',
+    region: 'Новосибирская область',
+    status: 'excluded',
+    joinDate: '2020-12-01',
+    excludeDate: '2023-10-20',
+    excludeReason: 'Несоблюдение требований СРО'
+  },
+  {
+    id: '9',
+    fullName: 'Лебедев Лебедь Лебедевич',
+    inn: '901234567890',
+    registryNumber: 'АУ-009',
+    phone: '+7 (495) 901-23-45',
+    email: 'lebedev@example.com',
+    region: 'Республика Татарстан',
+    status: 'active',
+    joinDate: '2022-01-20',
+  },
+  {
+    id: '10',
+    fullName: 'Орлов Орел Орлович',
+    inn: '012345678901',
+    registryNumber: 'АУ-010',
+    phone: '+7 (495) 012-34-56',
+    email: 'orlov@example.com',
+    region: 'Нижегородская область',
+    status: 'suspended',
+    joinDate: '2021-11-30',
+  }
+];
 
 export default function RegistryPage() {
+  const router = useRouter();
+  const [managers, setManagers] = useState<ArbitraryManager[]>(mockManagers);
+  const [filteredManagers, setFilteredManagers] = useState<ArbitraryManager[]>(mockManagers);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    fullName: '',
+    inn: '',
+    registryNumber: '',
+    region: '',
+    status: 'active'
+  });
+
+  const itemsPerPage = 5;
+
+  // Фильтрация и поиск
+  const filteredData = useMemo(() => {
+    let filtered = managers;
+
+    if (searchFilters.fullName) {
+      filtered = filtered.filter(manager =>
+        manager.fullName.toLowerCase().includes(searchFilters.fullName!.toLowerCase())
+      );
+    }
+
+    if (searchFilters.inn) {
+      filtered = filtered.filter(manager =>
+        manager.inn.includes(searchFilters.inn!)
+      );
+    }
+
+    if (searchFilters.registryNumber) {
+      filtered = filtered.filter(manager =>
+        manager.registryNumber.toLowerCase().includes(searchFilters.registryNumber!.toLowerCase())
+      );
+    }
+
+    if (searchFilters.region) {
+      filtered = filtered.filter(manager =>
+        manager.region === searchFilters.region
+      );
+    }
+
+    if (searchFilters.status && searchFilters.status !== 'all') {
+      filtered = filtered.filter(manager =>
+        manager.status === searchFilters.status
+      );
+    }
+
+    return filtered;
+  }, [managers, searchFilters]);
+
+  // Пагинация
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Статистика
+  const stats = useMemo(() => {
+    const active = managers.filter(m => m.status === 'active').length;
+    const excluded = managers.filter(m => m.status === 'excluded').length;
+    const suspended = managers.filter(m => m.status === 'suspended').length;
+    
+    return {
+      total: managers.length,
+      active,
+      excluded,
+      suspended
+    };
+  }, [managers]);
+
+  const handleSearch = (filters: SearchFilters) => {
+    setSearchFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
+    setSearchFilters({
+      fullName: '',
+      inn: '',
+      registryNumber: '',
+      region: '',
+      status: 'active'
+    });
+    setCurrentPage(1);
+  };
+
+  const handleManagerClick = (manager: ArbitraryManager) => {
+    // Открываем в новом окне
+    const url = `/registry/${manager.id}`;
+    window.open(url, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleExport = () => {
+    // Простой экспорт в CSV
+    const csvContent = [
+      ['ФИО', 'ИНН', 'Номер в реестре', 'Телефон', 'Email', 'Регион', 'Статус', 'Дата вступления'],
+      ...filteredData.map(manager => [
+        manager.fullName,
+        manager.inn,
+        manager.registryNumber,
+        manager.phone,
+        manager.email,
+        manager.region || '',
+        manager.status === 'active' ? 'Действующий' : 
+        manager.status === 'excluded' ? 'Исключен' : 'Приостановлен',
+        new Date(manager.joinDate).toLocaleDateString('ru-RU')
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `реестр_арбитражных_управляющих_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Layout
       title="Реестр арбитражных управляющих - СРО АУ"
@@ -26,37 +283,26 @@ export default function RegistryPage() {
         {/* Search Form */}
         <Card className="mb-8">
           <CardHeader>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-              Поиск в реестре
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-neutral-900">
+                Поиск в реестре
+              </h2>
+              <Button
+                variant="outline"
+                onClick={handleExport}
+                className="hidden sm:flex"
+              >
+                <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                Экспорт в Excel
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <Input
-                label="ФИО арбитражного управляющего"
-                placeholder="Введите ФИО"
-                leftIcon={<UserGroupIcon className="h-5 w-5" />}
-              />
-              <Input
-                label="ИНН"
-                placeholder="Введите ИНН (12 цифр)"
-                leftIcon={<DocumentTextIcon className="h-5 w-5" />}
-              />
-              <Input
-                label="Номер в реестре"
-                placeholder="Введите номер"
-                leftIcon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="flex-1 sm:flex-none">
-                <MagnifyingGlassIcon className="h-5 w-5 mr-2" />
-                Найти
-              </Button>
-              <Button variant="outline" className="flex-1 sm:flex-none">
-                Сбросить фильтры
-              </Button>
-            </div>
+            <SearchForm
+              onSearch={handleSearch}
+              onReset={handleReset}
+              loading={loading}
+            />
           </CardContent>
         </Card>
 
@@ -70,128 +316,55 @@ export default function RegistryPage() {
                     Результаты поиска
                   </h2>
                   <span className="text-sm text-neutral-600">
-                    Найдено: 150 арбитражных управляющих
+                    Найдено: {filteredData.length} арбитражных управляющих
                   </span>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Sample Results */}
-                  {[1, 2, 3, 4, 5].map((item) => (
-                    <div 
-                      key={item}
-                      className="border border-neutral-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                            Иванов Иван Иванович
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-neutral-600">
-                            <div>
-                              <span className="font-medium">ИНН:</span> 123456789012
-                            </div>
-                            <div>
-                              <span className="font-medium">Номер в реестре:</span> АУ-001
-                            </div>
-                            <div>
-                              <span className="font-medium">Телефон:</span> +7 (495) 123-45-67
-                            </div>
-                            <div>
-                              <span className="font-medium">Email:</span> ivanov@example.com
-                            </div>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Действующий
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <RegistryTable
+                  managers={paginatedData}
+                  onManagerClick={handleManagerClick}
+                  loading={loading}
+                />
 
-                {/* Pagination */}
-                <div className="mt-6 flex justify-center">
-                  <nav className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" disabled>
-                      Предыдущая
-                    </Button>
-                    <Button size="sm">1</Button>
-                    <Button variant="outline" size="sm">2</Button>
-                    <Button variant="outline" size="sm">3</Button>
-                    <Button variant="outline" size="sm">
-                      Следующая
-                    </Button>
-                  </nav>
-                </div>
+                {filteredData.length > 0 && (
+                  <div className="mt-6">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                      totalItems={filteredData.length}
+                      itemsPerPage={itemsPerPage}
+                      loading={loading}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <h3 className="text-lg font-semibold text-neutral-900">
-                  Фильтры
-                </h3>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Статус
-                    </label>
-                    <div className="space-y-2">
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded border-neutral-300 text-beige-600 focus:ring-beige-500" defaultChecked />
-                        <span className="ml-2 text-sm text-neutral-700">Действующие</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="checkbox" className="rounded border-neutral-300 text-beige-600 focus:ring-beige-500" />
-                        <span className="ml-2 text-sm text-neutral-700">Исключенные</span>
-                      </label>
-                    </div>
-                  </div>
+            <FilterPanel
+              onFilterChange={(filters) => {
+                setSearchFilters(prev => ({ ...prev, ...filters }));
+                setCurrentPage(1);
+              }}
+              activeFilters={searchFilters}
+              stats={stats}
+            />
 
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-2">
-                      Регион
-                    </label>
-                    <select className="form-input">
-                      <option>Все регионы</option>
-                      <option>Москва</option>
-                      <option>Санкт-Петербург</option>
-                      <option>Московская область</option>
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <h3 className="text-lg font-semibold text-neutral-900">
-                  Статистика
-                </h3>
-              </CardHeader>
+            {/* Экспорт для мобильных */}
+            <Card className="lg:hidden">
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-neutral-600">Всего в реестре:</span>
-                    <span className="text-sm font-medium text-neutral-900">150</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-neutral-600">Действующие:</span>
-                    <span className="text-sm font-medium text-green-600">145</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-neutral-600">Исключенные:</span>
-                    <span className="text-sm font-medium text-red-600">5</span>
-                  </div>
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
+                  className="w-full"
+                >
+                  <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                  Экспорт в Excel
+                </Button>
               </CardContent>
             </Card>
           </div>
