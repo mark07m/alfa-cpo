@@ -1,5 +1,9 @@
+"use client";
+
 import Layout from '@/components/layout/Layout';
 import { InformationUpdate, InformationItem } from '@/components/control';
+import Link from 'next/link';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function InformationUpdatesPage() {
   const informationItems: InformationItem[] = [
@@ -118,6 +122,17 @@ export default function InformationUpdatesPage() {
             Сведения о размещении и обновлении информации на сайте саморегулируемой организации 
             в соответствии с требованиями федерального законодательства.
           </p>
+        </div>
+
+        {/* Back to Control */}
+        <div className="mb-8">
+          <Link 
+            href="/control"
+            className="inline-flex items-center text-beige-600 hover:text-beige-700 font-medium transition-colors duration-200"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Назад к контролю деятельности
+          </Link>
         </div>
 
         <InformationUpdate 
