@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SearchForm, RegistryTable, Pagination, FilterPanel, SearchFilters } from '@/components/registry';
 import { ArbitraryManager } from '@/types';
+import { formatDate } from '@/utils/dateUtils';
 
 // Моковые данные для демонстрации
 const mockManagers: ArbitraryManager[] = [
@@ -269,7 +270,7 @@ export default function RegistryPage() {
         manager.region || '',
         manager.status === 'active' ? 'Действующий' : 
         manager.status === 'excluded' ? 'Исключен' : 'Приостановлен',
-        new Date(manager.joinDate).toLocaleDateString('ru-RU')
+        formatDate(manager.joinDate)
       ])
     ].map(row => row.join(',')).join('\n');
 

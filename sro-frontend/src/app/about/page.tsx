@@ -168,7 +168,7 @@ export default function AboutPage() {
                 Учредительные и нормативные документы
               </p>
               <a 
-                href="/documents" 
+                href="/documents/regulatory" 
                 className="text-beige-600 hover:text-beige-700 text-sm font-medium"
               >
                 Подробнее →

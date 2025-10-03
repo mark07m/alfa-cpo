@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DocumentViewerProps } from '@/types';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
+import { formatDate } from '@/utils/dateUtils';
 import { 
   XMarkIcon,
   DocumentArrowDownIcon,
@@ -251,7 +252,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
               )}
             </div>
             <div>
-              <span className="font-medium">Обновлено:</span> {new Date(document.updatedAt).toLocaleDateString('ru-RU')}
+              <span className="font-medium">Обновлено:</span> {formatDate(document.updatedAt)}
             </div>
           </div>
         </div>

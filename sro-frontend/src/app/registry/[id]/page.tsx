@@ -201,12 +201,26 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
   const statusConfig = getStatusConfig(manager.status);
   const StatusIcon = statusConfig.icon;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const formatDateLongLong = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return 'Неизвестно';
+      }
+      
+      const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+      ];
+      
+      const day = date.getDate();
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      
+      return `${day} ${month} ${year} г.`;
+    } catch (error) {
+      return 'Неизвестно';
+    }
   };
 
   const formatPhone = (phone: string) => {
@@ -369,14 +383,14 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
                       Дата вступления в СРО
                     </label>
-                    <p className="text-neutral-900">{formatDate(manager.joinDate)}</p>
+                    <p className="text-neutral-900">{formatDateLong(manager.joinDate)}</p>
                   </div>
                   {manager.registrationDate && (
                     <div>
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Дата регистрации в реестре
                       </label>
-                      <p className="text-neutral-900">{formatDate(manager.registrationDate)}</p>
+                      <p className="text-neutral-900">{formatDateLong(manager.registrationDate)}</p>
                     </div>
                   )}
                   {manager.decisionNumber && (
@@ -392,7 +406,7 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Дата исключения
                       </label>
-                      <p className="text-neutral-900">{formatDate(manager.excludeDate)}</p>
+                      <p className="text-neutral-900">{formatDateLong(manager.excludeDate)}</p>
                     </div>
                   )}
                   {manager.excludeReason && (
@@ -422,7 +436,7 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
                       <label className="block text-sm font-medium text-neutral-700 mb-1">
                         Дата рождения
                       </label>
-                      <p className="text-neutral-900">{formatDate(manager.birthDate)}</p>
+                      <p className="text-neutral-900">{formatDateLong(manager.birthDate)}</p>
                     </div>
                   )}
                   {manager.birthPlace && (
@@ -644,7 +658,7 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
                   </div>
                   <div>
                     <span className="font-medium text-neutral-700">Последнее обновление:</span>
-                    <p className="text-neutral-600">{formatDate(new Date().toISOString())}</p>
+                    <p className="text-neutral-600">{formatDateLong(new Date().toISOString())}</p>
                   </div>
                 </div>
               </CardContent>

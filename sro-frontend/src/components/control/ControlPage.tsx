@@ -13,11 +13,8 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  UserGroupIcon,
-  InformationCircleIcon,
-  ArrowRightIcon
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
-import Link from 'next/link';
 
 interface ControlPageProps {
   title?: string;
@@ -269,35 +266,6 @@ export default function ControlPage({
           </p>
         </div>
 
-        {/* Additional Menu */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-              Дополнительная информация
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link 
-                href="/control/information-updates"
-                className="group flex items-center p-4 border border-neutral-200 rounded-lg hover:border-beige-300 hover:shadow-md transition-all duration-200"
-              >
-                <div className="flex-shrink-0">
-                  <InformationCircleIcon className="h-8 w-8 text-beige-600 group-hover:text-beige-700" />
-                </div>
-                <div className="ml-4 flex-1">
-                  <h3 className="text-lg font-medium text-neutral-900 group-hover:text-beige-700">
-                    Информация о размещении и обновлении сведений
-                  </h3>
-                  <p className="text-sm text-neutral-600 mt-1">
-                    Сведения о размещении и обновлении информации на сайте СРО в соответствии с требованиями законодательства
-                  </p>
-                </div>
-                <div className="flex-shrink-0">
-                  <ArrowRightIcon className="h-5 w-5 text-neutral-400 group-hover:text-beige-600" />
-                </div>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Control Rules */}
         <Card className="mb-8">

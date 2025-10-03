@@ -4,6 +4,7 @@ import React from 'react';
 import { Document } from '@/types';
 import Card, { CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
+import { formatDate } from '@/utils/dateUtils';
 import { 
   DocumentTextIcon, 
   CalendarIcon,
@@ -37,13 +38,6 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
 
   const getFileTypeIcon = (fileType: string) => {
     switch (fileType.toLowerCase()) {

@@ -29,21 +29,21 @@ export default function NewsSection({
     {
       id: "1",
       title: "Обновление реестра арбитражных управляющих",
-      date: new Date().toLocaleDateString('ru-RU'),
+      date: '01.12.2023',
       excerpt: "В реестр СРО добавлены новые арбитражные управляющие, прошедшие процедуру аккредитации.",
       href: "/news/1"
     },
     {
       id: "2", 
       title: "Изменения в нормативных документах",
-      date: new Date(Date.now() - 86400000).toLocaleDateString('ru-RU'),
+      date: '30.11.2023',
       excerpt: "Обновлены правила профессиональной деятельности арбитражных управляющих.",
       href: "/news/2"
     },
     {
       id: "3",
       title: "Проведение семинара по повышению квалификации",
-      date: new Date(Date.now() - 172800000).toLocaleDateString('ru-RU'),
+      date: '29.11.2023',
       excerpt: "Запланирован семинар для членов СРО по актуальным вопросам банкротства.",
       href: "/news/3"
     }
