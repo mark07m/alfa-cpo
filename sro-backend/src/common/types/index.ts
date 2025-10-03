@@ -17,6 +17,9 @@ export enum Permission {
   NEWS_CREATE = 'news:create',
   NEWS_UPDATE = 'news:update',
   NEWS_DELETE = 'news:delete',
+  NEWS_CATEGORY_CREATE = 'news:category:create',
+  NEWS_CATEGORY_UPDATE = 'news:category:update',
+  NEWS_CATEGORY_DELETE = 'news:category:delete',
   
   // Документы
   DOCUMENTS_READ = 'documents:read',
@@ -56,6 +59,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.NEWS_CREATE,
     Permission.NEWS_UPDATE,
     Permission.NEWS_DELETE,
+    Permission.NEWS_CATEGORY_CREATE,
+    Permission.NEWS_CATEGORY_UPDATE,
+    Permission.NEWS_CATEGORY_DELETE,
     Permission.DOCUMENTS_READ,
     Permission.DOCUMENTS_CREATE,
     Permission.DOCUMENTS_UPDATE,
@@ -78,6 +84,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.NEWS_READ,
     Permission.NEWS_CREATE,
     Permission.NEWS_UPDATE,
+    Permission.NEWS_CATEGORY_CREATE,
+    Permission.NEWS_CATEGORY_UPDATE,
     Permission.DOCUMENTS_READ,
     Permission.DOCUMENTS_CREATE,
     Permission.DOCUMENTS_UPDATE,

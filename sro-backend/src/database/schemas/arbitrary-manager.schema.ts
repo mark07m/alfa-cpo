@@ -5,6 +5,7 @@ export type ArbitraryManagerDocument = ArbitraryManager & Document;
 
 @Schema({ timestamps: true })
 export class ArbitraryManager {
+  // Основная информация
   @Prop({ required: true })
   fullName: string;
 
@@ -14,6 +15,15 @@ export class ArbitraryManager {
   @Prop({ required: true, unique: true })
   registryNumber: string;
 
+  @Prop()
+  snils?: string; // СНИЛС
+
+  @Prop()
+  stateRegistryNumber?: string; // Номер в Госреестре
+
+  @Prop()
+  stateRegistryDate?: Date; // Дата включения в Госреестр
+
   @Prop({ required: true })
   phone: string;
 
@@ -22,6 +32,9 @@ export class ArbitraryManager {
 
   @Prop()
   region?: string;
+
+  @Prop()
+  city?: string; // Населенный пункт
 
   @Prop({ 
     type: String, 
@@ -39,6 +52,7 @@ export class ArbitraryManager {
   @Prop()
   excludeReason?: string;
 
+  // Личная информация
   @Prop()
   birthDate?: Date;
 
@@ -51,6 +65,7 @@ export class ArbitraryManager {
   @Prop()
   decisionNumber?: string;
 
+  // Профессиональная подготовка
   @Prop()
   education?: string;
 
@@ -63,6 +78,7 @@ export class ArbitraryManager {
   @Prop()
   examCertificate?: string;
 
+  // Дисквалификация и судимости
   @Prop()
   disqualification?: string;
 
@@ -70,22 +86,119 @@ export class ArbitraryManager {
   criminalRecord?: string;
 
   @Prop()
-  insurance?: string;
+  criminalRecordDate?: Date;
 
   @Prop()
-  compensationFundContribution?: number;
+  criminalRecordNumber?: string;
 
   @Prop()
-  penalties?: string;
+  criminalRecordName?: string;
+
+  // Страхование
+  @Prop({
+    type: {
+      startDate: Date,
+      endDate: Date,
+      amount: Number,
+      contractNumber: String,
+      contractDate: Date,
+      insuranceCompany: String,
+    },
+  })
+  insurance?: {
+    startDate?: Date;
+    endDate?: Date;
+    amount?: number;
+    contractNumber?: string;
+    contractDate?: Date;
+    insuranceCompany?: string;
+  };
+
+  // Компенсационный фонд
+  @Prop({
+    type: [{
+      purpose: String,
+      date: Date,
+      amount: Number,
+    }],
+  })
+  compensationFundContributions?: {
+    purpose: string;
+    date: Date;
+    amount: number;
+  }[];
 
   @Prop()
-  complianceStatus?: string;
+  compensationFundContribution?: number; // Общая сумма взносов
+
+  // Проверки
+  @Prop({
+    type: [{
+      type: String,
+      startDate: Date,
+      endDate: Date,
+      result: String,
+    }],
+  })
+  inspections?: {
+    type: string;
+    startDate: Date;
+    endDate: Date;
+    result: string;
+  }[];
 
   @Prop()
   lastInspection?: Date;
 
+  // Дисциплинарные взыскания
+  @Prop({
+    type: [{
+      startDate: Date,
+      endDate: Date,
+      decisionNumber: String,
+      penalty: String,
+    }],
+  })
+  disciplinaryMeasures?: {
+    startDate: Date;
+    endDate: Date;
+    decisionNumber: string;
+    penalty: string;
+  }[];
+
+  // Участие в других СРО
+  @Prop({
+    type: [{
+      sroName: String,
+      joinDate: Date,
+      leaveDate: Date,
+      status: String,
+    }],
+  })
+  otherSroParticipation?: {
+    sroName: string;
+    joinDate: Date;
+    leaveDate?: Date;
+    status: string;
+  }[];
+
+  // Соответствие члена
+  @Prop()
+  complianceStatus?: string;
+
+  @Prop()
+  complianceDate?: Date;
+
+  @Prop()
+  complianceNumber?: string;
+
+  // Контактная информация
   @Prop()
   postalAddress?: string;
+
+  // Дополнительные поля
+  @Prop()
+  penalties?: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Document' }] })
   documents?: Types.ObjectId[];

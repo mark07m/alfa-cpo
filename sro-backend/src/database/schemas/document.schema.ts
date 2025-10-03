@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-export type DocumentDocument = DocumentSchema & Document;
+export type DocumentDocument = DocumentModel & Document;
 
 @Schema({ timestamps: true })
-export class DocumentSchema {
+export class DocumentModel {
   @Prop({ required: true })
   title: string;
 
@@ -73,4 +73,4 @@ export class DocumentSchema {
   updatedBy: Types.ObjectId;
 }
 
-export const DocumentSchemaFactory = SchemaFactory.createForClass(DocumentSchema);
+export const DocumentSchema = SchemaFactory.createForClass(DocumentModel);

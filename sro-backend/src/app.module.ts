@@ -5,6 +5,8 @@ import { AppService } from './app.service';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthModule } from '@/auth/auth.module';
 import { UsersModule } from '@/users/users.module';
+import { NewsModule } from '@/content/news.module';
+import { RegistryModule } from '@/registry/registry.module';
 import appConfig from '@/config/app.config';
 
 @Module({
@@ -16,6 +18,8 @@ import appConfig from '@/config/app.config';
     DatabaseModule,
     AuthModule,
     UsersModule,
+    NewsModule,
+    RegistryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

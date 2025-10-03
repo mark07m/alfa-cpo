@@ -201,7 +201,7 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
   const statusConfig = getStatusConfig(manager.status);
   const StatusIcon = statusConfig.icon;
 
-  const formatDateLongLong = (dateString: string) => {
+  const formatDateLong = (dateString: string) => {
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
