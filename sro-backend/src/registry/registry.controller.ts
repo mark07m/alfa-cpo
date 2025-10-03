@@ -40,8 +40,17 @@ export class RegistryController {
   }
 
   @Get()
-  findAll(@Query() query: RegistryQueryDto) {
-    return this.registryService.findAll(query);
+  async findAll(@Query() query: RegistryQueryDto) {
+    try {
+      console.log('Registry findAll called with query:', query);
+      const result = await this.registryService.findAll(query);
+      console.log('Registry findAll result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in findAll:', error);
+      console.error('Error stack:', error.stack);
+      throw error;
+    }
   }
 
   @Get('statistics')
@@ -53,8 +62,13 @@ export class RegistryController {
   @Header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   @Header('Content-Disposition', 'attachment; filename="registry.xlsx"')
   async exportToExcel(@Res() res: Response) {
-    const buffer = await this.registryService.exportToExcel();
-    res.send(buffer);
+    try {
+      const buffer = await this.registryService.exportToExcel();
+      res.send(buffer);
+    } catch (error) {
+      console.error('Error in exportToExcel:', error);
+      res.status(500).json({ message: 'Ошибка экспорта в Excel' });
+    }
   }
 
   @Get('export/csv')

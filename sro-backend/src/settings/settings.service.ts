@@ -11,18 +11,19 @@ export class SettingsService {
     @InjectModel(SiteSettings.name) private siteSettingsModel: Model<SiteSettingsDocument>,
   ) {}
 
-  async getSettings(): Promise<SiteSettings> {
+  async getSettings(): Promise<SiteSettingsDocument> {
     let settings = await this.siteSettingsModel.findOne().exec();
     
     if (!settings) {
       // Создаем настройки по умолчанию, если их нет
-      settings = await this.createDefaultSettings();
+      const defaultSettings = await this.createDefaultSettings();
+      return defaultSettings;
     }
 
     return settings;
   }
 
-  async updateSettings(updateSiteSettingsDto: UpdateSiteSettingsDto, userId: string): Promise<SiteSettings> {
+  async updateSettings(updateSiteSettingsDto: UpdateSiteSettingsDto, userId: string): Promise<SiteSettingsDocument> {
     try {
       let settings = await this.siteSettingsModel.findOne().exec();
       
@@ -51,13 +52,20 @@ export class SettingsService {
     return settings.themeSettings;
   }
 
-  async updateThemeSettings(updateThemeSettingsDto: UpdateThemeSettingsDto, userId: string): Promise<SiteSettings> {
+  async updateThemeSettings(updateThemeSettingsDto: UpdateThemeSettingsDto, userId: string): Promise<SiteSettingsDocument> {
     try {
       let settings = await this.siteSettingsModel.findOne().exec();
       
       if (!settings) {
         // Создаем настройки с темой по умолчанию
-        settings = await this.createDefaultSettings();
+        const defaultSettings = await this.createDefaultSettings();
+        defaultSettings.themeSettings = {
+          ...defaultSettings.themeSettings,
+          ...updateThemeSettingsDto,
+        };
+        defaultSettings.updatedBy = new Types.ObjectId(userId);
+
+        return await defaultSettings.save();
       }
 
       settings.themeSettings = {
@@ -96,7 +104,7 @@ export class SettingsService {
     };
   }
 
-  private async createDefaultSettings(): Promise<SiteSettings> {
+  private async createDefaultSettings(): Promise<SiteSettingsDocument> {
     const defaultSettings = new this.siteSettingsModel({
       siteName: 'СРО Арбитражных Управляющих',
       siteDescription: 'Официальный сайт саморегулируемой организации арбитражных управляющих',
@@ -121,7 +129,7 @@ export class SettingsService {
     return await defaultSettings.save();
   }
 
-  async resetToDefaults(userId: string): Promise<SiteSettings> {
+  async resetToDefaults(userId: string): Promise<SiteSettingsDocument> {
     try {
       await this.siteSettingsModel.deleteMany().exec();
       const defaultSettings = await this.createDefaultSettings();

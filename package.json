@@ -1,0 +1,27 @@
+{
+  "name": "sro-test-suite",
+  "version": "1.0.0",
+  "description": "Тестовый набор для API СРО арбитражных управляющих",
+  "main": "test-api.js",
+  "scripts": {
+    "test": "node test-api.js",
+    "test:auth": "node -e \"require('./test-api').testAuth()\"",
+    "test:content": "node -e \"require('./test-api').testContent()\"",
+    "test:registry": "node -e \"require('./test-api').testRegistry()\"",
+    "test:control": "node -e \"require('./test-api').testControl()\"",
+    "test:documents": "node -e \"require('./test-api').testDocuments()\"",
+    "test:settings": "node -e \"require('./test-api').testSettings()\""
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "mongoose": "^8.19.0"
+  },
+  "keywords": [
+    "sro",
+    "api",
+    "test",
+    "mongodb"
+  ],
+  "author": "SRO AU Team",
+  "license": "MIT"
+}

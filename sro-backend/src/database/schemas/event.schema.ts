@@ -45,7 +45,7 @@ export class Event {
   @Prop()
   registrationDeadline?: Date;
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Document' }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'DocumentModel' }] })
   materials?: Types.ObjectId[];
 
   @Prop()

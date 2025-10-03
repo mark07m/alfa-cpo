@@ -38,3 +38,4 @@ export class Log {
 }
 
 export const LogSchema = SchemaFactory.createForClass(Log);
+export const LogModel = { name: 'Log', schema: LogSchema };

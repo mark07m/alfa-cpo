@@ -31,7 +31,7 @@ export class DisciplinaryMeasure {
   })
   status: 'active' | 'cancelled' | 'expired';
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Document' }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'DocumentModel' }] })
   documents?: Types.ObjectId[];
 
   @Prop()

@@ -28,22 +28,13 @@ import { Roles } from '@/auth/decorators/roles.decorator';
 import { RequirePermissions } from '@/auth/decorators/permissions.decorator';
 import { UserRole, Permission } from '@/common/types';
 import { StreamableFile } from '@nestjs/common';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { randomUUID } from 'crypto';
 
 // Настройка Multer для загрузки файлов
 const multerConfig = {
-  storage: diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, './uploads/temp');
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = randomUUID();
-      const ext = extname(file.originalname);
-      cb(null, `${uniqueSuffix}${ext}`);
-    },
-  }),
+  storage: memoryStorage(),
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
       'image/jpeg',
@@ -84,9 +75,34 @@ export class FilesController {
     @Body() uploadFileDto: UploadFileDto,
     @Request() req: any,
   ) {
+    console.log('Controller received file:', {
+      file: !!file,
+      originalname: file?.originalname,
+      mimetype: file?.mimetype,
+      size: file?.size,
+      buffer: !!file?.buffer,
+      path: file?.path,
+      fieldname: file?.fieldname
+    });
+
     if (!file) {
       throw new BadRequestException('Файл не предоставлен');
     }
+
+    // Обрабатываем валидацию tags и isPublic
+    console.log('UploadFileDto before processing:', uploadFileDto);
+    
+    if (uploadFileDto.tags && typeof uploadFileDto.tags === 'string') {
+      const tagsString = uploadFileDto.tags as any;
+      (uploadFileDto as any).tags = tagsString.split(',').map(tag => tag.trim());
+    }
+    
+    if (uploadFileDto.isPublic && typeof uploadFileDto.isPublic === 'string') {
+      const isPublicString = uploadFileDto.isPublic as any;
+      (uploadFileDto as any).isPublic = isPublicString === 'true';
+    }
+    
+    console.log('UploadFileDto after processing:', uploadFileDto);
 
     return this.filesService.uploadFile(file, uploadFileDto, req.user.id);
   }

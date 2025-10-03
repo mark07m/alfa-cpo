@@ -38,8 +38,13 @@ export class EventsController {
   }
 
   @Get()
-  findAll(@Query() query: EventQueryDto) {
-    return this.eventsService.findAll(query);
+  async findAll(@Query() query: EventQueryDto) {
+    try {
+      return await this.eventsService.findAll(query);
+    } catch (error) {
+      console.error('Error in findAll events:', error);
+      throw error;
+    }
   }
 
   @Get('upcoming')

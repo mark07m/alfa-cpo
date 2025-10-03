@@ -6,6 +6,7 @@ import { RefreshTokenService } from './refresh-token.service';
 import { PasswordResetService } from './password-reset.service';
 import { LoginLoggerService } from './login-logger.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +17,36 @@ export class AuthService {
     private passwordResetService: PasswordResetService,
     private loginLoggerService: LoginLoggerService,
   ) {}
+
+  async register(registerDto: RegisterDto, ipAddress?: string, userAgent?: string) {
+    const { email, password, firstName, lastName, middleName, phone } = registerDto;
+    
+    // Проверяем, существует ли пользователь
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new BadRequestException('Пользователь с таким email уже существует');
+    }
+
+    // Создаем нового пользователя
+    const user = await this.usersService.create({
+      email,
+      password,
+      firstName,
+      lastName,
+      middleName,
+      phone,
+      role: 'USER' as any, // По умолчанию обычный пользователь
+      isActive: true,
+    });
+
+    // Логируем регистрацию
+    if (ipAddress && userAgent) {
+      // await this.loginLoggerService.logLogin(user._id.toString(), ipAddress, userAgent, true);
+    }
+
+    // Возвращаем токены
+    return this.login(user, ipAddress, userAgent);
+  }
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);

@@ -8,7 +8,7 @@ import { FileQueryDto } from './dto/file-query.dto';
 import { FileLoggerService } from './file-logger.service';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as sharp from 'sharp';
+// import sharp from 'sharp'; // Временно отключено из-за проблем с установкой
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -24,6 +24,16 @@ export class FilesService {
     userId: string,
   ): Promise<FileModel> {
     try {
+      // Отладочная информация
+      console.log('File object:', {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        buffer: !!file.buffer,
+        path: file.path,
+        fieldname: file.fieldname
+      });
+
       // Создаем уникальное имя файла
       const fileExtension = path.extname(file.originalname);
       const fileName = `${randomUUID()}${fileExtension}`;
@@ -43,37 +53,61 @@ export class FilesService {
       const filePath = path.join(uploadDir, fileName);
       const fileUrl = `/uploads/files/${fileName}`;
 
+      // Читаем файл из временной папки и сохраняем в постоянную
+      let fileBuffer: Buffer;
+      if (file.buffer) {
+        // Если есть buffer (memory storage)
+        fileBuffer = file.buffer;
+        console.log('Using file.buffer, size:', fileBuffer.length);
+      } else if (file.path) {
+        // Если файл сохранен на диск (disk storage)
+        console.log('Reading file from path:', file.path);
+        fileBuffer = await fs.promises.readFile(file.path);
+        console.log('Read file buffer, size:', fileBuffer.length);
+        // Удаляем временный файл
+        await fs.promises.unlink(file.path);
+      } else {
+        console.log('No buffer or path found, file object:', file);
+        throw new BadRequestException('Файл не найден');
+      }
+
+      // Проверяем, что fileBuffer не undefined
+      if (!fileBuffer || fileBuffer.length === 0) {
+        console.log('FileBuffer is empty or undefined');
+        throw new BadRequestException('Файл пустой или поврежден');
+      }
+
       // Сохраняем файл
-      await fs.promises.writeFile(filePath, file.buffer);
+      await fs.promises.writeFile(filePath, fileBuffer);
 
       let imageMetadata: any = {};
       let thumbnailPath: string | undefined;
       let thumbnailUrl: string | undefined;
 
-      // Обрабатываем изображения
+      // Обрабатываем изображения (временно отключено из-за проблем с sharp)
       if (isImage) {
-        const image = sharp(file.buffer);
-        const metadata = await image.metadata();
+        // const image = sharp(fileBuffer);
+        // const metadata = await image.metadata();
         
         imageMetadata = {
-          width: metadata.width,
-          height: metadata.height,
-          format: metadata.format,
+          width: 0,
+          height: 0,
+          format: 'unknown',
           quality: 90,
         };
 
-        // Создаем превью
-        const thumbnailFileName = `thumb_${fileName}`;
-        thumbnailPath = path.join(thumbnailDir, thumbnailFileName);
-        thumbnailUrl = `/uploads/files/thumbnails/${thumbnailFileName}`;
+        // Создаем превью (временно отключено)
+        // const thumbnailFileName = `thumb_${fileName}`;
+        // thumbnailPath = path.join(thumbnailDir, thumbnailFileName);
+        // thumbnailUrl = `/uploads/files/thumbnails/${thumbnailFileName}`;
 
-        await image
-          .resize(300, 300, { 
-            fit: 'inside',
-            withoutEnlargement: true 
-          })
-          .jpeg({ quality: 80 })
-          .toFile(thumbnailPath);
+        // await image
+        //   .resize(300, 300, { 
+        //     fit: 'inside',
+        //     withoutEnlargement: true 
+        //   })
+        //   .jpeg({ quality: 80 })
+        //   .toFile(thumbnailPath);
       }
 
       // Создаем запись в БД
@@ -83,7 +117,7 @@ export class FilesService {
         filePath,
         fileUrl,
         mimeType: file.mimetype,
-        fileSize: file.size,
+        fileSize: file.size || fileBuffer.length,
         fileExtension: fileExtension.toLowerCase(),
         isImage,
         imageWidth: imageMetadata.width,
@@ -91,7 +125,7 @@ export class FilesService {
         thumbnailPath,
         thumbnailUrl,
         description: uploadFileDto.description,
-        tags: uploadFileDto.tags || [],
+        tags: Array.isArray(uploadFileDto.tags) ? uploadFileDto.tags : [],
         isPublic: uploadFileDto.isPublic !== false,
         imageMetadata,
         uploadedBy: new Types.ObjectId(userId),
@@ -106,7 +140,7 @@ export class FilesService {
       await this.fileLoggerService.logFileUpload(
         userId,
         file.originalname,
-        file.size,
+        file.size || fileBuffer.length,
         file.mimetype,
         true,
       );
@@ -117,7 +151,7 @@ export class FilesService {
       await this.fileLoggerService.logFileUpload(
         userId,
         file.originalname,
-        file.size,
+        file.size || 0,
         file.mimetype,
         false,
         error.message,
@@ -239,6 +273,10 @@ export class FilesService {
       .populate('updatedBy', 'firstName lastName email')
       .exec();
 
+    if (!updatedFile) {
+      throw new NotFoundException('Файл не найден');
+    }
+    
     return updatedFile;
   }
 

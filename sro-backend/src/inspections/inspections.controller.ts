@@ -30,8 +30,13 @@ export class InspectionsController {
   }
 
   @Get()
-  findAll(@Query() query: InspectionQueryDto) {
-    return this.inspectionsService.findAll(query);
+  async findAll(@Query() query: InspectionQueryDto) {
+    try {
+      return await this.inspectionsService.findAll(query);
+    } catch (error) {
+      console.error('Error in findAll inspections:', error);
+      throw error;
+    }
   }
 
   @Get('statistics')

@@ -34,7 +34,7 @@ export class CompensationFund {
     kpp: string;
   };
 
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Document' }] })
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'DocumentModel' }] })
   documents?: Types.ObjectId[];
 
   @Prop({

@@ -30,8 +30,13 @@ export class DisciplinaryMeasuresController {
   }
 
   @Get()
-  findAll(@Query() query: DisciplinaryMeasureQueryDto) {
-    return this.disciplinaryMeasuresService.findAll(query);
+  async findAll(@Query() query: DisciplinaryMeasureQueryDto) {
+    try {
+      return await this.disciplinaryMeasuresService.findAll(query);
+    } catch (error) {
+      console.error('Error in findAll disciplinary measures:', error);
+      throw error;
+    }
   }
 
   @Get('statistics')

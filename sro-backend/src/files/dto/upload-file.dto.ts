@@ -7,6 +7,7 @@ import {
   MinLength,
   IsBoolean
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class UploadFileDto {
   @IsString()
@@ -21,5 +22,11 @@ export class UploadFileDto {
 
   @IsBoolean()
   @IsOptional()
-  isPublic?: boolean = true;
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value === 'true';
+    }
+    return value;
+  })
+  isPublic?: boolean;
 }

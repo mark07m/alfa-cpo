@@ -4,13 +4,13 @@ import { FilesController } from './files.controller';
 import { FilesService } from './files.service';
 import { FileLoggerService } from './file-logger.service';
 import { FileModel, FileSchema } from '@/database/schemas/file.schema';
-import { LogModel, LogSchema } from '@/database/schemas/log.schema';
+import { Log, LogSchema } from '@/database/schemas/log.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: FileModel.name, schema: FileSchema },
-      { name: LogModel.name, schema: LogSchema },
+      { name: Log.name, schema: LogSchema },
     ]),
   ],
   controllers: [FilesController],

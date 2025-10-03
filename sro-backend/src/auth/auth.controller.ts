@@ -4,6 +4,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RateLimitGuard } from './guards/rate-limit.guard';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -14,6 +15,13 @@ import { User } from '@/database/schemas/user.schema';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  async register(@Body() registerDto: RegisterDto, @Req() request) {
+    const ipAddress = this.getClientIp(request);
+    const userAgent = request.get('User-Agent');
+    return this.authService.register(registerDto, ipAddress, userAgent);
+  }
 
   @UseGuards(RateLimitGuard, LocalAuthGuard)
   @Post('login')

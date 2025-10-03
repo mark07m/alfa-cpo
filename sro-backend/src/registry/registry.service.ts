@@ -76,7 +76,10 @@ export class RegistryService {
       updatedBy: new Types.ObjectId(userId),
     });
 
-    return arbitraryManager.save();
+    const savedManager = await arbitraryManager.save();
+    console.log('Saved manager ID:', savedManager._id);
+    console.log('Saved manager data:', JSON.stringify(savedManager, null, 2));
+    return savedManager;
   }
 
   async findAll(query: RegistryQueryDto) {

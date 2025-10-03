@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { LogModel, LogSchema } from '@/database/schemas/log.schema';
+import { Log, LogSchema } from '@/database/schemas/log.schema';
 
 @Injectable()
 export class FileLoggerService {
   constructor(
-    @InjectModel(LogModel.name) private logModel: Model<LogModel>,
+    @InjectModel(Log.name) private logModel: Model<Log>,
   ) {}
 
   async logFileUpload(

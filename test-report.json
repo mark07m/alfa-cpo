@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-10-03T23:10:41.433Z",
+  "summary": {
+    "totalTests": 0,
+    "passedTests": 0,
+    "failedTests": 0
+  },
+  "createdData": {},
+  "authTokens": [
+    "admin@sro-au.ru",
+    "moderator@sro-au.ru",
+    "editor@sro-au.ru"
+  ],
+  "recommendations": []
+}

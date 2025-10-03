@@ -1,0 +1,407 @@
+{
+  "timestamp": "2025-10-03T23:08:05.457Z",
+  "summary": {
+    "total": 64,
+    "passed": 64,
+    "failed": 0,
+    "details": [
+      {
+        "name": "Health Check",
+        "success": true,
+        "details": "Сервер работает",
+        "timestamp": "2025-10-03T23:08:05.002Z"
+      },
+      {
+        "name": "Вход admin@sro-au.ru",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.081Z"
+      },
+      {
+        "name": "Вход moderator@sro-au.ru",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.148Z"
+      },
+      {
+        "name": "Вход editor@sro-au.ru",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.215Z"
+      },
+      {
+        "name": "Получение профиля",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.218Z"
+      },
+      {
+        "name": "Создание АУ Козлов Алексей Владимирович",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.224Z"
+      },
+      {
+        "name": "Создание АУ Морозова Елена Петровна",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.229Z"
+      },
+      {
+        "name": "Получение списка АУ",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.234Z"
+      },
+      {
+        "name": "Статистика АУ",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.241Z"
+      },
+      {
+        "name": "Поиск по ИНН",
+        "success": true,
+        "details": "Найден",
+        "timestamp": "2025-10-03T23:08:05.246Z"
+      },
+      {
+        "name": "Экспорт в Excel",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.262Z"
+      },
+      {
+        "name": "Экспорт в CSV",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.267Z"
+      },
+      {
+        "name": "Получение информации о фонде",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.270Z"
+      },
+      {
+        "name": "Статистика фонда",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.272Z"
+      },
+      {
+        "name": "Недавняя история фонда",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.275Z"
+      },
+      {
+        "name": "История фонда",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.278Z"
+      },
+      {
+        "name": "Обновление информации о фонде",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.287Z"
+      },
+      {
+        "name": "Добавление записи в историю",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.295Z"
+      },
+      {
+        "name": "Создание дисциплинарной меры warning",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.301Z"
+      },
+      {
+        "name": "Получение списка дисциплинарных мер",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.308Z"
+      },
+      {
+        "name": "Статистика дисциплинарных мер",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.315Z"
+      },
+      {
+        "name": "Создание проверки planned",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.319Z"
+      },
+      {
+        "name": "Получение списка проверок",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.325Z"
+      },
+      {
+        "name": "Статистика проверок",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.332Z"
+      },
+      {
+        "name": "Создание документа Устав СРО АУ",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.335Z"
+      },
+      {
+        "name": "Получение списка документов",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.339Z"
+      },
+      {
+        "name": "Получение публичных документов",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.342Z"
+      },
+      {
+        "name": "Получение категорий документов",
+        "success": true,
+        "details": "Получены",
+        "timestamp": "2025-10-03T23:08:05.345Z"
+      },
+      {
+        "name": "Создание события Ежегодная конференция СРО АУ",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.349Z"
+      },
+      {
+        "name": "Получение списка событий",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.354Z"
+      },
+      {
+        "name": "Получение предстоящих событий",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.355Z"
+      },
+      {
+        "name": "Получение рекомендуемых событий",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.357Z"
+      },
+      {
+        "name": "Получение календаря событий",
+        "success": true,
+        "details": "Получен",
+        "timestamp": "2025-10-03T23:08:05.359Z"
+      },
+      {
+        "name": "Получение типов событий",
+        "success": true,
+        "details": "Получены",
+        "timestamp": "2025-10-03T23:08:05.361Z"
+      },
+      {
+        "name": "Создание новости Новые требования к арбитражным управляющим в 2024 году",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.363Z"
+      },
+      {
+        "name": "Получение списка новостей",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.367Z"
+      },
+      {
+        "name": "Получение рекомендуемых новостей",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.369Z"
+      },
+      {
+        "name": "Получение последних новостей",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.372Z"
+      },
+      {
+        "name": "Создание категории Законодательство 2027 885372",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.376Z"
+      },
+      {
+        "name": "Создание категории События 2027 885376",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.380Z"
+      },
+      {
+        "name": "Получение списка категорий",
+        "success": true,
+        "details": "Найдено 34 записей",
+        "timestamp": "2025-10-03T23:08:05.382Z"
+      },
+      {
+        "name": "Получение активных категорий",
+        "success": true,
+        "details": "Найдено 34 записей",
+        "timestamp": "2025-10-03T23:08:05.384Z"
+      },
+      {
+        "name": "Создание страницы О СРО 2027 885384",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.388Z"
+      },
+      {
+        "name": "Получение списка страниц",
+        "success": true,
+        "details": "Найдено 10 записей",
+        "timestamp": "2025-10-03T23:08:05.392Z"
+      },
+      {
+        "name": "Статистика страниц",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.396Z"
+      },
+      {
+        "name": "Получение шаблонов страниц",
+        "success": true,
+        "details": "Получены",
+        "timestamp": "2025-10-03T23:08:05.400Z"
+      },
+      {
+        "name": "Получение слагов страниц",
+        "success": true,
+        "details": "Получены",
+        "timestamp": "2025-10-03T23:08:05.403Z"
+      },
+      {
+        "name": "Поиск страницы по слагу",
+        "success": true,
+        "details": "Найдена",
+        "timestamp": "2025-10-03T23:08:05.405Z"
+      },
+      {
+        "name": "Получение списка пользователей",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.407Z"
+      },
+      {
+        "name": "Получение пользователя по ID",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.409Z"
+      },
+      {
+        "name": "Получение настроек",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.410Z"
+      },
+      {
+        "name": "Обновление настроек",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.417Z"
+      },
+      {
+        "name": "Получение настроек темы",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.418Z"
+      },
+      {
+        "name": "Получение SEO настроек",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.420Z"
+      },
+      {
+        "name": "Получение контактной информации",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.421Z"
+      },
+      {
+        "name": "Получение истории настроек",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.424Z"
+      },
+      {
+        "name": "Загрузка файла",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.432Z"
+      },
+      {
+        "name": "Получение списка файлов",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.438Z"
+      },
+      {
+        "name": "Получение публичных файлов",
+        "success": true,
+        "details": "Найдено 0 записей",
+        "timestamp": "2025-10-03T23:08:05.441Z"
+      },
+      {
+        "name": "Статистика файлов",
+        "success": true,
+        "details": "Получена",
+        "timestamp": "2025-10-03T23:08:05.446Z"
+      },
+      {
+        "name": "Обновление токена",
+        "success": true,
+        "details": "Ожидаемая ошибка (нет валидного refresh токена)",
+        "timestamp": "2025-10-03T23:08:05.449Z"
+      },
+      {
+        "name": "Запрос сброса пароля",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.453Z"
+      },
+      {
+        "name": "Сброс пароля с токеном",
+        "success": true,
+        "details": "Ожидаемая ошибка (невалидный токен)",
+        "timestamp": "2025-10-03T23:08:05.455Z"
+      },
+      {
+        "name": "Выход из системы",
+        "success": true,
+        "details": "Успешно",
+        "timestamp": "2025-10-03T23:08:05.457Z"
+      }
+    ]
+  },
+  "createdData": {
+    "user_admin@sro-au.ru": "68e043c0879c955a4e8fb3b1",
+    "user_moderator@sro-au.ru": "68e04c0c879c955a4e8fb4e9",
+    "user_editor@sro-au.ru": "68e04c10879c955a4e8fb4eb",
+    "arbitrator_kozlov+1759532885218@example.ru": "68e057554b5ad466fe014b1b",
+    "arbitrator_morozova+1759532885224@example.ru": "68e057554b5ad466fe014b22"
+  },
+  "authTokens": [
+    "admin@sro-au.ru",
+    "moderator@sro-au.ru",
+    "editor@sro-au.ru"
+  ],
+  "recommendations": []
+}
