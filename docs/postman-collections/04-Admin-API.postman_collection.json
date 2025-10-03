@@ -1,0 +1,194 @@
+{
+  "info": {
+    "name": "SRO - Admin API",
+    "description": "API для роли ADMIN - полные права на управление системой",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"]}
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Админ Админов\",\n  \"profile\": {\n    \"phone\": \"+7 (999) 123-45-67\",\n    \"position\": \"Администратор\"\n  }\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/profile", "host": ["{{baseUrl}}"], "path": ["auth", "profile"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Иван Иванов\",\n  \"role\": \"EDITOR\",\n  \"isActive\": true\n}"},
+            "url": {"raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"]}
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"]}
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/users/:id", "host": ["{{baseUrl}}"], "path": ["users", ":id"], "variable": [{"key": "id", "value": "user_id_here"}]}
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"name\": \"Обновленное имя\",\n  \"role\": \"MODERATOR\",\n  \"isActive\": false\n}"},
+            "url": {"raw": "{{baseUrl}}/users/:id", "host": ["{{baseUrl}}"], "path": ["users", ":id"], "variable": [{"key": "id", "value": "user_id_here"}]}
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/users/:id", "host": ["{{baseUrl}}"], "path": ["users", ":id"], "variable": [{"key": "id", "value": "user_id_here"}]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {"name": "Create News", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Заголовок новости\",\n  \"content\": \"Содержание новости\",\n  \"category\": \"category_id_here\",\n  \"status\": \"published\"\n}"}, "url": {"raw": "{{baseUrl}}/news", "host": ["{{baseUrl}}"], "path": ["news"]}}},
+        {"name": "Get All News", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/news?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["news"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get News by ID", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/news/:id", "host": ["{{baseUrl}}"], "path": ["news", ":id"], "variable": [{"key": "id", "value": "news_id_here"}]}}},
+        {"name": "Update News", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленный заголовок\"\n}"}, "url": {"raw": "{{baseUrl}}/news/:id", "host": ["{{baseUrl}}"], "path": ["news", ":id"], "variable": [{"key": "id", "value": "news_id_here"}]}}},
+        {"name": "Delete News", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/news/:id", "host": ["{{baseUrl}}"], "path": ["news", ":id"], "variable": [{"key": "id", "value": "news_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "News Categories",
+      "item": [
+        {"name": "Create Category", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Новая категория\",\n  \"slug\": \"new-category\",\n  \"isActive\": true\n}"}, "url": {"raw": "{{baseUrl}}/news/categories", "host": ["{{baseUrl}}"], "path": ["news", "categories"]}}},
+        {"name": "Get All Categories", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/news/categories", "host": ["{{baseUrl}}"], "path": ["news", "categories"]}}},
+        {"name": "Update Category", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"name\": \"Обновленная категория\"\n}"}, "url": {"raw": "{{baseUrl}}/news/categories/:id", "host": ["{{baseUrl}}"], "path": ["news", "categories", ":id"], "variable": [{"key": "id", "value": "category_id_here"}]}}},
+        {"name": "Delete Category", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/news/categories/:id", "host": ["{{baseUrl}}"], "path": ["news", "categories", ":id"], "variable": [{"key": "id", "value": "category_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {"name": "Create Document", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Название документа\",\n  \"category\": \"category_name\",\n  \"isPublic\": true\n}"}, "url": {"raw": "{{baseUrl}}/documents", "host": ["{{baseUrl}}"], "path": ["documents"]}}},
+        {"name": "Get All Documents", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/documents?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["documents"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Update Document", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/documents/:id", "host": ["{{baseUrl}}"], "path": ["documents", ":id"], "variable": [{"key": "id", "value": "document_id_here"}]}}},
+        {"name": "Delete Document", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/documents/:id", "host": ["{{baseUrl}}"], "path": ["documents", ":id"], "variable": [{"key": "id", "value": "document_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {"name": "Create Event", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Название мероприятия\",\n  \"type\": \"conference\",\n  \"startDate\": \"2024-12-01T10:00:00Z\",\n  \"status\": \"published\"\n}"}, "url": {"raw": "{{baseUrl}}/events", "host": ["{{baseUrl}}"], "path": ["events"]}}},
+        {"name": "Get All Events", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/events?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["events"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Update Event", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/events/:id", "host": ["{{baseUrl}}"], "path": ["events", ":id"], "variable": [{"key": "id", "value": "event_id_here"}]}}},
+        {"name": "Delete Event", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/events/:id", "host": ["{{baseUrl}}"], "path": ["events", ":id"], "variable": [{"key": "id", "value": "event_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Files",
+      "item": [
+        {"name": "Upload File", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "body": {"mode": "formdata", "formdata": [{"key": "file", "type": "file", "src": "/path/to/file.pdf"}, {"key": "title", "value": "Название файла", "type": "text"}]}, "url": {"raw": "{{baseUrl}}/files/upload", "host": ["{{baseUrl}}"], "path": ["files", "upload"]}}},
+        {"name": "Get All Files", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/files?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["files"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get File Stats", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/files/stats", "host": ["{{baseUrl}}"], "path": ["files", "stats"]}}},
+        {"name": "Update File", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/files/:id", "host": ["{{baseUrl}}"], "path": ["files", ":id"], "variable": [{"key": "id", "value": "file_id_here"}]}}},
+        {"name": "Delete File", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/files/:id", "host": ["{{baseUrl}}"], "path": ["files", ":id"], "variable": [{"key": "id", "value": "file_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Registry",
+      "item": [
+        {"name": "Create Registry Entry", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"registryNumber\": \"12345\",\n  \"inn\": \"1234567890\",\n  \"fullName\": \"ООО Рога и Копыта\",\n  \"status\": \"active\"\n}"}, "url": {"raw": "{{baseUrl}}/registry", "host": ["{{baseUrl}}"], "path": ["registry"]}}},
+        {"name": "Get All Registry", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/registry?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["registry"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Import Registry", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"data\": [{\n    \"registryNumber\": \"12345\",\n    \"inn\": \"1234567890\",\n    \"fullName\": \"ООО Рога и Копыта\"\n  }]\n}"}, "url": {"raw": "{{baseUrl}}/registry/import", "host": ["{{baseUrl}}"], "path": ["registry", "import"]}}},
+        {"name": "Update Registry Entry", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"fullName\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/registry/:id", "host": ["{{baseUrl}}"], "path": ["registry", ":id"], "variable": [{"key": "id", "value": "registry_id_here"}]}}},
+        {"name": "Delete Registry Entry", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/registry/:id", "host": ["{{baseUrl}}"], "path": ["registry", ":id"], "variable": [{"key": "id", "value": "registry_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {"name": "Update Settings", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"siteName\": \"Название сайта\",\n  \"description\": \"Описание сайта\"\n}"}, "url": {"raw": "{{baseUrl}}/api/settings", "host": ["{{baseUrl}}"], "path": ["api", "settings"]}}},
+        {"name": "Update Theme Settings", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"primaryColor\": \"#007bff\",\n  \"secondaryColor\": \"#6c757d\"\n}"}, "url": {"raw": "{{baseUrl}}/api/settings/theme", "host": ["{{baseUrl}}"], "path": ["api", "settings", "theme"]}}},
+        {"name": "Reset Settings", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/settings/reset", "host": ["{{baseUrl}}"], "path": ["api", "settings", "reset"]}}},
+        {"name": "Get Settings History", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/settings/history", "host": ["{{baseUrl}}"], "path": ["api", "settings", "history"]}}}
+      ]
+    },
+    {
+      "name": "Compensation Fund",
+      "item": [
+        {"name": "Update Fund Info", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"totalAmount\": 1000000,\n  \"description\": \"Описание компенсационного фонда\"\n}"}, "url": {"raw": "{{baseUrl}}/compensation-fund", "host": ["{{baseUrl}}"], "path": ["compensation-fund"]}}},
+        {"name": "Add History Entry", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"amount\": 50000,\n  \"description\": \"Пополнение фонда\",\n  \"type\": \"income\"\n}"}, "url": {"raw": "{{baseUrl}}/compensation-fund/history", "host": ["{{baseUrl}}"], "path": ["compensation-fund", "history"]}}}
+      ]
+    },
+    {
+      "name": "Pages",
+      "item": [
+        {"name": "Create Page", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Название страницы\",\n  \"content\": \"Содержание страницы\",\n  \"slug\": \"page-slug\",\n  \"isPublished\": true\n}"}, "url": {"raw": "{{baseUrl}}/api/pages", "host": ["{{baseUrl}}"], "path": ["api", "pages"]}}},
+        {"name": "Get All Pages", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/pages?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api", "pages"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get Page Statistics", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/pages/statistics", "host": ["{{baseUrl}}"], "path": ["api", "pages", "statistics"]}}},
+        {"name": "Update Page", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/api/pages/:id", "host": ["{{baseUrl}}"], "path": ["api", "pages", ":id"], "variable": [{"key": "id", "value": "page_id_here"}]}}},
+        {"name": "Delete Page", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/pages/:id", "host": ["{{baseUrl}}"], "path": ["api", "pages", ":id"], "variable": [{"key": "id", "value": "page_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Disciplinary Measures",
+      "item": [
+        {"name": "Create Disciplinary Measure", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Название меры\",\n  \"description\": \"Описание меры\",\n  \"type\": \"warning\",\n  \"date\": \"2024-01-01T00:00:00Z\"\n}"}, "url": {"raw": "{{baseUrl}}/api/disciplinary-measures", "host": ["{{baseUrl}}"], "path": ["api", "disciplinary-measures"]}}},
+        {"name": "Get All Disciplinary Measures", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/disciplinary-measures?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api", "disciplinary-measures"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get Statistics", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/disciplinary-measures/statistics", "host": ["{{baseUrl}}"], "path": ["api", "disciplinary-measures", "statistics"]}}},
+        {"name": "Update Disciplinary Measure", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/api/disciplinary-measures/:id", "host": ["{{baseUrl}}"], "path": ["api", "disciplinary-measures", ":id"], "variable": [{"key": "id", "value": "measure_id_here"}]}}},
+        {"name": "Delete Disciplinary Measure", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/disciplinary-measures/:id", "host": ["{{baseUrl}}"], "path": ["api", "disciplinary-measures", ":id"], "variable": [{"key": "id", "value": "measure_id_here"}]}}}
+      ]
+    },
+    {
+      "name": "Inspections",
+      "item": [
+        {"name": "Create Inspection", "request": {"method": "POST", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Название проверки\",\n  \"description\": \"Описание проверки\",\n  \"type\": \"scheduled\",\n  \"date\": \"2024-01-01T00:00:00Z\"\n}"}, "url": {"raw": "{{baseUrl}}/api/inspections", "host": ["{{baseUrl}}"], "path": ["api", "inspections"]}}},
+        {"name": "Get All Inspections", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/inspections?page=1&limit=10", "host": ["{{baseUrl}}"], "path": ["api", "inspections"], "query": [{"key": "page", "value": "1"}, {"key": "limit", "value": "10"}]}}},
+        {"name": "Get Statistics", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/inspections/statistics", "host": ["{{baseUrl}}"], "path": ["api", "inspections", "statistics"]}}},
+        {"name": "Update Inspection", "request": {"method": "PATCH", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"title\": \"Обновленное название\"\n}"}, "url": {"raw": "{{baseUrl}}/api/inspections/:id", "host": ["{{baseUrl}}"], "path": ["api", "inspections", ":id"], "variable": [{"key": "id", "value": "inspection_id_here"}]}}},
+        {"name": "Delete Inspection", "request": {"method": "DELETE", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/inspections/:id", "host": ["{{baseUrl}}"], "path": ["api", "inspections", ":id"], "variable": [{"key": "id", "value": "inspection_id_here"}]}}}
+      ]
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:3000", "description": "Base URL for the API"},
+    {"key": "accessToken", "value": "your_access_token_here", "description": "JWT access token for authentication"}
+  ]
+}
