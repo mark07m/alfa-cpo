@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
+    "@types/uuid": "^11.0.0",
     "archiver": "^7.0.1",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
@@ -48,6 +49,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "sharp": "^0.34.4",
+    "uuid": "^13.0.0",
     "winston": "^3.18.3",
     "xlsx": "^0.18.5"
   },

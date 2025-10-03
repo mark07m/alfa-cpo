@@ -44,9 +44,10 @@ export enum Permission {
   SETTINGS_UPDATE = 'settings:update',
   
   // Файлы
-  FILES_READ = 'files:read',
-  FILES_CREATE = 'files:create',
-  FILES_DELETE = 'files:delete',
+  FILE_READ = 'file:read',
+  FILE_UPLOAD = 'file:upload',
+  FILE_UPDATE = 'file:update',
+  FILE_DELETE = 'file:delete',
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
@@ -76,9 +77,10 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EVENTS_DELETE,
     Permission.SETTINGS_READ,
     Permission.SETTINGS_UPDATE,
-    Permission.FILES_READ,
-    Permission.FILES_CREATE,
-    Permission.FILES_DELETE,
+    Permission.FILE_READ,
+    Permission.FILE_UPLOAD,
+    Permission.FILE_UPDATE,
+    Permission.FILE_DELETE,
   ],
   [UserRole.MODERATOR]: [
     Permission.NEWS_READ,
@@ -94,8 +96,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EVENTS_READ,
     Permission.EVENTS_CREATE,
     Permission.EVENTS_UPDATE,
-    Permission.FILES_READ,
-    Permission.FILES_CREATE,
+    Permission.FILE_READ,
+    Permission.FILE_UPLOAD,
   ],
   [UserRole.EDITOR]: [
     Permission.NEWS_READ,
@@ -108,7 +110,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.EVENTS_READ,
     Permission.EVENTS_CREATE,
     Permission.EVENTS_UPDATE,
-    Permission.FILES_READ,
-    Permission.FILES_CREATE,
+    Permission.FILE_READ,
+    Permission.FILE_UPLOAD,
   ],
 };
