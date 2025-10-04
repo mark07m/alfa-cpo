@@ -94,7 +94,7 @@ export function getStatusDisplayName(status: string): string {
   return statusMap[status] || status
 }
 
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -105,7 +105,7 @@ export function debounce<T extends (...args: any[]) => any>(
   }
 }
 
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -158,10 +158,13 @@ export function downloadFile(url: string, filename: string): void {
   document.body.removeChild(link)
 }
 
-export function getErrorMessage(error: any): string {
+export function getErrorMessage(error: unknown): string {
   if (typeof error === 'string') return error
-  if (error?.message) return error.message
-  if (error?.response?.data?.message) return error.response.data.message
-  if (error?.response?.data?.error) return error.response.data.error
+  if (error && typeof error === 'object' && 'message' in error) return String(error.message)
+  if (error && typeof error === 'object' && 'response' in error) {
+    const response = (error as { response: { data: { message?: string; error?: string } } }).response
+    if (response?.data?.message) return response.data.message
+    if (response?.data?.error) return response.data.error
+  }
   return 'Произошла неизвестная ошибка'
 }

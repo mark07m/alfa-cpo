@@ -18,7 +18,7 @@ import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { InspectionQueryDto } from './dto/inspection-query.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
-@Controller('api/inspections')
+@Controller('inspections')
 @UseGuards(JwtAuthGuard)
 export class InspectionsController {
   constructor(private readonly inspectionsService: InspectionsService) {}

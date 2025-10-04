@@ -13,7 +13,7 @@ import { UpdateSiteSettingsDto } from './dto/update-site-settings.dto';
 import { UpdateThemeSettingsDto } from './dto/update-theme-settings.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
-@Controller('api/settings')
+@Controller('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 

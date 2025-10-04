@@ -103,15 +103,20 @@ export function ActivityFeed({
   maxItems = 10,
   className 
 }: ActivityFeedProps) {
-  const displayActivities = activities.slice(0, maxItems)
+  const displayActivities = activities?.slice(0, maxItems) || []
 
   return (
     <Card className={className}>
       <CardHeader title={title} />
       <CardContent>
-        <div className="flow-root">
-          <ul className="-mb-8">
-            {displayActivities.map((activity, activityIdx) => (
+        {displayActivities.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-sm text-gray-500">Нет активности</p>
+          </div>
+        ) : (
+          <div className="flow-root">
+            <ul className="-mb-8">
+              {displayActivities.map((activity, activityIdx) => (
               <li key={activity.id}>
                 <div className="relative pb-8">
                   {activityIdx !== displayActivities.length - 1 && (
@@ -163,14 +168,6 @@ export function ActivityFeed({
               </li>
             ))}
           </ul>
-        </div>
-        
-        {activities.length === 0 && (
-          <div className="text-center py-8">
-            <div className="text-gray-400 mb-2">
-              <DocumentTextIcon className="h-12 w-12 mx-auto" />
-            </div>
-            <p className="text-gray-500">Нет активности</p>
           </div>
         )}
       </CardContent>

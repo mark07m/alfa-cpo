@@ -18,7 +18,7 @@ import { UpdatePageDto } from './dto/update-page.dto';
 import { PageQueryDto } from './dto/page-query.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
-@Controller('api/pages')
+@Controller('pages')
 export class PagesController {
   constructor(private readonly pagesService: PagesService) {}
 

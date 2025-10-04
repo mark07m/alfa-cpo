@@ -23,7 +23,7 @@ export function StatCard({
   value,
   change,
   icon: Icon,
-  iconColor = 'text-amber-600',
+  iconColor = 'text-gray-600',
   href,
   onClick,
   className
@@ -41,11 +41,11 @@ export function StatCard({
     
     switch (change.type) {
       case 'positive':
-        return <ArrowUpIcon className="h-4 w-4 text-green-500" />
+        return <ArrowUpIcon className="h-3 w-3 text-success-500" />
       case 'negative':
-        return <ArrowDownIcon className="h-4 w-4 text-red-500" />
+        return <ArrowDownIcon className="h-3 w-3 text-danger-500" />
       case 'neutral':
-        return <MinusIcon className="h-4 w-4 text-gray-500" />
+        return <MinusIcon className="h-3 w-3 text-gray-500" />
       default:
         return null
     }
@@ -69,39 +69,32 @@ export function StatCard({
   return (
     <Card 
       className={cn(
-        'hover:shadow-md transition-all duration-200 cursor-pointer group',
+        'hover:shadow-sm transition-all duration-150 cursor-pointer group border-gray-200 flex-1 min-w-0',
         className
       )}
       onClick={handleClick}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <div className={cn('p-3 rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors')}>
-              <Icon className={cn('h-6 w-6 text-blue-600')} />
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className={cn('p-2 rounded-md bg-gray-50 group-hover:bg-gray-100 transition-colors')}>
+              <Icon className={cn('h-5 w-5', iconColor)} />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-gray-600">
+                {title}
+              </div>
+              <div className="text-2xl font-bold text-gray-900">
+                {value}
+              </div>
             </div>
           </div>
-          <div className="ml-5 w-0 flex-1">
-            <dl>
-              <dt className="text-sm font-medium text-gray-500 truncate">
-                {title}
-              </dt>
-              <dd className="flex items-baseline">
-                <div className="text-2xl font-semibold text-gray-900">
-                  {value}
-                </div>
-                {change && (
-                  <div className={cn('ml-2 flex items-baseline text-sm font-medium', getChangeColor())}>
-                    {getChangeIcon()}
-                    <span className="ml-1">{change.value}</span>
-                    {change.period && (
-                      <span className="ml-1 text-gray-500">за {change.period}</span>
-                    )}
-                  </div>
-                )}
-              </dd>
-            </dl>
-          </div>
+          {change && (
+            <div className={cn('flex items-center space-x-1 text-xs font-medium', getChangeColor())}>
+              {getChangeIcon()}
+              <span>{change.value}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

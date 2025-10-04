@@ -3,9 +3,6 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/admin/ui/Button'
-import { Input } from '@/components/admin/ui/Input'
-import { Card, CardContent, CardHeader } from '@/components/admin/ui/Card'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 
 export default function LoginPage() {
@@ -73,9 +70,9 @@ export default function LoginPage() {
     try {
       await login(formData)
       router.push('/')
-    } catch (error: any) {
+    } catch (error: unknown) {
       setErrors({
-        general: error.message || 'Ошибка входа. Проверьте данные и попробуйте снова.'
+        general: (error instanceof Error ? error.message : 'Ошибка входа. Проверьте данные и попробуйте снова.')
       })
     } finally {
       setIsSubmitting(false)

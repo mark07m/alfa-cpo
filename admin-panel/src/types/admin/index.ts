@@ -84,36 +84,117 @@ export interface NewsCategory {
   updatedAt: string;
 }
 
+export interface NewsFilters {
+  search?: string;
+  category?: string;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
 export interface Event {
   id: string;
   title: string;
   description: string;
+  content?: string;
   startDate: string;
-  endDate: string;
+  endDate?: string;
   location: string;
-  isOnline: boolean;
+  type?: EventType;
+  status: 'draft' | 'published' | 'cancelled' | 'completed';
   maxParticipants?: number;
   currentParticipants: number;
-  status: 'draft' | 'published' | 'cancelled' | 'completed';
+  registrationRequired: boolean;
+  registrationDeadline?: string;
+  materials?: Document[];
+  imageUrl?: string;
+  cover?: string;
+  featured: boolean;
+  tags: string[];
+  organizer?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  price?: number;
+  currency: string;
+  requirements?: string;
+  agenda: EventAgendaItem[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string[];
   createdAt: string;
   updatedAt: string;
-  organizer: User;
-  imageUrl?: string;
+  createdBy: User;
+  updatedBy: User;
+}
+
+export interface EventType {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventAgendaItem {
+  id: string;
+  time: string;
+  title: string;
+  description?: string;
+  speaker?: string;
+  duration?: number;
+}
+
+export interface EventParticipant {
+  id: string;
+  eventId: string;
+  userId?: string;
+  name: string;
+  email: string;
+  phone?: string;
+  organization?: string;
+  position?: string;
+  registrationDate: string;
+  status: 'pending' | 'confirmed' | 'cancelled';
+  notes?: string;
+}
+
+export interface EventFilters {
+  search?: string;
+  type?: string;
+  status?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  featured?: boolean;
+  registrationRequired?: boolean;
+  location?: string;
+  organizer?: string;
 }
 
 export interface Document {
   id: string;
   title: string;
   description?: string;
-  fileName: string;
-  fileUrl: string;
-  fileSize: number;
-  mimeType: string;
   category: DocumentCategory;
+  fileUrl: string;
+  fileName: string;
+  originalName: string;
+  fileSize: number;
+  fileType: string;
+  mimeType: string;
+  uploadedAt: string;
+  version?: string;
   isPublic: boolean;
+  downloadCount: number;
+  tags: string[];
+  metadata?: DocumentMetadata;
   createdAt: string;
   updatedAt: string;
-  uploadedBy: User;
+  createdBy: User;
+  updatedBy: User;
 }
 
 export interface DocumentCategory {
@@ -121,9 +202,54 @@ export interface DocumentCategory {
   name: string;
   slug: string;
   description?: string;
+  color?: string;
+  icon?: string;
+  isActive: boolean;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DocumentMetadata {
+  author?: string;
+  publisher?: string;
+  language?: string;
+  pages?: number;
+}
+
+export interface DocumentFilters {
+  search?: string;
+  category?: string;
+  fileType?: string;
+  isPublic?: boolean;
+  dateFrom?: string;
+  dateTo?: string;
+  tags?: string[];
+  author?: string;
+  minSize?: number;
+  maxSize?: number;
+}
+
+export interface DocumentUpload {
+  file: File;
+  title: string;
+  description?: string;
+  category: string;
+  tags?: string[];
+  isPublic?: boolean;
+  metadata?: DocumentMetadata;
+}
+
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  version: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  uploadedAt: string;
+  uploadedBy: User;
+  changeLog?: string;
 }
 
 export interface Page {
@@ -131,14 +257,128 @@ export interface Page {
   title: string;
   slug: string;
   content: string;
+  excerpt?: string;
   status: 'draft' | 'published' | 'archived';
-  template: string;
+  template: PageTemplate;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
+  isHomePage: boolean;
+  showInMenu: boolean;
+  menuOrder: number;
+  parentId?: string;
+  children?: Page[];
+  imageUrl?: string;
+  featuredImage?: string;
+  customFields?: Record<string, unknown>;
+  publishedAt?: string;
   createdAt: string;
   updatedAt: string;
-  author: User;
+  createdBy: User;
+  updatedBy: User;
+}
+
+export enum PageTemplate {
+  DEFAULT = 'default',
+  HOME = 'home',
+  ABOUT = 'about',
+  CONTACTS = 'contacts',
+  DOCUMENTS = 'documents',
+  REGISTRY = 'registry',
+  COMPENSATION_FUND = 'compensation_fund',
+  ACCREDITATION = 'accreditation',
+  LABOR_ACTIVITY = 'labor_activity',
+  CONTROL = 'control',
+  NEWS = 'news',
+  EVENTS = 'events',
+  CUSTOM = 'custom'
+}
+
+export interface PageFilters {
+  search?: string;
+  status?: string;
+  template?: string;
+  isHomePage?: boolean;
+  showInMenu?: boolean;
+  parentId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  author?: string;
+}
+
+export interface PageFormData {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  status: 'draft' | 'published' | 'archived';
+  template: PageTemplate;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string;
+  isHomePage: boolean;
+  showInMenu: boolean;
+  menuOrder: number;
+  parentId?: string;
+  imageUrl?: string;
+  featuredImage?: string;
+  customFields?: Record<string, unknown>;
+  publishedAt?: string;
+}
+
+export interface MenuItem {
+  id: string;
+  title: string;
+  url: string;
+  icon?: string;
+  order: number;
+  parentId?: string;
+  isVisible: boolean;
+  pageId?: string;
+  isExternal: boolean;
+  children?: MenuItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MenuFormData {
+  title: string;
+  url: string;
+  icon?: string;
+  order: number;
+  parentId?: string;
+  isVisible: boolean;
+  pageId?: string;
+  isExternal: boolean;
+}
+
+export interface SiteSettings {
+  id: string;
+  siteName: string;
+  siteDescription: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
+  theme: {
+    primaryColor: string;
+    secondaryColor: string;
+    accentColor: string;
+  };
+  socialMedia?: {
+    facebook?: string;
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+  };
+  footerText?: string;
+  copyrightText?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Типы для реестра
@@ -194,49 +434,20 @@ export interface DisciplinaryMeasure {
   updatedAt: string;
 }
 
-// Типы для настроек
-export interface SiteSettings {
-  id: string;
-  siteName: string;
-  siteDescription: string;
-  contactEmail: string;
-  contactPhone: string;
-  address: string;
-  logoUrl?: string;
-  faviconUrl?: string;
-  seoTitle: string;
-  seoDescription: string;
-  seoKeywords: string;
-  theme: {
-    primaryColor: string;
-    secondaryColor: string;
-    accentColor: string;
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Типы для навигации
-export interface MenuItem {
-  id: string;
-  title: string;
-  url: string;
-  icon?: string;
-  order: number;
-  parentId?: string;
-  isVisible: boolean;
-  children?: MenuItem[];
-}
 
 // Типы для статистики
 export interface DashboardStats {
-  totalNews: number;
-  totalEvents: number;
-  totalDocuments: number;
-  totalArbitrators: number;
-  activeArbitrators: number;
-  pendingInspections: number;
-  recentActivity: ActivityItem[];
+  newsCount: number;
+  newsChange: { value: string; type: 'increase' | 'decrease' | 'neutral' };
+  eventsCount: number;
+  eventsChange: { value: string; type: 'increase' | 'decrease' | 'neutral' };
+  documentsCount: number;
+  documentsChange: { value: string; type: 'increase' | 'decrease' | 'neutral' };
+  usersCount: number;
+  usersChange: { value: string; type: 'increase' | 'decrease' | 'neutral' };
+  inspectionsCount: number;
+  disciplinaryMeasuresCount: number;
+  compensationFundCount: number;
 }
 
 export interface ActivityItem {
@@ -244,8 +455,9 @@ export interface ActivityItem {
   type: 'news' | 'event' | 'document' | 'arbitrator' | 'inspection';
   action: 'created' | 'updated' | 'deleted' | 'published';
   title: string;
-  user: User;
+  user: { name: string; id?: string };
   timestamp: string;
+  details?: string;
 }
 
 // Типы для форм
@@ -288,6 +500,31 @@ export interface Notification {
   isRead: boolean;
   createdAt: string;
   actionUrl?: string;
+}
+
+// Типы для API ответов
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
+  error?: string;
+}
+
+export interface PaginationResponse<T = any> {
+  data: T[];
+  meta: {
+    total: number;
+    lastPage: number;
+    currentPage: number;
+    perPage: number;
+  };
+}
+
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 // Типы для логирования

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminHeader } from './AdminHeader'
@@ -14,9 +14,14 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const { isAuthenticated, isLoading } = useAuth()
 
-  if (isLoading) {
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

@@ -73,7 +73,9 @@ const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
 
 CardHeader.displayName = 'CardHeader'
 
-interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: React.ReactNode
+}
 
 const CardContent = React.forwardRef<HTMLDivElement, CardContentProps>(
   ({ className, ...props }, ref) => {

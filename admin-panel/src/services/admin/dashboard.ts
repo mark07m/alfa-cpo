@@ -22,13 +22,17 @@ class DashboardServiceImpl implements DashboardService {
       }
       // Возвращаем моковые данные в случае ошибки
       return {
-        totalNews: 24,
-        totalEvents: 8,
-        totalDocuments: 156,
-        totalArbitrators: 342,
-        activeArbitrators: 340,
-        pendingInspections: 12,
-        recentActivity: []
+        newsCount: 24,
+        newsChange: { value: '+12%', type: 'increase' },
+        eventsCount: 8,
+        eventsChange: { value: '+5%', type: 'increase' },
+        documentsCount: 156,
+        documentsChange: { value: '+8%', type: 'increase' },
+        usersCount: 342,
+        usersChange: { value: '+3%', type: 'increase' },
+        inspectionsCount: 12,
+        disciplinaryMeasuresCount: 3,
+        compensationFundCount: 45
       }
     }
   }
@@ -51,7 +55,7 @@ class DashboardServiceImpl implements DashboardService {
           type: 'news',
           action: 'created',
           title: 'Новая статья о банкротстве',
-          user: { name: 'Иван Петров' },
+          user: { name: 'Иван Петров', id: '1' },
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
           details: 'Статья о новых изменениях в законодательстве'
         },
@@ -60,7 +64,7 @@ class DashboardServiceImpl implements DashboardService {
           type: 'arbitrator',
           action: 'updated',
           title: 'Обновлены данные управляющего',
-          user: { name: 'Мария Сидорова' },
+          user: { name: 'Мария Сидорова', id: '2' },
           timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
           details: 'Изменены контактные данные'
         },
@@ -69,9 +73,27 @@ class DashboardServiceImpl implements DashboardService {
           type: 'event',
           action: 'created',
           title: 'Семинар по новому законодательству',
-          user: { name: 'Алексей Козлов' },
+          user: { name: 'Алексей Козлов', id: '3' },
           timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
           details: 'Планируется на 15 января 2025'
+        },
+        {
+          id: '4',
+          type: 'document',
+          action: 'published',
+          title: 'Новый регламент СРО',
+          user: { name: 'Елена Волкова', id: '4' },
+          timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+          details: 'Опубликован обновленный регламент работы'
+        },
+        {
+          id: '5',
+          type: 'inspection',
+          action: 'created',
+          title: 'Планируется проверка',
+          user: { name: 'Дмитрий Соколов', id: '5' },
+          timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+          details: 'Запланирована проверка деятельности СРО'
         }
       ]
     }
@@ -138,10 +160,7 @@ class DashboardServiceImpl implements DashboardService {
       
       data.push({
         date: date.toISOString().split('T')[0],
-        news: Math.floor(Math.random() * 5) + 1,
-        events: Math.floor(Math.random() * 3),
-        documents: Math.floor(Math.random() * 8) + 2,
-        users: Math.floor(Math.random() * 4) + 1
+        value: Math.floor(Math.random() * 20) + 5
       })
     }
     

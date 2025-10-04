@@ -18,7 +18,7 @@ import { UpdateDisciplinaryMeasureDto } from './dto/update-disciplinary-measure.
 import { DisciplinaryMeasureQueryDto } from './dto/disciplinary-measure-query.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 
-@Controller('api/disciplinary-measures')
+@Controller('disciplinary-measures')
 @UseGuards(JwtAuthGuard)
 export class DisciplinaryMeasuresController {
   constructor(private readonly disciplinaryMeasuresService: DisciplinaryMeasuresService) {}

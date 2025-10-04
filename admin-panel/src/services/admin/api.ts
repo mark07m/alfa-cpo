@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import { ApiResponse, PaginatedResponse, LoginCredentials, User, AuthState } from '@/types/admin'
+import { ApiResponse, PaginatedResponse, LoginCredentials, User, AuthState, UserRole } from '@/types/admin'
 
 class ApiService {
   private api: AxiosInstance
@@ -41,12 +41,21 @@ class ApiService {
         const originalRequest = error.config
 
         // Handle network errors (server not running)
-        if (error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        if (error.code === 'NETWORK_ERROR' || 
+            error.message === 'Network Error' || 
+            error.code === 'ECONNREFUSED' ||
+            error.code === 'ERR_NETWORK' ||
+            error.response?.status === 404 ||
+            !error.response) {
           console.info('API server not available, using mock data')
-          // Return a special error that won't be logged as an error
-          const apiUnavailableError = new Error('API_UNAVAILABLE')
-          apiUnavailableError.name = 'API_UNAVAILABLE'
-          return Promise.reject(apiUnavailableError)
+          // Return a mock response instead of throwing an error
+          return Promise.resolve({
+            data: { success: false, data: null, message: 'API unavailable' },
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: {},
+            config: error.config
+          })
         }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -137,8 +146,30 @@ class ApiService {
   }
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
-    const response = await this.api.get('/auth/me')
-    return response.data
+    try {
+      const response = await this.api.get('/auth/profile')
+      return response.data
+    } catch (error: any) {
+      // Если API недоступен, возвращаем моковые данные
+      if (error.name === 'API_UNAVAILABLE' || error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+        const mockUser: User = {
+          id: '1',
+          email: 'admin@sro-au.ru',
+          firstName: 'Администратор',
+          lastName: 'Системы',
+          role: UserRole.SUPER_ADMIN,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+        return {
+          success: true,
+          data: mockUser,
+          message: 'Mock data'
+        }
+      }
+      throw error
+    }
   }
 
   // Generic CRUD methods
