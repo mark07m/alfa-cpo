@@ -107,6 +107,19 @@ export const arbitratorsService = {
     } catch (error: any) {
       console.error('Error fetching arbitrators:', error);
       
+      if (error.message === 'MOCK_MODE') {
+        console.info('Mock mode, returning empty data');
+        return {
+          data: [],
+          pagination: {
+            page: 1,
+            limit: 10,
+            total: 0,
+            pages: 0
+          }
+        };
+      }
+      
       // Если API недоступен, возвращаем моковые данные
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
@@ -165,6 +178,37 @@ export const arbitratorsService = {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching arbitrator stats:', error);
+      
+      if (error.message === 'MOCK_MODE') {
+        console.info('Mock mode, returning mock arbitrator stats');
+        const mockStats = {
+          total: 1250,
+          active: 1180,
+          excluded: 45,
+          suspended: 25,
+          byRegion: [
+            { region: 'Москва', count: 320 },
+            { region: 'Санкт-Петербург', count: 180 },
+            { region: 'Московская область', count: 95 },
+            { region: 'Краснодарский край', count: 78 },
+            { region: 'Свердловская область', count: 65 },
+            { region: 'Новосибирская область', count: 58 },
+            { region: 'Ростовская область', count: 52 },
+            { region: 'Нижегородская область', count: 48 },
+            { region: 'Самарская область', count: 42 },
+            { region: 'Волгоградская область', count: 38 }
+          ],
+          byStatus: [
+            { status: 'active', count: 1180 },
+            { status: 'excluded', count: 45 },
+            { status: 'suspended', count: 25 }
+          ],
+          recentAdditions: 12,
+          recentExclusions: 3
+        };
+        console.log('Returning mock stats:', mockStats);
+        return mockStats;
+      }
       
       // Если API недоступен, возвращаем моковые данные
       if (error.code === 'NETWORK_ERROR' || 

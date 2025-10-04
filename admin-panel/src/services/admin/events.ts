@@ -57,6 +57,9 @@ class EventsServiceImpl implements EventsService {
       return response.data
     } catch (error: any) {
       console.error('Failed to fetch events:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by Proxy fallback
+      }
       // Check if it's API unavailable error
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
@@ -168,6 +171,9 @@ class EventsServiceImpl implements EventsService {
       return response.data
     } catch (error: any) {
       console.error('Failed to fetch event types:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by Proxy fallback
+      }
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
           error.code === 'ECONNREFUSED' ||

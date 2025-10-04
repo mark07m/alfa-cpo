@@ -2,24 +2,31 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ApiResponse, PaginatedResponse, LoginCredentials, User, AuthState, UserRole } from '@/types/admin'
 
 class ApiService {
-  private api: AxiosInstance
+  private api: AxiosInstance | null = null
   private baseURL: string
+  private useMockData: boolean
 
   constructor() {
     this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+    this.useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
     
-    this.api = axios.create({
-      baseURL: this.baseURL,
-      timeout: 10000,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    // В моковом режиме не создаем axios instance
+    if (!this.useMockData) {
+      this.api = axios.create({
+        baseURL: this.baseURL,
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
 
-    this.setupInterceptors()
+      this.setupInterceptors()
+    }
   }
 
   private setupInterceptors() {
+    if (!this.api) return
+    
     // Request interceptor to add auth token
     this.api.interceptors.request.use(
       (config) => {
@@ -68,7 +75,7 @@ class ApiService {
               const response = await this.refreshToken(refreshToken)
               this.setTokens(response.data.token, response.data.refreshToken)
               originalRequest.headers.Authorization = `Bearer ${response.data.token}`
-              return this.api(originalRequest)
+              return this.api!(originalRequest)
             }
           } catch (refreshError) {
             this.clearTokens()
@@ -114,7 +121,11 @@ class ApiService {
 
   // Auth methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthState>> {
-    const response = await this.api.post('/auth/login', credentials)
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.post('/auth/login', credentials)
     const { token, refreshToken, user } = response.data.data
     
     this.setTokens(token, refreshToken)
@@ -132,8 +143,13 @@ class ApiService {
   }
 
   async logout(): Promise<void> {
+    if (this.useMockData) {
+      this.clearTokens()
+      return
+    }
+    
     try {
-      await this.api.post('/auth/logout')
+      await this.api!.post('/auth/logout')
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
@@ -142,13 +158,21 @@ class ApiService {
   }
 
   async refreshToken(refreshToken: string): Promise<ApiResponse<{ token: string; refreshToken: string }>> {
-    const response = await this.api.post('/auth/refresh', { refreshToken })
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.post('/auth/refresh', { refreshToken })
     return response.data
   }
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
     try {
-      const response = await this.api.get('/auth/profile')
+      const response = await this.api!.get('/auth/profile')
       return response.data
     } catch (error: any) {
       console.log('getCurrentUser error:', error)
@@ -185,9 +209,13 @@ class ApiService {
 
   // Generic CRUD methods
   async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
     console.log('API GET request to:', endpoint, 'with config:', config);
     try {
-      const response = await this.api.get(endpoint, config)
+      const response = await this.api!.get(endpoint, config)
       console.log('API GET response:', response.data);
       // Если ответ уже содержит data и pagination, возвращаем как есть
       if (response.data && (response.data.data || response.data.pagination)) {
@@ -205,7 +233,11 @@ class ApiService {
   }
 
   async post<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.api.post(endpoint, data, config)
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.post(endpoint, data, config)
     // Если ответ уже содержит data, возвращаем как есть
     if (response.data && response.data.data) {
       return response.data
@@ -218,7 +250,11 @@ class ApiService {
   }
 
   async put<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.api.put(endpoint, data, config)
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.put(endpoint, data, config)
     // Если ответ уже содержит data, возвращаем как есть
     if (response.data && response.data.data) {
       return response.data
@@ -231,7 +267,11 @@ class ApiService {
   }
 
   async patch<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.api.patch(endpoint, data, config)
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.patch(endpoint, data, config)
     // Если ответ уже содержит data, возвращаем как есть
     if (response.data && response.data.data) {
       return response.data
@@ -244,7 +284,11 @@ class ApiService {
   }
 
   async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.api.delete(endpoint, config)
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.delete(endpoint, config)
     // Если ответ уже содержит data, возвращаем как есть
     if (response.data && response.data.data) {
       return response.data
@@ -258,10 +302,14 @@ class ApiService {
 
   // File upload
   async uploadFile(file: File, endpoint: string = '/files/upload'): Promise<ApiResponse<{ url: string; filename: string }>> {
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
     const formData = new FormData()
     formData.append('file', file)
 
-    const response = await this.api.post(endpoint, formData, {
+    const response = await this.api!.post(endpoint, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -282,25 +330,41 @@ class ApiService {
       filters?: Record<string, any>
     } = {}
   ): Promise<ApiResponse<PaginatedResponse<T>>> {
-    const response = await this.api.get(endpoint, { params })
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.get(endpoint, { params })
     return response.data
   }
 
   // Batch operations
   async batchDelete(endpoint: string, ids: string[]): Promise<ApiResponse<{ deleted: number }>> {
-    const response = await this.api.delete(endpoint, { data: { ids } })
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.delete(endpoint, { data: { ids } })
     return response.data
   }
 
   async batchUpdate(endpoint: string, updates: Array<{ id: string; data: any }>): Promise<ApiResponse<{ updated: number }>> {
-    const response = await this.api.patch(endpoint, { updates })
+    if (this.useMockData) {
+      throw new Error('MOCK_MODE')
+    }
+    
+    const response = await this.api!.patch(endpoint, { updates })
     return response.data
   }
 
   // Health check
   async healthCheck(): Promise<boolean> {
+    if (this.useMockData) {
+      return false // В моковом режиме API недоступен
+    }
+    
     try {
-      await this.api.get('/health')
+      await this.api!.get('/health')
       return true
     } catch {
       return false

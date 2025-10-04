@@ -48,6 +48,9 @@ class NewsServiceImpl implements NewsService {
       return response
     } catch (error: any) {
       console.error('Failed to fetch news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       // Check if it's API unavailable error
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
@@ -74,6 +77,9 @@ class NewsServiceImpl implements NewsService {
       return response
     } catch (error: any) {
       console.error('Failed to fetch news item:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
           error.code === 'ECONNREFUSED' ||
@@ -169,6 +175,9 @@ class NewsServiceImpl implements NewsService {
       return response
     } catch (error: any) {
       console.error('Failed to fetch news categories:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
           error.code === 'ECONNREFUSED' ||

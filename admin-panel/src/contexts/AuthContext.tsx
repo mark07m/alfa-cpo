@@ -17,6 +17,8 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+  
   const [authState, setAuthState] = useState<AuthState>(() => {
     // Инициализируем состояние сразу как не загружающееся
     // если мы на сервере
@@ -30,12 +32,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     
-    const token = localStorage.getItem('admin_token')
-    const refreshToken = localStorage.getItem('admin_refresh_token')
-    
-    if (!token) {
-      // Нет токена - автоматически входим в демо режим
-      console.info('No token found, entering demo mode')
+    // В моковом режиме сразу возвращаем мокового пользователя
+    if (useMockData) {
+      console.info('Mock data mode enabled, using mock user')
       const mockUser = {
         id: '1',
         email: 'admin@sro-au.ru',
@@ -47,19 +46,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
         updatedAt: new Date().toISOString()
       }
       
-      const mockToken = 'demo_token_' + Date.now()
-      const mockRefreshToken = 'demo_refresh_token_' + Date.now()
-      
-      // Сохраняем в localStorage
-      localStorage.setItem('admin_token', mockToken)
-      localStorage.setItem('admin_refresh_token', mockRefreshToken)
-      localStorage.setItem('admin_user', JSON.stringify(mockUser))
-      
       return {
         user: mockUser,
-        token: mockToken,
-        refreshToken: mockRefreshToken,
+        token: null, // В моковом режиме не нужны токены
+        refreshToken: null,
         isAuthenticated: true,
+        isLoading: false
+      }
+    }
+    
+    const token = localStorage.getItem('admin_token')
+    const refreshToken = localStorage.getItem('admin_refresh_token')
+    
+    if (!token) {
+      // Нет токена - показываем форму входа
+      return {
+        user: null,
+        token: null,
+        refreshToken: null,
+        isAuthenticated: false,
         isLoading: false
       }
     }
@@ -94,46 +99,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   })
 
   useEffect(() => {
+    // В моковом режиме не делаем API запросы
+    if (useMockData) {
+      return
+    }
+    
     // Проверяем токен только если мы в состоянии загрузки
     if (authState.isLoading && typeof window !== 'undefined') {
       checkAuthStatus()
     }
-  }, [authState.isLoading])
-
-  // Автоматическая моковая аутентификация на клиенте
-  useEffect(() => {
-    if (typeof window !== 'undefined' && !authState.isAuthenticated && !authState.isLoading) {
-      const token = localStorage.getItem('admin_token')
-      if (!token) {
-        console.info('No token found, entering demo mode')
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
-          role: 'SUPER_ADMIN' as UserRole,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        
-        const mockToken = 'demo_token_' + Date.now()
-        const mockRefreshToken = 'demo_refresh_token_' + Date.now()
-        
-        localStorage.setItem('admin_token', mockToken)
-        localStorage.setItem('admin_refresh_token', mockRefreshToken)
-        localStorage.setItem('admin_user', JSON.stringify(mockUser))
-        
-        setAuthState({
-          user: mockUser,
-          token: mockToken,
-          refreshToken: mockRefreshToken,
-          isAuthenticated: true,
-          isLoading: false
-        })
-      }
-    }
-  }, [authState.isAuthenticated, authState.isLoading])
+  }, [authState.isLoading, useMockData])
 
   const checkAuthStatus = async () => {
     try {
@@ -180,8 +155,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       } else {
         clearAuthState()
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auth check failed:', error)
+      
+      // Если это моковый режим, не обрабатываем ошибку
+      if (error.message === 'MOCK_MODE') {
+        return
+      }
+      
       // Если API недоступен, используем моковые данные
       const token = localStorage.getItem('admin_token')
       if (token) {
@@ -230,6 +211,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = async (credentials: LoginCredentials) => {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }))
+      
+      // В моковом режиме всегда разрешаем вход
+      if (useMockData) {
+        const mockUser = {
+          id: '1',
+          email: 'admin@sro-au.ru',
+          firstName: 'Администратор',
+          lastName: 'Системы',
+          role: 'SUPER_ADMIN' as UserRole,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+        
+        setAuthState({
+          user: mockUser,
+          token: null, // В моковом режиме не нужны токены
+          refreshToken: null,
+          isAuthenticated: true,
+          isLoading: false
+        })
+        return
+      }
       
       // Проверяем моковые данные для входа
       if (credentials.email === 'admin@sro-au.ru' && credentials.password === 'Admin123!') {
@@ -316,7 +320,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = async () => {
     try {
-      await apiService.logout()
+      // В моковом режиме не делаем API запросы
+      if (!useMockData) {
+        await apiService.logout()
+      }
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
@@ -326,6 +333,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshUser = async () => {
     try {
+      // В моковом режиме не делаем API запросы
+      if (useMockData) {
+        return
+      }
+      
       const response = await apiService.getCurrentUser()
       if (response.success) {
         // Сохраняем обновленного пользователя в localStorage
@@ -335,8 +347,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
           user: response.data
         }))
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to refresh user:', error)
+      
+      // Если это моковый режим, не обрабатываем ошибку
+      if (error.message === 'MOCK_MODE') {
+        return
+      }
+      
       clearAuthState()
     }
   }
