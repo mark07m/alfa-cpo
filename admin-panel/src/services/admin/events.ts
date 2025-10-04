@@ -55,8 +55,20 @@ class EventsServiceImpl implements EventsService {
       }
       
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch events:', error)
+      // Check if it's API unavailable error
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by Proxy fallback
+      }
       // Return fallback response instead of throwing
       return {
         success: false,
@@ -154,8 +166,19 @@ class EventsServiceImpl implements EventsService {
     try {
       const response = await apiService.get('/events/types')
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch event types:', error)
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by Proxy fallback
+      }
       return {
         success: false,
         data: [],

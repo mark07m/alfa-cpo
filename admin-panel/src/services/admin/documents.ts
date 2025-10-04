@@ -55,8 +55,19 @@ class DocumentsServiceImpl implements DocumentsService {
       }
       
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch documents:', error)
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by Proxy fallback
+      }
       return {
         success: false,
         data: { documents: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } },
@@ -182,8 +193,19 @@ class DocumentsServiceImpl implements DocumentsService {
     try {
       const response = await apiService.get('/documents/categories')
       return response.data
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch document categories:', error)
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by Proxy fallback
+      }
       return {
         success: false,
         data: [],

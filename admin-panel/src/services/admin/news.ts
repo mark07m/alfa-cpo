@@ -46,8 +46,20 @@ class NewsServiceImpl implements NewsService {
       }
       
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch news:', error)
+      // Check if it's API unavailable error
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: { news: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } },
@@ -60,8 +72,19 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.get(`/news/${id}`) as ApiResponse<News>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch news item:', error)
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: null as any,
@@ -144,8 +167,19 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.get('/news/categories') as ApiResponse<NewsCategory[]>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch news categories:', error)
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: [],

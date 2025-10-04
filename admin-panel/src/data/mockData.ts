@@ -1,4 +1,4 @@
-import { Event, EventType, EventParticipant, Document, DocumentCategory, News, NewsCategory, User, UserRole } from '@/types/admin'
+import { Event, EventType, EventParticipant, Document, DocumentCategory, News, NewsCategory, User, UserRole, Page, PageTemplate } from '@/types/admin'
 
 // Моковые пользователи
 export const mockUsers: User[] = [
@@ -465,5 +465,143 @@ export const mockNews: News[] = [
     createdAt: '2024-01-30T08:00:00Z',
     updatedAt: '2024-01-30T08:00:00Z',
     author: mockUsers[0]
+  }
+]
+
+// Моковые страницы
+export const mockPages: Page[] = [
+  {
+    id: '1',
+    title: 'О СРО',
+    slug: 'about',
+    content: 'СРО арбитражных управляющих - это саморегулируемая организация...',
+    excerpt: 'Информация о саморегулируемой организации арбитражных управляющих',
+    status: 'published',
+    template: 'default',
+    isHomePage: false,
+    showInMenu: true,
+    menuOrder: 1,
+    seoTitle: 'О СРО арбитражных управляющих',
+    seoDescription: 'Саморегулируемая организация арбитражных управляющих',
+    seoKeywords: 'СРО, арбитражные управляющие, саморегулируемая организация',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    author: mockUsers[0]
+  },
+  {
+    id: '2',
+    title: 'Контакты',
+    slug: 'contacts',
+    content: 'Контактная информация СРО арбитражных управляющих...',
+    excerpt: 'Как связаться с СРО арбитражных управляющих',
+    status: 'published',
+    template: 'contacts',
+    isHomePage: false,
+    showInMenu: true,
+    menuOrder: 2,
+    seoTitle: 'Контакты СРО арбитражных управляющих',
+    seoDescription: 'Контактная информация и адреса СРО АУ',
+    seoKeywords: 'контакты, СРО, арбитражные управляющие, адрес, телефон',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    author: mockUsers[0]
+  },
+  {
+    id: '3',
+    title: 'Документы',
+    slug: 'documents',
+    content: 'Нормативные документы и регламенты СРО...',
+    excerpt: 'Официальные документы и регламенты СРО АУ',
+    status: 'published',
+    template: 'documents',
+    isHomePage: false,
+    showInMenu: true,
+    menuOrder: 3,
+    seoTitle: 'Документы СРО арбитражных управляющих',
+    seoDescription: 'Нормативные документы и регламенты СРО АУ',
+    seoKeywords: 'документы, регламенты, СРО, арбитражные управляющие',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    author: mockUsers[0]
+  },
+  {
+    id: '4',
+    title: 'Новости',
+    slug: 'news',
+    content: 'Последние новости и события СРО...',
+    excerpt: 'Актуальные новости и события СРО арбитражных управляющих',
+    status: 'published',
+    template: 'news',
+    isHomePage: false,
+    showInMenu: true,
+    menuOrder: 4,
+    seoTitle: 'Новости СРО арбитражных управляющих',
+    seoDescription: 'Актуальные новости и события СРО АУ',
+    seoKeywords: 'новости, события, СРО, арбитражные управляющие',
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+    author: mockUsers[0]
+  }
+]
+
+// Моковые шаблоны страниц
+export const mockPageTemplates: PageTemplate[] = [
+  {
+    id: '1',
+    name: 'Стандартная страница',
+    slug: 'default',
+    description: 'Обычная страница с текстовым контентом',
+    fields: [
+      { name: 'title', type: 'text', required: true, label: 'Заголовок' },
+      { name: 'content', type: 'richtext', required: true, label: 'Содержание' },
+      { name: 'excerpt', type: 'textarea', required: false, label: 'Краткое описание' }
+    ],
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '2',
+    name: 'Контакты',
+    slug: 'contacts',
+    description: 'Страница с контактной информацией',
+    fields: [
+      { name: 'title', type: 'text', required: true, label: 'Заголовок' },
+      { name: 'content', type: 'richtext', required: true, label: 'Содержание' },
+      { name: 'address', type: 'text', required: false, label: 'Адрес' },
+      { name: 'phone', type: 'text', required: false, label: 'Телефон' },
+      { name: 'email', type: 'email', required: false, label: 'Email' }
+    ],
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '3',
+    name: 'Документы',
+    slug: 'documents',
+    description: 'Страница со списком документов',
+    fields: [
+      { name: 'title', type: 'text', required: true, label: 'Заголовок' },
+      { name: 'content', type: 'richtext', required: true, label: 'Содержание' },
+      { name: 'category', type: 'select', required: false, label: 'Категория документов' }
+    ],
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: '4',
+    name: 'Новости',
+    slug: 'news',
+    description: 'Страница со списком новостей',
+    fields: [
+      { name: 'title', type: 'text', required: true, label: 'Заголовок' },
+      { name: 'content', type: 'richtext', required: true, label: 'Содержание' },
+      { name: 'category', type: 'select', required: false, label: 'Категория новостей' }
+    ],
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z'
   }
 ]

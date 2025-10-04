@@ -384,22 +384,102 @@ export interface SiteSettings {
 // Типы для реестра
 export interface Arbitrator {
   id: string;
-  firstName: string;
-  lastName: string;
-  middleName?: string;
+  fullName: string;
   inn: string;
   registryNumber: string;
-  email: string;
+  snils?: string;
+  stateRegistryNumber?: string;
+  stateRegistryDate?: string;
   phone: string;
-  address: string;
-  city: string;
-  region: string;
-  status: 'active' | 'suspended' | 'excluded';
-  joinedAt: string;
-  excludedAt?: string;
-  exclusionReason?: string;
+  email: string;
+  region?: string;
+  city?: string;
+  status: 'active' | 'excluded' | 'suspended';
+  joinDate: string;
+  excludeDate?: string;
+  excludeReason?: string;
+  birthDate?: string;
+  birthPlace?: string;
+  registrationDate?: string;
+  decisionNumber?: string;
+  education?: string;
+  workExperience?: string;
+  internship?: string;
+  examCertificate?: string;
+  disqualification?: string;
+  criminalRecord?: string;
+  criminalRecordDate?: string;
+  criminalRecordNumber?: string;
+  criminalRecordName?: string;
+  insurance?: {
+    startDate?: string;
+    endDate?: string;
+    amount?: number;
+    contractNumber?: string;
+    contractDate?: string;
+    insuranceCompany?: string;
+  };
+  compensationFundContributions?: {
+    purpose: string;
+    date: string;
+    amount: number;
+  }[];
+  compensationFundContribution?: number;
+  inspections?: {
+    type: string;
+    startDate: string;
+    endDate: string;
+    result: string;
+  }[];
+  lastInspection?: string;
+  disciplinaryMeasures?: {
+    startDate: string;
+    endDate: string;
+    decisionNumber: string;
+    penalty: string;
+  }[];
+  otherSroParticipation?: {
+    sroName: string;
+    joinDate: string;
+    leaveDate?: string;
+    status: string;
+  }[];
+  complianceStatus?: string;
+  complianceDate?: string;
+  complianceNumber?: string;
+  postalAddress?: string;
+  penalties?: string;
+  documents?: string[];
+  createdBy: string;
+  updatedBy: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ArbitratorFilters {
+  search?: string;
+  status?: 'active' | 'excluded' | 'suspended';
+  region?: string;
+  city?: string;
+  inn?: string;
+  registryNumber?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  sortBy?: 'fullName' | 'joinDate' | 'status' | 'region' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export interface ArbitratorStats {
+  total: number;
+  active: number;
+  excluded: number;
+  suspended: number;
+  byRegion: { region: string; count: number }[];
+  byStatus: { status: string; count: number }[];
+  recentAdditions: number;
+  recentExclusions: number;
 }
 
 // Типы для контроля
@@ -539,4 +619,99 @@ export interface AuditLog {
   ipAddress: string;
   userAgent: string;
   createdAt: string;
+}
+
+// Типы для аккредитованных организаций
+export interface AccreditedOrganization {
+  id: string;
+  name: string;
+  shortName?: string;
+  inn: string;
+  kpp?: string;
+  ogrn: string;
+  legalAddress: string;
+  actualAddress?: string;
+  phone: string;
+  email: string;
+  website?: string;
+  directorName: string;
+  directorPosition: string;
+  accreditationNumber: string;
+  accreditationDate: string;
+  accreditationExpiryDate: string;
+  status: 'active' | 'suspended' | 'revoked' | 'expired';
+  accreditationType: 'educational' | 'training' | 'assessment' | 'other';
+  description?: string;
+  services: string[];
+  documents: {
+    id: string;
+    name: string;
+    type: string;
+    url: string;
+    uploadedAt: string;
+  }[];
+  contacts: {
+    name: string;
+    position: string;
+    phone: string;
+    email: string;
+  }[];
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AccreditedOrganizationFilters {
+  search?: string;
+  status?: string;
+  accreditationType?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  region?: string;
+}
+
+export interface AccreditedOrganizationStats {
+  total: number;
+  active: number;
+  suspended: number;
+  revoked: number;
+  expired: number;
+  byType: {
+    educational: number;
+    training: number;
+    assessment: number;
+    other: number;
+  };
+  recentAdditions: number;
+  expiringSoon: number;
+}
+
+export interface AccreditedOrganizationFormData {
+  id?: string;
+  name: string;
+  shortName?: string;
+  inn: string;
+  kpp?: string;
+  ogrn: string;
+  legalAddress: string;
+  actualAddress?: string;
+  phone: string;
+  email: string;
+  website?: string;
+  directorName: string;
+  directorPosition: string;
+  accreditationNumber: string;
+  accreditationDate: string;
+  accreditationExpiryDate: string;
+  status: 'active' | 'suspended' | 'revoked' | 'expired';
+  accreditationType: 'educational' | 'training' | 'assessment' | 'other';
+  description?: string;
+  services: string[];
+  contacts: {
+    name: string;
+    position: string;
+    phone: string;
+    email: string;
+  }[];
 }

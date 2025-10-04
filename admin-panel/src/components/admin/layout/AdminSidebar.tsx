@@ -17,6 +17,7 @@ import {
   UsersIcon,
   ChartBarIcon,
   DocumentDuplicateIcon,
+  BuildingOfficeIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
 
@@ -60,6 +61,7 @@ const navigation: NavigationItem[] = [
     icon: UserGroupIcon,
     children: [
       { name: 'Арбитражные управляющие', href: '/registry/arbitrators', icon: UserGroupIcon },
+      { name: 'Аккредитованные организации', href: '/registry/accredited-organizations', icon: BuildingOfficeIcon },
       { name: 'Статистика', href: '/registry/statistics', icon: ChartBarIcon }
     ]
   },
@@ -159,7 +161,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
             <div className="flex flex-shrink-0 items-center px-4">
               <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">А</span>
+                <span className="text-white font-bold text-sm">СРО</span>
               </div>
               <div className="ml-3">
                 <h1 className="text-lg font-semibold text-gray-900">Админ панель</h1>
@@ -183,7 +185,7 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
             <div className="flex items-center">
               <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">А</span>
+                <span className="text-white font-bold text-sm">СРО</span>
               </div>
               <div className="ml-3">
                 <h1 className="text-lg font-semibold text-gray-900">Админ панель</h1>

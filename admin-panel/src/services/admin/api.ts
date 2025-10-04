@@ -36,8 +36,12 @@ class ApiService {
 
     // Response interceptor to handle token refresh and network errors
     this.api.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        console.log('API response interceptor - success:', response.status, response.config.url);
+        return response;
+      },
       async (error) => {
+        console.error('API response interceptor - error:', error);
         const originalRequest = error.config
 
         // Handle network errors (server not running)
@@ -45,17 +49,14 @@ class ApiService {
             error.message === 'Network Error' || 
             error.code === 'ECONNREFUSED' ||
             error.code === 'ERR_NETWORK' ||
+            error.code === 'EADDRINUSE' ||
+            error.response?.status === 400 ||
             error.response?.status === 404 ||
+            error.response?.status === 503 ||
             !error.response) {
-          console.info('API server not available, using mock data')
-          // Return a mock response instead of throwing an error
-          return Promise.resolve({
-            data: { success: false, data: null, message: 'API unavailable' },
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: {},
-            config: error.config
-          })
+          console.info('API server not available, services will use mock data')
+          // Just log and let services handle the fallback
+          return Promise.reject(error)
         }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -150,8 +151,18 @@ class ApiService {
       const response = await this.api.get('/auth/profile')
       return response.data
     } catch (error: any) {
+      console.log('getCurrentUser error:', error)
       // Если API недоступен, возвращаем моковые данные
-      if (error.name === 'API_UNAVAILABLE' || error.code === 'NETWORK_ERROR' || error.message === 'Network Error') {
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        console.info('API unavailable, returning mock user')
         const mockUser: User = {
           id: '1',
           email: 'admin@sro-au.ru',
@@ -174,28 +185,75 @@ class ApiService {
 
   // Generic CRUD methods
   async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const response = await this.api.get(endpoint, config)
-    return response.data
+    console.log('API GET request to:', endpoint, 'with config:', config);
+    try {
+      const response = await this.api.get(endpoint, config)
+      console.log('API GET response:', response.data);
+      // Если ответ уже содержит data и pagination, возвращаем как есть
+      if (response.data && (response.data.data || response.data.pagination)) {
+        return response.data
+      }
+      // Иначе оборачиваем в стандартный формат
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      console.error('API GET error:', error);
+      throw error;
+    }
   }
 
   async post<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.api.post(endpoint, data, config)
-    return response.data
+    // Если ответ уже содержит data, возвращаем как есть
+    if (response.data && response.data.data) {
+      return response.data
+    }
+    // Иначе оборачиваем в стандартный формат
+    return {
+      success: true,
+      data: response.data
+    }
   }
 
   async put<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.api.put(endpoint, data, config)
-    return response.data
+    // Если ответ уже содержит data, возвращаем как есть
+    if (response.data && response.data.data) {
+      return response.data
+    }
+    // Иначе оборачиваем в стандартный формат
+    return {
+      success: true,
+      data: response.data
+    }
   }
 
   async patch<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.api.patch(endpoint, data, config)
-    return response.data
+    // Если ответ уже содержит data, возвращаем как есть
+    if (response.data && response.data.data) {
+      return response.data
+    }
+    // Иначе оборачиваем в стандартный формат
+    return {
+      success: true,
+      data: response.data
+    }
   }
 
   async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     const response = await this.api.delete(endpoint, config)
-    return response.data
+    // Если ответ уже содержит data, возвращаем как есть
+    if (response.data && response.data.data) {
+      return response.data
+    }
+    // Иначе оборачиваем в стандартный формат
+    return {
+      success: true,
+      data: response.data
+    }
   }
 
   // File upload

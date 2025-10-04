@@ -1,37 +1,22 @@
-'use client';
-
 import { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  options: SelectOption[];
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   placeholder?: string;
+  error?: string;
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, helperText, options, placeholder, className, ...props }, ref) => {
+  ({ className, placeholder, error, children, ...props }, ref) => {
     return (
-      <div className="space-y-1">
-        {label && (
-          <label className="block text-sm font-medium text-neutral-700">
-            {label}
-          </label>
-        )}
+      <div className="relative">
         <select
-          ref={ref}
           className={cn(
-            'block w-full rounded-md border-neutral-300 shadow-sm focus:border-beige-500 focus:ring-beige-500 sm:text-sm',
+            'block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm',
             error && 'border-red-300 focus:border-red-500 focus:ring-red-500',
             className
           )}
+          ref={ref}
           {...props}
         >
           {placeholder && (
@@ -39,17 +24,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {children}
         </select>
         {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
-        {helperText && !error && (
-          <p className="text-sm text-neutral-500">{helperText}</p>
+          <p className="mt-1 text-sm text-red-600">{error}</p>
         )}
       </div>
     );

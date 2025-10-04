@@ -19,7 +19,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [authState, setAuthState] = useState<AuthState>(() => {
     // Инициализируем состояние сразу как не загружающееся
-    // если мы на сервере или нет токена
+    // если мы на сервере
     if (typeof window === 'undefined') {
       return {
         user: null,
@@ -34,11 +34,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const refreshToken = localStorage.getItem('admin_refresh_token')
     
     if (!token) {
+      // Нет токена - автоматически входим в демо режим
+      console.info('No token found, entering demo mode')
+      const mockUser = {
+        id: '1',
+        email: 'admin@sro-au.ru',
+        firstName: 'Администратор',
+        lastName: 'Системы',
+        role: 'SUPER_ADMIN' as UserRole,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+      
+      const mockToken = 'demo_token_' + Date.now()
+      const mockRefreshToken = 'demo_refresh_token_' + Date.now()
+      
+      // Сохраняем в localStorage
+      localStorage.setItem('admin_token', mockToken)
+      localStorage.setItem('admin_refresh_token', mockRefreshToken)
+      localStorage.setItem('admin_user', JSON.stringify(mockUser))
+      
       return {
-        user: null,
-        token: null,
-        refreshToken: null,
-        isAuthenticated: false,
+        user: mockUser,
+        token: mockToken,
+        refreshToken: mockRefreshToken,
+        isAuthenticated: true,
         isLoading: false
       }
     }
@@ -79,6 +100,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, [authState.isLoading])
 
+  // Автоматическая моковая аутентификация на клиенте
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !authState.isAuthenticated && !authState.isLoading) {
+      const token = localStorage.getItem('admin_token')
+      if (!token) {
+        console.info('No token found, entering demo mode')
+        const mockUser = {
+          id: '1',
+          email: 'admin@sro-au.ru',
+          firstName: 'Администратор',
+          lastName: 'Системы',
+          role: 'SUPER_ADMIN' as UserRole,
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+        
+        const mockToken = 'demo_token_' + Date.now()
+        const mockRefreshToken = 'demo_refresh_token_' + Date.now()
+        
+        localStorage.setItem('admin_token', mockToken)
+        localStorage.setItem('admin_refresh_token', mockRefreshToken)
+        localStorage.setItem('admin_user', JSON.stringify(mockUser))
+        
+        setAuthState({
+          user: mockUser,
+          token: mockToken,
+          refreshToken: mockRefreshToken,
+          isAuthenticated: true,
+          isLoading: false
+        })
+      }
+    }
+  }, [authState.isAuthenticated, authState.isLoading])
+
   const checkAuthStatus = async () => {
     try {
       const token = localStorage.getItem('admin_token')
@@ -99,7 +155,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isAuthenticated: true,
           isLoading: false
         })
-      } else if (response.message === 'API unavailable') {
+      } else if (response.message === 'API unavailable' || response.message === 'Mock data') {
         // API недоступен, используем моковые данные для аутентификации
         console.info('API unavailable, using mock user for auth')
         const mockUser = {
