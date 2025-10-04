@@ -17,7 +17,7 @@ import {
   UsersIcon,
   ChartBarIcon,
   DocumentDuplicateIcon,
-  BuildingOfficeIcon,
+  BuildingOffice2Icon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
 
@@ -61,7 +61,7 @@ const navigation: NavigationItem[] = [
     icon: UserGroupIcon,
     children: [
       { name: 'Арбитражные управляющие', href: '/registry/arbitrators', icon: UserGroupIcon },
-      { name: 'Аккредитованные организации', href: '/registry/accredited-organizations', icon: BuildingOfficeIcon },
+      { name: 'Аккредитованные организации', href: '/registry/accredited-organizations', icon: BuildingOffice2Icon },
       { name: 'Статистика', href: '/registry/statistics', icon: ChartBarIcon }
     ]
   },
