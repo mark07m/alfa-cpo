@@ -53,7 +53,7 @@ export default function NewsPage() {
 
   const handleSelectAll = (selected: boolean) => {
     if (selected) {
-      setSelectedNews(news)
+      setSelectedNews(news || [])
     } else {
       setSelectedNews([])
     }
@@ -117,11 +117,12 @@ export default function NewsPage() {
   }
 
   const getStatusStats = () => {
+    const newsArray = news || []
     const stats = {
-      total: news.length,
-      published: news.filter(n => n.status === 'published').length,
-      draft: news.filter(n => n.status === 'draft').length,
-      archived: news.filter(n => n.status === 'archived').length
+      total: newsArray.length,
+      published: newsArray.filter(n => n.status === 'published').length,
+      draft: newsArray.filter(n => n.status === 'draft').length,
+      archived: newsArray.filter(n => n.status === 'archived').length
     }
     return stats
   }

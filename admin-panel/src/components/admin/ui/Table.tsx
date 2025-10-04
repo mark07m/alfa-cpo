@@ -187,7 +187,7 @@ export const Table = <T extends { id: string }>({
     return (
       <div className={cn('bg-white rounded-lg border border-neutral-200', className)}>
         <div className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-beige-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto"></div>
           <p className="mt-2 text-sm text-neutral-600">Загрузка данных...</p>
         </div>
       </div>

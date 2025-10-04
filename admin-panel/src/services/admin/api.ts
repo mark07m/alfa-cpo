@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ApiResponse, PaginatedResponse, LoginCredentials, User, AuthState, UserRole } from '@/types/admin'
+import { mockUsers, mockEvents, mockNews, mockDocuments, mockPages } from '@/data/mockData'
 
 class ApiService {
   private api: AxiosInstance | null = null
@@ -119,6 +120,97 @@ class ApiService {
     }
   }
 
+  private getMockData<T>(endpoint: string): ApiResponse<T> {
+    // Простая логика для возврата моковых данных по эндпоинту
+    let data: any = []
+    
+    if (endpoint.includes('/users')) {
+      data = mockUsers
+    } else if (endpoint.includes('/events')) {
+      data = mockEvents
+    } else if (endpoint.includes('/news')) {
+      data = mockNews
+    } else if (endpoint.includes('/documents')) {
+      data = mockDocuments
+    } else if (endpoint.includes('/pages')) {
+      data = mockPages
+    } else if (endpoint.includes('/dashboard/activities')) {
+      // Для эндпоинта activities возвращаем массив напрямую
+      data = [
+        {
+          id: '1',
+          type: 'news',
+          action: 'created',
+          title: 'Новая статья о банкротстве',
+          user: { name: 'Иван Петров', id: '1' },
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          details: 'Статья о новых изменениях в законодательстве'
+        },
+        {
+          id: '2',
+          type: 'arbitrator',
+          action: 'updated',
+          title: 'Обновлены данные управляющего',
+          user: { name: 'Мария Сидорова', id: '2' },
+          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+          details: 'Изменены контактные данные'
+        },
+        {
+          id: '3',
+          type: 'event',
+          action: 'created',
+          title: 'Семинар по новому законодательству',
+          user: { name: 'Алексей Козлов', id: '3' },
+          timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+          details: 'Планируется на 15 января 2025'
+        }
+      ]
+    } else if (endpoint.includes('/dashboard/activity-chart')) {
+      // Для эндпоинта activity-chart возвращаем данные для графика
+      data = this.generateMockChartData()
+    } else if (endpoint.includes('/dashboard') || endpoint.includes('/stats')) {
+      // Моковые данные для дашборда
+      data = {
+        totalUsers: mockUsers.length,
+        totalEvents: mockEvents.length,
+        totalNews: mockNews.length,
+        totalDocuments: mockDocuments.length,
+        statistics: {
+          users: { total: mockUsers.length, active: mockUsers.filter(u => u.isActive).length },
+          events: { total: mockEvents.length, upcoming: mockEvents.filter(e => new Date(e.startDate) > new Date()).length },
+          news: { total: mockNews.length, published: mockNews.filter(n => n.publishedAt).length },
+          documents: { total: mockDocuments.length }
+        }
+      }
+    }
+
+    return {
+      success: true,
+      data: data as T,
+      message: 'Mock data'
+    }
+  }
+
+  private generateMockChartData(): any[] {
+    const data = []
+    const today = new Date()
+    
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      
+      data.push({
+        date: date.toISOString().split('T')[0],
+        news: Math.floor(Math.random() * 10) + 1,
+        events: Math.floor(Math.random() * 5) + 1,
+        documents: Math.floor(Math.random() * 15) + 3,
+        users: Math.floor(Math.random() * 8) + 2
+      })
+    }
+    
+    return data
+  }
+
   // Auth methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<AuthState>> {
     if (this.useMockData) {
@@ -210,7 +302,7 @@ class ApiService {
   // Generic CRUD methods
   async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return this.getMockData<T>(endpoint)
     }
     
     console.log('API GET request to:', endpoint, 'with config:', config);
@@ -234,7 +326,7 @@ class ApiService {
 
   async post<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return this.getMockData<T>(endpoint)
     }
     
     const response = await this.api!.post(endpoint, data, config)
@@ -251,7 +343,7 @@ class ApiService {
 
   async put<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return this.getMockData<T>(endpoint)
     }
     
     const response = await this.api!.put(endpoint, data, config)
@@ -268,7 +360,7 @@ class ApiService {
 
   async patch<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return this.getMockData<T>(endpoint)
     }
     
     const response = await this.api!.patch(endpoint, data, config)
@@ -285,7 +377,7 @@ class ApiService {
 
   async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return this.getMockData<T>(endpoint)
     }
     
     const response = await this.api!.delete(endpoint, config)
@@ -303,7 +395,14 @@ class ApiService {
   // File upload
   async uploadFile(file: File, endpoint: string = '/files/upload'): Promise<ApiResponse<{ url: string; filename: string }>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return {
+        success: true,
+        data: {
+          url: `/uploads/${file.name}`,
+          filename: file.name
+        },
+        message: 'Mock data'
+      }
     }
     
     const formData = new FormData()
@@ -331,7 +430,20 @@ class ApiService {
     } = {}
   ): Promise<ApiResponse<PaginatedResponse<T>>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      const mockResponse = this.getMockData<T[]>(endpoint)
+      return {
+        success: true,
+        data: {
+          data: mockResponse.data as T[],
+          pagination: {
+            page: params.page || 1,
+            limit: params.limit || 10,
+            total: (mockResponse.data as T[]).length,
+            totalPages: Math.ceil((mockResponse.data as T[]).length / (params.limit || 10))
+          }
+        },
+        message: 'Mock data'
+      }
     }
     
     const response = await this.api!.get(endpoint, { params })
@@ -341,7 +453,11 @@ class ApiService {
   // Batch operations
   async batchDelete(endpoint: string, ids: string[]): Promise<ApiResponse<{ deleted: number }>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return {
+        success: true,
+        data: { deleted: ids.length },
+        message: 'Mock data'
+      }
     }
     
     const response = await this.api!.delete(endpoint, { data: { ids } })
@@ -350,7 +466,11 @@ class ApiService {
 
   async batchUpdate(endpoint: string, updates: Array<{ id: string; data: any }>): Promise<ApiResponse<{ updated: number }>> {
     if (this.useMockData) {
-      throw new Error('MOCK_MODE')
+      return {
+        success: true,
+        data: { updated: updates.length },
+        message: 'Mock data'
+      }
     }
     
     const response = await this.api!.patch(endpoint, { updates })

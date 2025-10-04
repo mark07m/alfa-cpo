@@ -88,8 +88,8 @@ export function useDocuments(): UseDocumentsReturn {
       const currentFilters = newFilters || filters
       const response = await documentsService.getDocuments({
         ...currentFilters,
-        page: newFilters?.page || pagination.page,
-        limit: newFilters?.limit || pagination.limit
+        page: newFilters?.page || pagination?.page || 1,
+        limit: newFilters?.limit || pagination?.limit || 10
       })
       
       console.log('Documents response:', response) // Debug log
@@ -121,7 +121,7 @@ export function useDocuments(): UseDocumentsReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [filters, pagination.page, pagination.limit])
+  }, [filters, pagination?.page, pagination?.limit])
 
   const fetchDocument = useCallback(async (id: string) => {
     setIsLoading(true)

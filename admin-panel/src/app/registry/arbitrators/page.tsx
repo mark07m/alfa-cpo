@@ -1,20 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useArbitrators } from '@/hooks/admin/useArbitrators';
-import { ArbitratorFilters } from '@/types/admin';
-import { ArbitratorsList } from '@/components/admin/arbitrators/ArbitratorsList';
-import { ArbitratorsFilters } from '@/components/admin/arbitrators/ArbitratorsFilters';
-import { ArbitratorsActions } from '@/components/admin/arbitrators/ArbitratorsActions';
+import { ArbitratorFilters, Arbitrator } from '@/types/admin';
+import { PageWithTable } from '@/components/admin/layout/PageWithTable';
 import { Button } from '@/components/admin/ui/Button';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
-import { PlusIcon, DocumentArrowDownIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline';
+import { Badge } from '@/components/admin/ui/Badge';
+import { 
+  PlusIcon, 
+  DocumentArrowDownIcon, 
+  DocumentArrowUpIcon,
+  EyeIcon,
+  PencilIcon,
+  TrashIcon,
+  UserIcon
+} from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+import { Modal } from '@/components/admin/ui/Modal';
+import { Alert } from '@/components/admin/ui/Alert';
 
 export default function ArbitratorsPage() {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
   
   const {
     arbitrators,
@@ -29,236 +40,379 @@ export default function ArbitratorsPage() {
     bulkDelete,
     exportArbitrators,
     importArbitrators,
+    refetch
   } = useArbitrators();
 
-  console.log('ArbitratorsPage - arbitrators:', arbitrators);
-  console.log('ArbitratorsPage - loading:', loading);
-  console.log('ArbitratorsPage - error:', error);
-
-  const handleCreate = () => {
+  // Мемоизированные обработчики
+  const handleCreate = useCallback(() => {
     router.push('/registry/arbitrators/create');
-  };
+  }, [router]);
 
-  const handleEdit = (id: string) => {
+  const handleEdit = useCallback((id: string) => {
     router.push(`/registry/arbitrators/${id}/edit`);
-  };
+  }, [router]);
 
-  const handleView = (id: string) => {
+  const handleView = useCallback((id: string) => {
     router.push(`/registry/arbitrators/${id}`);
-  };
+  }, [router]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (confirm('Вы уверены, что хотите удалить этого арбитражного управляющего?')) {
       try {
         await deleteArbitrator(id);
+        refetch();
       } catch (error) {
-        console.error('Ошибка удаления:', error);
+        console.error('Error deleting arbitrator:', error);
       }
     }
-  };
+  }, [deleteArbitrator, refetch]);
 
-  const handleBulkStatusUpdate = async (status: 'active' | 'excluded' | 'suspended') => {
-    if (selectedIds.length === 0) return;
-    
-    if (confirm(`Вы уверены, что хотите изменить статус ${selectedIds.length} арбитражных управляющих на "${status}"?`)) {
-      try {
-        await bulkUpdateStatus(selectedIds, status);
-        setSelectedIds([]);
-      } catch (error) {
-        console.error('Ошибка массового обновления статуса:', error);
-      }
-    }
-  };
-
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = useCallback(async () => {
     if (selectedIds.length === 0) return;
     
     if (confirm(`Вы уверены, что хотите удалить ${selectedIds.length} арбитражных управляющих?`)) {
       try {
         await bulkDelete(selectedIds);
         setSelectedIds([]);
+        refetch();
       } catch (error) {
-        console.error('Ошибка массового удаления:', error);
+        console.error('Error bulk deleting arbitrators:', error);
       }
     }
-  };
+  }, [selectedIds, bulkDelete, refetch]);
 
-  const handleExport = async () => {
+  const handleExport = useCallback(async () => {
     try {
-      await exportArbitrators();
+      await exportArbitrators(filters);
     } catch (error) {
-      console.error('Ошибка экспорта:', error);
+      console.error('Error exporting arbitrators:', error);
     }
-  };
+  }, [exportArbitrators, filters]);
 
-  const handleImport = async (file: File) => {
-    try {
-      const result = await importArbitrators(file);
-      setShowImportModal(false);
+  const handleSearch = useCallback((value: string) => {
+    setSearchValue(value);
+    updateFilters({ search: value, page: 1 });
+  }, [updateFilters]);
+
+  const handleSort = useCallback((key: keyof Arbitrator, direction: 'asc' | 'desc') => {
+    updateFilters({ 
+      sortBy: key as string, 
+      sortOrder: direction,
+      page: 1 
+    });
+  }, [updateFilters]);
+
+  const handlePageChange = useCallback((page: number) => {
+    updateFilters({ page });
+  }, [updateFilters]);
+
+  // Мемоизированные колонки таблицы
+  const columns = useMemo(() => [
+    {
+      key: 'select' as const,
+      title: (
+        <input
+          type="checkbox"
+          checked={selectedIds.length === arbitrators.length && arbitrators.length > 0}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedIds(arbitrators.map(a => a.id));
+            } else {
+              setSelectedIds([]);
+            }
+          }}
+          className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+        />
+      ),
+      width: 'w-12',
+      className: 'text-center'
+    },
+    {
+      key: 'fullName' as keyof Arbitrator,
+      title: 'ФИО',
+      sortable: true,
+      render: (value: unknown, row: Arbitrator) => (
+        <div className="flex items-center">
+          <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+            <UserIcon className="h-5 w-5 text-amber-600" />
+          </div>
+          <div>
+            <div className="font-medium text-gray-900">{row.fullName}</div>
+            <div className="text-sm text-gray-500">{row.email}</div>
+          </div>
+        </div>
+      )
+    },
+    {
+      key: 'status' as keyof Arbitrator,
+      title: 'Статус',
+      sortable: true,
+      render: (value: unknown, row: Arbitrator) => {
+        const statusColors = {
+          active: 'green',
+          inactive: 'gray',
+          suspended: 'red',
+          pending: 'yellow'
+        } as const;
+        
+        return (
+          <Badge 
+            color={statusColors[row.status as keyof typeof statusColors] || 'gray'}
+            variant="soft"
+          >
+            {row.status === 'active' ? 'Активен' : 
+             row.status === 'inactive' ? 'Неактивен' :
+             row.status === 'suspended' ? 'Приостановлен' : 'Ожидает'}
+          </Badge>
+        );
+      }
+    },
+    {
+      key: 'registrationNumber' as keyof Arbitrator,
+      title: 'Регистрационный номер',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="font-mono text-sm">{value as string}</span>
+      )
+    },
+    {
+      key: 'specializations' as keyof Arbitrator,
+      title: 'Специализации',
+      render: (value: unknown, row: Arbitrator) => (
+        <div className="flex flex-wrap gap-1">
+          {(row.specializations || []).slice(0, 2).map((spec, index) => (
+            <Badge key={index} color="blue" size="sm" variant="outline">
+              {spec}
+            </Badge>
+          ))}
+          {(row.specializations || []).length > 2 && (
+            <Badge color="gray" size="sm" variant="outline">
+              +{(row.specializations || []).length - 2}
+            </Badge>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'createdAt' as keyof Arbitrator,
+      title: 'Дата регистрации',
+      sortable: true,
+      render: (value: unknown) => (
+        <span className="text-sm text-gray-500">
+          {new Date(value as string).toLocaleDateString('ru-RU')}
+        </span>
+      )
+    },
+    {
+      key: 'actions' as const,
+      title: 'Действия',
+      width: 'w-32',
+      render: (value: unknown, row: Arbitrator) => (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleView(row.id)}
+            icon={<EyeIcon className="h-4 w-4" />}
+          >
+            Просмотр
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEdit(row.id)}
+            icon={<PencilIcon className="h-4 w-4" />}
+          >
+            Редактировать
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDelete(row.id)}
+            icon={<TrashIcon className="h-4 w-4" />}
+            className="text-red-600 hover:text-red-700"
+          >
+            Удалить
+          </Button>
+        </div>
+      )
+    }
+  ], [arbitrators, selectedIds, handleView, handleEdit, handleDelete]);
+
+  // Фильтры
+  const filtersComponent = showFilters && (
+    <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <select
+          value={filters.status || ''}
+          onChange={(e) => updateFilters({ status: e.target.value || undefined, page: 1 })}
+          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+        >
+          <option value="">Все статусы</option>
+          <option value="active">Активен</option>
+          <option value="inactive">Неактивен</option>
+          <option value="suspended">Приостановлен</option>
+          <option value="pending">Ожидает</option>
+        </select>
+        
+        <select
+          value={filters.specialization || ''}
+          onChange={(e) => updateFilters({ specialization: e.target.value || undefined, page: 1 })}
+          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+        >
+          <option value="">Все специализации</option>
+          <option value="bankruptcy">Банкротство</option>
+          <option value="reorganization">Реорганизация</option>
+          <option value="liquidation">Ликвидация</option>
+        </select>
+        
+        <input
+          type="date"
+          placeholder="Дата с"
+          value={filters.dateFrom || ''}
+          onChange={(e) => updateFilters({ dateFrom: e.target.value || undefined, page: 1 })}
+          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+        />
+        
+        <input
+          type="date"
+          placeholder="Дата по"
+          value={filters.dateTo || ''}
+          onChange={(e) => updateFilters({ dateTo: e.target.value || undefined, page: 1 })}
+          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+        />
+      </div>
       
-      if (result.errors.length > 0) {
-        alert(`Импорт завершен с ошибками:\n${result.errors.join('\n')}`);
-      } else {
-        alert(`Успешно импортировано ${result.success} записей`);
-      }
-    } catch (error) {
-      console.error('Ошибка импорта:', error);
-    }
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(arbitrators.map(arbitrator => arbitrator.id));
-    } else {
-      setSelectedIds([]);
-    }
-  };
-
-  const handleSelectOne = (id: string, checked: boolean) => {
-    if (checked) {
-      setSelectedIds(prev => [...prev, id]);
-    } else {
-      setSelectedIds(prev => prev.filter(selectedId => selectedId !== id));
-    }
-  };
+      <div className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={resetFilters}
+          size="sm"
+        >
+          Сбросить фильтры
+        </Button>
+        
+        <Button
+          variant="outline"
+          onClick={() => setShowFilters(false)}
+          size="sm"
+        >
+          Скрыть фильтры
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <AdminLayout
       title="Арбитражные управляющие"
+      breadcrumbs={[
+        { label: 'Реестр', href: '/registry' },
+        { label: 'Арбитражные управляющие' }
+      ]}
     >
-      <div className="space-y-6">
-        {/* Описание и действия */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-500">
-              Управление реестром арбитражных управляющих
+      <PageWithTable
+        data={arbitrators}
+        loading={loading}
+        error={error}
+        columns={columns}
+        pagination={pagination ? {
+          currentPage: pagination.page,
+          totalPages: pagination.pages,
+          totalItems: pagination.total,
+          itemsPerPage: pagination.limit,
+          onPageChange: handlePageChange
+        } : undefined}
+        onSort={handleSort}
+        sortKey={filters.sortBy as keyof Arbitrator}
+        sortDirection={filters.sortOrder as 'asc' | 'desc'}
+        searchValue={searchValue}
+        onSearchChange={handleSearch}
+        searchPlaceholder="Поиск по ФИО, email или номеру..."
+        filters={filtersComponent}
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters(!showFilters)}
+        title="Арбитражные управляющие"
+        description="Управление реестром арбитражных управляющих"
+        primaryAction={{
+          label: 'Добавить управляющего',
+          onClick: handleCreate,
+          icon: <PlusIcon className="h-4 w-4" />
+        }}
+        secondaryActions={[
+          {
+            label: 'Экспорт',
+            onClick: handleExport,
+            icon: <DocumentArrowDownIcon className="h-4 w-4" />,
+            variant: 'outline'
+          },
+          {
+            label: 'Импорт',
+            onClick: () => setShowImportModal(true),
+            icon: <DocumentArrowUpIcon className="h-4 w-4" />,
+            variant: 'outline'
+          },
+          ...(selectedIds.length > 0 ? [{
+            label: `Удалить выбранные (${selectedIds.length})`,
+            onClick: handleBulkDelete,
+            icon: <TrashIcon className="h-4 w-4" />,
+            variant: 'danger' as const
+          }] : [])
+        ]}
+        emptyState={{
+          title: 'Нет арбитражных управляющих',
+          description: 'Добавьте первого арбитражного управляющего в реестр',
+          action: {
+            label: 'Добавить управляющего',
+            onClick: handleCreate
+          }
+        }}
+        onRefresh={refetch}
+      />
+
+      {/* Модальное окно импорта */}
+      <Modal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        title="Импорт арбитражных управляющих"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <Alert variant="info">
+            Поддерживаются файлы в формате Excel (.xlsx) и CSV (.csv)
+          </Alert>
+          
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <p className="mt-2 text-sm text-gray-600">
+              Перетащите файл сюда или нажмите для выбора
             </p>
+            <input
+              type="file"
+              accept=".xlsx,.csv"
+              className="mt-4"
+            />
           </div>
-          <div className="mt-4 sm:mt-0 flex space-x-3">
+          
+          <div className="flex justify-end space-x-3">
             <Button
               variant="outline"
-              onClick={() => setShowImportModal(true)}
-              className="flex items-center space-x-2"
+              onClick={() => setShowImportModal(false)}
             >
-              <DocumentArrowUpIcon className="h-4 w-4" />
-              <span>Импорт</span>
+              Отмена
             </Button>
             <Button
-              variant="outline"
-              onClick={handleExport}
-              className="flex items-center space-x-2"
+              variant="primary"
+              onClick={() => {
+                // TODO: Implement import logic
+                setShowImportModal(false);
+              }}
             >
-              <DocumentArrowDownIcon className="h-4 w-4" />
-              <span>Экспорт</span>
-            </Button>
-            <Button
-              onClick={handleCreate}
-              className="flex items-center space-x-2"
-            >
-              <PlusIcon className="h-4 w-4" />
-              <span>Добавить</span>
+              Импортировать
             </Button>
           </div>
         </div>
-
-        {/* Фильтры */}
-        <ArbitratorsFilters
-          filters={filters}
-          onFiltersChange={updateFilters}
-          onReset={resetFilters}
-        />
-
-        {/* Массовые действия */}
-        {selectedIds.length > 0 && (
-          <ArbitratorsActions
-            selectedCount={selectedIds.length}
-            onStatusUpdate={handleBulkStatusUpdate}
-            onDelete={handleBulkDelete}
-            onClearSelection={() => setSelectedIds([])}
-          />
-        )}
-
-        {/* Список */}
-        <ArbitratorsList
-          arbitrators={arbitrators}
-          loading={loading}
-          error={error}
-          pagination={pagination}
-          selectedIds={selectedIds}
-          onSelectAll={handleSelectAll}
-          onSelectOne={handleSelectOne}
-          onEdit={handleEdit}
-          onView={handleView}
-          onDelete={handleDelete}
-          onFiltersChange={updateFilters}
-        />
-
-        {/* Модальное окно импорта */}
-        {showImportModal && (
-          <ImportModal
-            onClose={() => setShowImportModal(false)}
-            onImport={handleImport}
-          />
-        )}
-      </div>
+      </Modal>
     </AdminLayout>
-  );
-}
-
-// Компонент модального окна импорта
-function ImportModal({ onClose, onImport }: { onClose: () => void; onImport: (file: File) => void }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
-
-    setLoading(true);
-    try {
-      await onImport(file);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-      <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div className="mt-3">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Импорт арбитражных управляющих</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Выберите файл Excel или CSV
-              </label>
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                required
-              />
-            </div>
-            <div className="flex justify-end space-x-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={loading}
-              >
-                Отмена
-              </Button>
-              <Button
-                type="submit"
-                disabled={!file || loading}
-              >
-                {loading ? 'Импорт...' : 'Импортировать'}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
   );
 }

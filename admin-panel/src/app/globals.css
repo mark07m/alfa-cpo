@@ -79,26 +79,7 @@ body {
   text-wrap: balance;
 }
 
-/* Button styles */
-.btn {
-  @apply inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none;
-}
-
-.btn-primary {
-  @apply bg-beige-600 text-white hover:bg-beige-700 focus:ring-beige-500;
-}
-
-.btn-secondary {
-  @apply bg-neutral-100 text-neutral-900 hover:bg-neutral-200 focus:ring-neutral-500;
-}
-
-.btn-ghost {
-  @apply hover:bg-neutral-100 hover:text-neutral-900 focus:ring-neutral-500;
-}
-
-.btn-danger {
-  @apply bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
-}
+/* Button styles - удалены, теперь используются в компоненте Button */
 
 /* Form styles */
 .form-label {

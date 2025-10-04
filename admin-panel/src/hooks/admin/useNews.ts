@@ -74,8 +74,8 @@ export function useNews(): UseNewsReturn {
       const currentFilters = newFilters || filters
       const response = await newsService.getNews({
         ...currentFilters,
-        page: newFilters?.page || pagination.page,
-        limit: newFilters?.limit || pagination.limit
+        page: newFilters?.page || pagination?.page || 1,
+        limit: newFilters?.limit || pagination?.limit || 10
       })
       
       console.log('News response:', response) // Debug log
@@ -107,7 +107,7 @@ export function useNews(): UseNewsReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [filters, pagination.page, pagination.limit])
+  }, [filters, pagination?.page, pagination?.limit])
 
   const fetchNewsItem = useCallback(async (id: string) => {
     setIsLoading(true)

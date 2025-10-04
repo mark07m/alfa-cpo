@@ -87,8 +87,8 @@ export function useEvents(): UseEventsReturn {
       const currentFilters = newFilters || filters
       const response = await eventsService.getEvents({
         ...currentFilters,
-        page: newFilters?.page || pagination.page,
-        limit: newFilters?.limit || pagination.limit
+        page: newFilters?.page || pagination?.page || 1,
+        limit: newFilters?.limit || pagination?.limit || 10
       })
       
       console.log('Events response:', response) // Debug log
@@ -120,7 +120,7 @@ export function useEvents(): UseEventsReturn {
     } finally {
       setIsLoading(false)
     }
-  }, [filters, pagination.page, pagination.limit])
+  }, [filters, pagination?.page, pagination?.limit])
 
   const fetchEvent = useCallback(async (id: string) => {
     setIsLoading(true)

@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { AdminSidebar } from './AdminSidebar'
 import { AdminHeader } from './AdminHeader'
 import { AdminBreadcrumbs } from './AdminBreadcrumbs'
+import { LoadingPage } from '@/components/admin/ui/LoadingSpinner'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -21,15 +22,16 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
     setIsClient(true)
   }, [])
 
+  const handleSidebarToggle = useCallback(() => {
+    setSidebarOpen(prev => !prev)
+  }, [])
+
+  const handleSidebarClose = useCallback(() => {
+    setSidebarOpen(false)
+  }, [])
+
   if (!isClient || isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
-        </div>
-      </div>
-    )
+    return <LoadingPage text="Загрузка админ-панели..." />
   }
 
   if (!isAuthenticated) {
@@ -42,22 +44,22 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
       {sidebarOpen && (
         <div 
           className="fixed inset-0 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleSidebarClose}
         >
-          <div className="absolute inset-0 bg-gray-600 opacity-75"></div>
+          <div className="absolute inset-0 bg-gray-600 opacity-75 transition-opacity duration-200"></div>
         </div>
       )}
 
       {/* Sidebar */}
       <AdminSidebar 
         isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        onClose={handleSidebarClose}
       />
 
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Header */}
-        <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
+        <AdminHeader onMenuClick={handleSidebarToggle} />
 
         {/* Page content */}
         <main className="py-6">
@@ -75,7 +77,9 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
             )}
 
             {/* Page content */}
-            {children}
+            <div className="animate-fade-in">
+              {children}
+            </div>
           </div>
         </main>
       </div>

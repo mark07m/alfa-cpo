@@ -110,7 +110,7 @@ export function NewsList({
     )
   }
 
-  if (news.length === 0) {
+  if (!news || news.length === 0) {
     return (
       <div className="bg-white shadow rounded-lg">
         <div className="px-4 py-12 sm:px-6 text-center">
@@ -133,7 +133,7 @@ export function NewsList({
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedNews.length === news.length && news.length > 0}
+                  checked={selectedNews.length === (news?.length || 0) && (news?.length || 0) > 0}
                   onChange={(e) => onSelectAll(e.target.checked)}
                   className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                 />
@@ -159,7 +159,7 @@ export function NewsList({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {news.map((newsItem) => (
+            {(news || []).map((newsItem) => (
               <tr
                 key={newsItem.id}
                 className={`hover:bg-gray-50 ${

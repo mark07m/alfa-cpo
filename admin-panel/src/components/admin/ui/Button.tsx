@@ -2,11 +2,12 @@ import React from 'react'
 import { cn } from '@/lib/utils'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   loading?: boolean
   icon?: React.ReactNode
   iconPosition?: 'left' | 'right'
+  fullWidth?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -17,24 +18,37 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     loading = false,
     icon,
     iconPosition = 'left',
+    fullWidth = false,
     children, 
     disabled,
     ...props 
   }, ref) => {
-    const baseClasses = 'btn'
+    const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none'
     
     const variants = {
-      primary: 'btn-primary',
-      secondary: 'btn-secondary',
-      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500',
-      ghost: 'btn-ghost',
-      danger: 'btn-danger'
+      primary: 'bg-amber-600 text-white hover:bg-amber-700 focus:ring-amber-500 shadow-sm',
+      secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
+      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500 shadow-sm',
+      ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500',
+      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm',
+      success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 shadow-sm',
+      warning: 'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500 shadow-sm'
     }
     
     const sizes = {
+      xs: 'h-7 px-2 text-xs',
       sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 py-2',
-      lg: 'h-12 px-6 text-lg'
+      md: 'h-10 px-4 text-sm',
+      lg: 'h-11 px-6 text-base',
+      xl: 'h-12 px-8 text-lg'
+    }
+
+    const iconSizes = {
+      xs: 'h-3 w-3',
+      sm: 'h-4 w-4',
+      md: 'h-4 w-4',
+      lg: 'h-5 w-5',
+      xl: 'h-6 w-6'
     }
 
     return (
@@ -43,6 +57,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           baseClasses,
           variants[variant],
           sizes[size],
+          fullWidth && 'w-full',
           className
         )}
         disabled={disabled || loading}
@@ -51,7 +66,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading && (
           <svg
-            className="mr-2 h-4 w-4 animate-spin"
+            className={cn("animate-spin", iconSizes[size], iconPosition === 'left' ? 'mr-2' : 'ml-2')}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -73,13 +88,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         
         {!loading && icon && iconPosition === 'left' && (
-          <span className="mr-2">{icon}</span>
+          <span className={cn(iconSizes[size], "mr-2")}>{icon}</span>
         )}
         
         {children}
         
         {!loading && icon && iconPosition === 'right' && (
-          <span className="ml-2">{icon}</span>
+          <span className={cn(iconSizes[size], "ml-2")}>{icon}</span>
         )}
       </button>
     )
