@@ -1,66 +1,164 @@
-'use client';
+import { useState, useEffect } from 'react';
+import { apiService } from '@/services/admin/api';
 
-import { useState, useCallback } from 'react';
-import { SiteSettings } from '@/types/admin';
-import { siteSettingsService } from '@/services/admin/siteSettings';
-import { toast } from 'react-toastify';
+export interface SiteSettings {
+  // Общие настройки
+  siteName: string;
+  siteDescription: string;
+  logo: string;
+  favicon: string;
+  maintenanceMode: boolean;
+  allowRegistration: boolean;
 
-export const useSiteSettings = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
+  // Контакты
+  organizationName: string;
+  ogrn: string;
+  inn: string;
+  kpp: string;
+  legalAddress: string;
+  phone: string;
+  email: string;
+  workingHours: string;
+  website: string;
 
-  const fetchSettings = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
+  // SEO настройки
+  seoTitle: string;
+  seoDescription: string;
+  seoKeywords: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  googleAnalyticsId: string;
+  yandexMetrikaId: string;
+
+  // Тема и дизайн
+  primaryColor: string;
+  secondaryColor: string;
+  primaryFont: string;
+  fontSize: string;
+
+  // Социальные сети
+  socialVk: string;
+  socialTelegram: string;
+  socialYoutube: string;
+  socialOdnoklassniki: string;
+}
+
+const defaultSettings: SiteSettings = {
+  siteName: 'СРО арбитражных управляющих',
+  siteDescription: 'Саморегулируемая организация арбитражных управляющих',
+  logo: '',
+  favicon: '',
+  maintenanceMode: false,
+  allowRegistration: false,
+  organizationName: '',
+  ogrn: '',
+  inn: '',
+  kpp: '',
+  legalAddress: '',
+  phone: '',
+  email: '',
+  workingHours: '',
+  website: '',
+  seoTitle: 'СРО арбитражных управляющих',
+  seoDescription: 'Официальный сайт саморегулируемой организации арбитражных управляющих',
+  seoKeywords: 'СРО, арбитражные управляющие, банкротство, несостоятельность',
+  ogTitle: 'СРО арбитражных управляющих',
+  ogDescription: 'Официальный сайт саморегулируемой организации арбитражных управляющих',
+  ogImage: '',
+  googleAnalyticsId: '',
+  yandexMetrikaId: '',
+  primaryColor: '#D4C4A8',
+  secondaryColor: '#8B7355',
+  primaryFont: 'Inter',
+  fontSize: '16px',
+  socialVk: '',
+  socialTelegram: '',
+  socialYoutube: '',
+  socialOdnoklassniki: '',
+};
+
+export function useSiteSettings() {
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Загрузка настроек
+  const loadSettings = async () => {
     try {
-      const data = await siteSettingsService.getSettings();
-      setSettings(data);
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await apiService.get('/settings/site');
+      const data = response.data;
+      
+      // Объединяем с настройками по умолчанию
+      setSettings({ ...defaultSettings, ...(data || {}) });
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Ошибка загрузки настроек');
-      setError(error);
-      toast.error(`Ошибка загрузки настроек: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const updateSettings = useCallback(async (data: Partial<SiteSettings>) => {
-    try {
-      const updatedSettings = await siteSettingsService.updateSettings(data);
-      setSettings(updatedSettings);
-      toast.success('Настройки сайта успешно обновлены!');
-      return updatedSettings;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Ошибка обновления настроек');
-      toast.error(`Ошибка обновления настроек: ${error.message}`);
-      throw error;
-    }
-  }, []);
-
-  const resetSettings = useCallback(async () => {
-    try {
-      const defaultSettings = await siteSettingsService.resetSettings();
+      console.error('Ошибка загрузки настроек:', err);
+      setError('Не удалось загрузить настройки');
+      // Используем настройки по умолчанию
       setSettings(defaultSettings);
-      toast.success('Настройки сброшены к значениям по умолчанию!');
-      return defaultSettings;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Ошибка сброса настроек');
-      toast.error(`Ошибка сброса настроек: ${error.message}`);
-      throw error;
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  // Обновление настроек
+  const updateSettings = async (section: string, newSettings: Partial<SiteSettings>) => {
+    try {
+      setError(null);
+      
+      // Обновляем локальное состояние
+      setSettings(prev => ({ ...prev, ...newSettings }));
+      
+      // Отправляем на сервер
+      await apiService.put('/settings/site', {
+        section,
+        settings: newSettings
+      });
+      
+      return true;
+    } catch (err) {
+      console.error('Ошибка сохранения настроек:', err);
+      setError('Не удалось сохранить настройки');
+      return false;
+    }
+  };
+
+  // Сброс к настройкам по умолчанию
+  const resetToDefault = async () => {
+    try {
+      setError(null);
+      
+      await apiService.post('/settings/site/reset');
+      setSettings(defaultSettings);
+      
+      return true;
+    } catch (err) {
+      console.error('Ошибка сброса настроек:', err);
+      setError('Не удалось сбросить настройки');
+      return false;
+    }
+  };
+
+  // Предварительный просмотр настроек
+  const previewSettings = (previewSettings: Partial<SiteSettings>) => {
+    // Применяем настройки для предварительного просмотра
+    setSettings(prev => ({ ...prev, ...previewSettings }));
+  };
+
+  useEffect(() => {
+    loadSettings();
   }, []);
 
   return {
-    // Data
     settings,
-    loading,
-    error,
-    
-    // Actions
-    fetchSettings,
     updateSettings,
-    resetSettings,
+    resetToDefault,
+    previewSettings,
+    loadSettings,
+    isLoading,
+    error,
   };
-};
+}

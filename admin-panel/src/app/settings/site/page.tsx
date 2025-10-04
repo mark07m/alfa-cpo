@@ -11,6 +11,7 @@ import { Textarea } from '@/components/admin/ui/Textarea';
 import { Card, CardContent, CardHeader } from '@/components/admin/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/admin/ui/Tabs';
 import { ImageUpload } from '@/components/admin/ui/ImageUpload';
+import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { 
   PaintBrushIcon, 
   GlobeAltIcon, 
@@ -116,31 +117,36 @@ export default function AdminSiteSettingsPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <AdminLayout title="Настройки сайта">
         <div className="text-center py-10">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-beige-600 mx-auto"></div>
           <p className="mt-2 text-sm text-neutral-600">Загрузка настроек...</p>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
+      <AdminLayout title="Настройки сайта">
         <div className="text-center py-10 text-red-500">
           <p>Ошибка загрузки настроек: {error.message}</p>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-neutral-900">Настройки сайта</h1>
-        <p className="text-neutral-600 mt-1">Управление основными параметрами и внешним видом сайта</p>
-      </div>
+    <AdminLayout 
+      title="Настройки сайта"
+      breadcrumbs={[
+        { label: 'Главная', href: '/dashboard' },
+        { label: 'Настройки', href: '/settings' },
+        { label: 'Сайт', href: '/settings/site' },
+      ]}
+    >
+      <div className="space-y-6">
+        <p className="text-neutral-600">Управление основными параметрами и внешним видом сайта</p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Tabs defaultValue="general" className="w-full">
@@ -387,6 +393,7 @@ export default function AdminSiteSettingsPage() {
           </Button>
         </div>
       </form>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

@@ -64,7 +64,7 @@ export function AdminLayout({ children, title, breadcrumbs }: AdminLayoutProps) 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Breadcrumbs */}
             {breadcrumbs && breadcrumbs.length > 0 && (
-              <AdminBreadcrumbs breadcrumbs={breadcrumbs} />
+              <AdminBreadcrumbs items={breadcrumbs} />
             )}
 
             {/* Page title */}

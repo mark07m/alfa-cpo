@@ -61,6 +61,9 @@ export function Badge({
     }
   };
 
+  // Убеждаемся, что цвет поддерживается
+  const validColor = colorClasses[color] ? color : 'gray';
+
   const sizeClasses = {
     sm: 'px-2 py-1 text-xs',
     md: 'px-2.5 py-1.5 text-sm',
@@ -77,7 +80,7 @@ export function Badge({
     <span
       className={cn(
         'inline-flex items-center rounded-full font-medium',
-        colorClasses[color][variant],
+        colorClasses[validColor][variant],
         sizeClasses[size],
         variantClasses[variant],
         className

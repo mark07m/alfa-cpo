@@ -11,17 +11,17 @@ interface BreadcrumbItem {
 }
 
 interface AdminBreadcrumbsProps {
-  breadcrumbs: BreadcrumbItem[]
+  items?: BreadcrumbItem[]
   className?: string
 }
 
-export function AdminBreadcrumbs({ breadcrumbs, className }: AdminBreadcrumbsProps) {
+export function AdminBreadcrumbs({ items = [], className }: AdminBreadcrumbsProps) {
   return (
     <nav className={cn('flex', className)} aria-label="Breadcrumb">
       <ol className="flex items-center space-x-2">
         <li>
           <Link
-            href="/"
+            href="/dashboard"
             className="text-gray-400 hover:text-gray-500 transition-colors"
           >
             <HomeIcon className="h-4 w-4" />
@@ -29,7 +29,7 @@ export function AdminBreadcrumbs({ breadcrumbs, className }: AdminBreadcrumbsPro
           </Link>
         </li>
         
-        {breadcrumbs.map((item, index) => (
+        {items.map((item, index) => (
           <li key={index} className="flex items-center">
             <ChevronRightIcon className="h-4 w-4 text-gray-400 mx-2" />
             {item.href ? (

@@ -76,12 +76,23 @@ const navigation: NavigationItem[] = [
     ]
   },
   {
+    name: 'Отчеты',
+    href: '/reports',
+    icon: ChartBarIcon,
+    children: [
+      { name: 'Все отчеты', href: '/reports', icon: ChartBarIcon },
+      { name: 'По проверкам', href: '/inspections/reports', icon: ClipboardDocumentListIcon },
+      { name: 'По дисциплинарным мерам', href: '/disciplinary-measures/reports', icon: ExclamationTriangleIcon }
+    ]
+  },
+  {
     name: 'Настройки',
     href: '/settings',
     icon: CogIcon,
     children: [
-      { name: 'Пользователи', href: '/users', icon: UsersIcon },
-      { name: 'Сайт', href: '/settings/site', icon: CogIcon }
+      { name: 'Сайт', href: '/settings', icon: CogIcon },
+      { name: 'Пользователи', href: '/settings/users', icon: UsersIcon },
+      { name: 'Безопасность', href: '/settings/security', icon: ShieldCheckIcon }
     ]
   }
 ]
