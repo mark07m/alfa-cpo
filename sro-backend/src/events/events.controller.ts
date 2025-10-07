@@ -23,6 +23,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { RequirePermissions } from '@/auth/decorators/permissions.decorator';
 import { UserRole, Permission } from '@/common/types';
+import { ResponseUtil } from '@/common/utils/response.util';
 
 @Controller('events')
 export class EventsController {
@@ -33,14 +34,16 @@ export class EventsController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.EVENTS_CREATE)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createEventDto: CreateEventDto, @Request() req) {
-    return this.eventsService.create(createEventDto, req.user.userId);
+  async create(@Body() createEventDto: CreateEventDto, @Request() req) {
+    const event = await this.eventsService.create(createEventDto, req.user.id);
+    return ResponseUtil.created(event, 'Мероприятие успешно создано');
   }
 
   @Get()
   async findAll(@Query() query: EventQueryDto) {
     try {
-      return await this.eventsService.findAll(query);
+      const result = await this.eventsService.findAll(query);
+      return ResponseUtil.paginated(result.data, result.pagination, 'Мероприятия успешно получены');
     } catch (error) {
       console.error('Error in findAll events:', error);
       throw error;
@@ -48,42 +51,49 @@ export class EventsController {
   }
 
   @Get('upcoming')
-  getUpcomingEvents(@Query('limit') limit?: number) {
-    return this.eventsService.getUpcomingEvents(limit);
+  async getUpcomingEvents(@Query('limit') limit?: number) {
+    const events = await this.eventsService.getUpcomingEvents(limit);
+    return ResponseUtil.success(events, 'Предстоящие мероприятия получены');
   }
 
   @Get('featured')
-  getFeaturedEvents(@Query('limit') limit?: number) {
-    return this.eventsService.getFeaturedEvents(limit);
+  async getFeaturedEvents(@Query('limit') limit?: number) {
+    const events = await this.eventsService.getFeaturedEvents(limit);
+    return ResponseUtil.success(events, 'Рекомендуемые мероприятия получены');
   }
 
   @Get('calendar')
-  getCalendar(@Query() query: CalendarQueryDto) {
-    return this.eventsService.getCalendar(query);
+  async getCalendar(@Query() query: CalendarQueryDto) {
+    const calendar = await this.eventsService.getCalendar(query);
+    return ResponseUtil.success(calendar, 'Календарь мероприятий получен');
   }
 
   @Get('types')
-  getEventTypes() {
-    return this.eventsService.getEventTypes();
+  async getEventTypes() {
+    const types = await this.eventsService.getEventTypes();
+    return ResponseUtil.success(types, 'Типы мероприятий получены');
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const event = await this.eventsService.findOne(id);
+    return ResponseUtil.success(event, 'Мероприятие получено');
   }
 
   @Post(':id/register')
   @HttpCode(HttpStatus.OK)
-  registerForEvent(@Param('id') id: string, @Body() registerEventDto: RegisterEventDto) {
-    return this.eventsService.registerForEvent(id, registerEventDto);
+  async registerForEvent(@Param('id') id: string, @Body() registerEventDto: RegisterEventDto) {
+    const registration = await this.eventsService.registerForEvent(id, registerEventDto);
+    return ResponseUtil.success(registration, 'Регистрация на мероприятие успешна');
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.EVENTS_UPDATE)
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @Request() req) {
-    return this.eventsService.update(id, updateEventDto, req.user.userId);
+  async update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto, @Request() req) {
+    const event = await this.eventsService.update(id, updateEventDto, req.user.id);
+    return ResponseUtil.updated(event, 'Мероприятие успешно обновлено');
   }
 
   @Delete(':id')
@@ -91,7 +101,8 @@ export class EventsController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.EVENTS_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.eventsService.remove(id);
+    return ResponseUtil.deleted('Мероприятие успешно удалено');
   }
 }

@@ -22,6 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       return null;
     }
-    return user;
+    
+    // Возвращаем унифицированный объект пользователя
+    return {
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      permissions: user.permissions || []
+    };
   }
 }

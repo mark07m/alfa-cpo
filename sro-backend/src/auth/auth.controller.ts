@@ -63,17 +63,17 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async getProfile(@CurrentUser() user: User) {
-    return this.authService.getProfile(user._id.toString());
+  async getProfile(@CurrentUser() user: any) {
+    return this.authService.getProfile(user.id);
   }
 
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(
-    @CurrentUser() user: User,
+    @CurrentUser() user: any,
     @Body() updateProfileDto: UpdateProfileDto
   ) {
-    return this.authService.updateProfile(user._id.toString(), updateProfileDto);
+    return this.authService.updateProfile(user.id, updateProfileDto);
   }
 
   private getClientIp(request: any): string {

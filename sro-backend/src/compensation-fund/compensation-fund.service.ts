@@ -119,7 +119,7 @@ export class CompensationFundService {
         page,
         limit,
         total: history.length,
-        pages: Math.ceil(history.length / limit),
+        totalPages: Math.ceil(history.length / limit),
       },
     };
   }

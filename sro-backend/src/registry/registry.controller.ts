@@ -25,6 +25,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { RequirePermissions } from '@/auth/decorators/permissions.decorator';
 import { UserRole, Permission } from '@/common/types';
+import { ResponseUtil } from '@/common/utils/response.util';
 
 @Controller('registry')
 export class RegistryController {
@@ -35,8 +36,9 @@ export class RegistryController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.REGISTRY_CREATE)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createArbitraryManagerDto: CreateArbitraryManagerDto, @Request() req) {
-    return this.registryService.create(createArbitraryManagerDto, req.user.userId);
+  async create(@Body() createArbitraryManagerDto: CreateArbitraryManagerDto, @Request() req) {
+    const manager = await this.registryService.create(createArbitraryManagerDto, req.user.id);
+    return ResponseUtil.created(manager, 'Арбитражный управляющий успешно добавлен в реестр');
   }
 
   @Get()
@@ -45,7 +47,7 @@ export class RegistryController {
       console.log('Registry findAll called with query:', query);
       const result = await this.registryService.findAll(query);
       console.log('Registry findAll result:', result);
-      return result;
+      return ResponseUtil.paginated(result.data, result.pagination, 'Реестр арбитражных управляющих успешно получен');
     } catch (error) {
       console.error('Error in findAll:', error);
       console.error('Error stack:', error.stack);
@@ -54,8 +56,9 @@ export class RegistryController {
   }
 
   @Get('statistics')
-  getStatistics() {
-    return this.registryService.getStatistics();
+  async getStatistics() {
+    const statistics = await this.registryService.getStatistics();
+    return ResponseUtil.success(statistics, 'Статистика реестра получена');
   }
 
   @Get('export/excel')
@@ -84,31 +87,36 @@ export class RegistryController {
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.REGISTRY_CREATE)
   @HttpCode(HttpStatus.OK)
-  import(@Body() importData: ImportRegistryDto, @Request() req) {
-    return this.registryService.importFromFile(importData, req.user.userId);
+  async import(@Body() importData: ImportRegistryDto, @Request() req) {
+    const result = await this.registryService.importFromFile(importData, req.user.id);
+    return ResponseUtil.success(result, 'Импорт данных в реестр выполнен успешно');
   }
 
   @Get('inn/:inn')
-  findByInn(@Param('inn') inn: string) {
-    return this.registryService.findByInn(inn);
+  async findByInn(@Param('inn') inn: string) {
+    const manager = await this.registryService.findByInn(inn);
+    return ResponseUtil.success(manager, 'Арбитражный управляющий найден по ИНН');
   }
 
   @Get('number/:registryNumber')
-  findByRegistryNumber(@Param('registryNumber') registryNumber: string) {
-    return this.registryService.findByRegistryNumber(registryNumber);
+  async findByRegistryNumber(@Param('registryNumber') registryNumber: string) {
+    const manager = await this.registryService.findByRegistryNumber(registryNumber);
+    return ResponseUtil.success(manager, 'Арбитражный управляющий найден по номеру реестра');
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.registryService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const manager = await this.registryService.findOne(id);
+    return ResponseUtil.success(manager, 'Арбитражный управляющий получен');
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.REGISTRY_UPDATE)
-  update(@Param('id') id: string, @Body() updateArbitraryManagerDto: UpdateArbitraryManagerDto, @Request() req) {
-    return this.registryService.update(id, updateArbitraryManagerDto, req.user.userId);
+  async update(@Param('id') id: string, @Body() updateArbitraryManagerDto: UpdateArbitraryManagerDto, @Request() req) {
+    const manager = await this.registryService.update(id, updateArbitraryManagerDto, req.user.id);
+    return ResponseUtil.updated(manager, 'Арбитражный управляющий успешно обновлен');
   }
 
   @Delete(':id')
@@ -116,7 +124,8 @@ export class RegistryController {
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.REGISTRY_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.registryService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.registryService.remove(id);
+    return ResponseUtil.deleted('Арбитражный управляющий успешно удален из реестра');
   }
 }

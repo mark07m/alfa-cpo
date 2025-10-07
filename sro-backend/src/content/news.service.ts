@@ -6,6 +6,8 @@ import { NewsCategory, NewsCategoryDocument } from '@/database/schemas/news-cate
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
 import { NewsQueryDto } from './dto/news-query.dto';
+import { CreateNewsCategoryDto } from './dto/create-news-category.dto';
+import { UpdateNewsCategoryDto } from './dto/update-news-category.dto';
 
 @Injectable()
 export class NewsService {
@@ -103,7 +105,7 @@ export class NewsService {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
@@ -193,5 +195,143 @@ export class NewsService {
       .sort({ publishedAt: -1 })
       .limit(limit)
       .exec();
+  }
+
+  async getPublicNews(category?: string, limit: number = 10): Promise<News[]> {
+    const filter: any = { status: 'published' };
+    
+    if (category) {
+      const categoryDoc = await this.newsCategoryModel.findOne({ slug: category });
+      if (categoryDoc) {
+        filter.category = categoryDoc._id;
+      }
+    }
+
+    return this.newsModel
+      .find(filter)
+      .populate('author', 'name email')
+      .populate('category', 'name slug color')
+      .sort({ publishedAt: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  async searchNews(query: string, limit: number = 10): Promise<News[]> {
+    const searchRegex = { $regex: query, $options: 'i' };
+    
+    return this.newsModel
+      .find({
+        $or: [
+          { title: searchRegex },
+          { content: searchRegex },
+          { excerpt: searchRegex },
+        ],
+        status: 'published'
+      })
+      .populate('author', 'name email')
+      .populate('category', 'name slug color')
+      .sort({ publishedAt: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  async getNewsByCategory(categorySlug: string, limit: number = 10): Promise<News[]> {
+    const category = await this.newsCategoryModel.findOne({ slug: categorySlug });
+    if (!category) {
+      throw new NotFoundException('Категория не найдена');
+    }
+
+    return this.newsModel
+      .find({ category: category._id, status: 'published' })
+      .populate('author', 'name email')
+      .populate('category', 'name slug color')
+      .sort({ publishedAt: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  async getNewsCategories(): Promise<NewsCategory[]> {
+    return this.newsCategoryModel
+      .find()
+      .sort({ sortOrder: 1, name: 1 })
+      .exec();
+  }
+
+  async createNewsCategory(createCategoryDto: CreateNewsCategoryDto): Promise<NewsCategory> {
+    const category = new this.newsCategoryModel(createCategoryDto);
+    return category.save();
+  }
+
+  async updateNewsCategory(id: string, updateCategoryDto: UpdateNewsCategoryDto): Promise<NewsCategory> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Неверный ID категории');
+    }
+
+    const category = await this.newsCategoryModel
+      .findByIdAndUpdate(id, updateCategoryDto, { new: true })
+      .exec();
+
+    if (!category) {
+      throw new NotFoundException('Категория не найдена');
+    }
+
+    return category;
+  }
+
+  async deleteNewsCategory(id: string): Promise<void> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Неверный ID категории');
+    }
+
+    // Проверяем, есть ли новости в этой категории
+    const newsCount = await this.newsModel.countDocuments({ category: id });
+    if (newsCount > 0) {
+      throw new BadRequestException('Нельзя удалить категорию, в которой есть новости');
+    }
+
+    const result = await this.newsCategoryModel.findByIdAndDelete(id).exec();
+    if (!result) {
+      throw new NotFoundException('Категория не найдена');
+    }
+  }
+
+  async updateStatus(id: string, status: string, userId: string): Promise<News> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Неверный ID новости');
+    }
+
+    const updateData: any = {
+      status,
+      updatedBy: new Types.ObjectId(userId),
+    };
+
+    if (status === 'published' && !updateData.publishedAt) {
+      updateData.publishedAt = new Date();
+    }
+
+    const news = await this.newsModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .populate('author', 'name email')
+      .populate('category', 'name slug color')
+      .exec();
+
+    if (!news) {
+      throw new NotFoundException('Новость не найдена');
+    }
+
+    return news;
+  }
+
+  async bulkRemove(ids: string[]): Promise<void> {
+    // Проверяем валидность всех ID
+    const invalidIds = ids.filter(id => !Types.ObjectId.isValid(id));
+    if (invalidIds.length > 0) {
+      throw new BadRequestException('Некоторые ID новостей неверны');
+    }
+
+    const result = await this.newsModel.deleteMany({ _id: { $in: ids } }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException('Новости не найдены');
+    }
   }
 }

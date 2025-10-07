@@ -5,9 +5,9 @@ export const mockUsers: User[] = [
   {
     id: '1',
     email: 'admin@sro-au.ru',
-    firstName: 'Администратор',
-    lastName: 'Системы',
-    role: 'SUPER_ADMIN' as UserRole,
+    name: 'Администратор Системы',
+    role: UserRole.SUPER_ADMIN,
+    permissions: ['users:read', 'users:create', 'users:update', 'users:delete', 'news:read', 'news:create', 'news:update', 'news:delete'],
     isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -15,9 +15,9 @@ export const mockUsers: User[] = [
   {
     id: '2',
     email: 'editor@sro-au.ru',
-    firstName: 'Редактор',
-    lastName: 'Контента',
-    role: 'EDITOR' as UserRole,
+    name: 'Редактор Контента',
+    role: UserRole.EDITOR,
+    permissions: ['news:read', 'news:create', 'news:update', 'documents:read', 'documents:create', 'documents:update'],
     isActive: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -339,7 +339,7 @@ export const mockEventParticipants: EventParticipant[] = [
       email: 'participant1@example.com',
       firstName: 'Иван',
       lastName: 'Петров',
-      role: 'MEMBER' as UserRole,
+      role: UserRole.EDITOR,
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -356,7 +356,7 @@ export const mockEventParticipants: EventParticipant[] = [
       email: 'participant2@example.com',
       firstName: 'Мария',
       lastName: 'Сидорова',
-      role: 'MEMBER' as UserRole,
+      role: UserRole.EDITOR,
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

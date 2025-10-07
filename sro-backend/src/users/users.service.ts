@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from '@/database/schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole, ROLE_PERMISSIONS } from '@/common/types';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -14,11 +15,23 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    
+    // Получаем разрешения для роли
+    const role = createUserDto.role || UserRole.EDITOR;
+    const permissions = createUserDto.permissions || ROLE_PERMISSIONS[role] || [];
+    
+    console.log('Creating user with role:', role, 'permissions:', permissions);
+    
     const createdUser = new this.userModel({
       ...createUserDto,
       password: hashedPassword,
+      role,
+      permissions,
     });
-    return createdUser.save();
+    
+    const savedUser = await createdUser.save();
+    console.log('Saved user permissions:', savedUser.permissions);
+    return savedUser;
   }
 
   async findAll(): Promise<User[]> {

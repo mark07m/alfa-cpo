@@ -27,6 +27,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { RequirePermissions } from '@/auth/decorators/permissions.decorator';
 import { UserRole, Permission } from '@/common/types';
+import { ResponseUtil } from '@/common/utils/response.util';
 import { StreamableFile } from '@nestjs/common';
 import { memoryStorage } from 'multer';
 import { extname } from 'path';
@@ -104,7 +105,8 @@ export class FilesController {
     
     console.log('UploadFileDto after processing:', uploadFileDto);
 
-    return this.filesService.uploadFile(file, uploadFileDto, req.user.id);
+    const uploadedFile = await this.filesService.uploadFile(file, uploadFileDto, req.user.id);
+    return ResponseUtil.created(uploadedFile, 'Файл успешно загружен');
   }
 
   @Get()
@@ -112,14 +114,16 @@ export class FilesController {
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
   @RequirePermissions(Permission.FILE_READ)
   async findAll(@Query() query: FileQueryDto) {
-    return this.filesService.findAll(query);
+    const result = await this.filesService.findAll(query);
+    return ResponseUtil.paginated(result.files, result.pagination, 'Файлы успешно получены');
   }
 
   @Get('public')
   async findPublic(@Query() query: FileQueryDto) {
     // Публичный доступ только к публичным файлам
     query.isPublic = true;
-    return this.filesService.findAll(query);
+    const result = await this.filesService.findAll(query);
+    return ResponseUtil.paginated(result.files, result.pagination, 'Публичные файлы получены');
   }
 
   @Get('stats')
@@ -127,7 +131,8 @@ export class FilesController {
   @Roles(UserRole.ADMIN)
   @RequirePermissions(Permission.FILE_READ)
   async getStats() {
-    return this.filesService.getFileStats();
+    const stats = await this.filesService.getFileStats();
+    return ResponseUtil.success(stats, 'Статистика файлов получена');
   }
 
   @Get(':id')
@@ -135,7 +140,8 @@ export class FilesController {
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
   @RequirePermissions(Permission.FILE_READ)
   async findOne(@Param('id') id: string) {
-    return this.filesService.findOne(id);
+    const file = await this.filesService.findOne(id);
+    return ResponseUtil.success(file, 'Файл получен');
   }
 
   @Get(':id/download')
@@ -198,7 +204,8 @@ export class FilesController {
     @Body() updateFileDto: UpdateFileDto,
     @Request() req: any,
   ) {
-    return this.filesService.update(id, updateFileDto, req.user.id);
+    const file = await this.filesService.update(id, updateFileDto, req.user.id);
+    return ResponseUtil.updated(file, 'Файл успешно обновлен');
   }
 
   @Delete(':id')
@@ -208,5 +215,6 @@ export class FilesController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string, @Request() req: any) {
     await this.filesService.remove(id, req.user.id);
+    return ResponseUtil.deleted('Файл успешно удален');
   }
 }

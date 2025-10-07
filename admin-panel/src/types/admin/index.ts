@@ -3,19 +3,31 @@
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   role: UserRole;
+  permissions: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Интерфейс для API ответа пользователя (с _id)
+export interface ApiUser {
+  _id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  permissions: string[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
 export enum UserRole {
-  SUPER_ADMIN = 'super_admin',
-  ADMIN = 'admin',
-  MODERATOR = 'moderator',
-  EDITOR = 'editor'
+  SUPER_ADMIN = 'SUPER_ADMIN',
+  ADMIN = 'ADMIN',
+  MODERATOR = 'MODERATOR',
+  EDITOR = 'EDITOR'
 }
 
 export interface AuthState {
@@ -582,30 +594,19 @@ export interface Notification {
   actionUrl?: string;
 }
 
-// Типы для API ответов
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message?: string;
-  error?: string;
-}
+// Типы для API ответов (дубликат удален - используется выше)
 
 export interface PaginationResponse<T = any> {
   data: T[];
-  meta: {
+  pagination: {
+    page: number;
+    limit: number;
     total: number;
-    lastPage: number;
-    currentPage: number;
-    perPage: number;
+    totalPages: number;
   };
 }
 
-export interface PaginationParams {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
+// PaginationParams дубликат удален - используется выше
 
 // Типы для логирования
 export interface AuditLog {

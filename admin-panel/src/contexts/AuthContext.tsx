@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { User, AuthState, LoginCredentials, UserRole } from '@/types/admin'
+import { User, ApiUser, AuthState, LoginCredentials, UserRole } from '@/types/admin'
 import { apiService } from '@/services/admin/api'
 
 interface AuthContextType extends AuthState {
@@ -32,28 +32,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     
-    // В моковом режиме сразу возвращаем мокового пользователя
-    if (useMockData) {
-      console.info('Mock data mode enabled, using mock user')
-      const mockUser = {
-        id: '1',
-        email: 'admin@sro-au.ru',
-        firstName: 'Администратор',
-        lastName: 'Системы',
-        role: 'SUPER_ADMIN' as UserRole,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      // В моковом режиме сразу возвращаем мокового пользователя
+      if (useMockData) {
+        console.info('Mock data mode enabled, using mock user')
+        const mockUser = {
+          id: '1',
+          email: 'admin@sro-au.ru',
+          name: 'Администратор Системы',
+          role: UserRole.SUPER_ADMIN,
+          permissions: [],
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+        
+        return {
+          user: mockUser,
+          token: null, // В моковом режиме не нужны токены
+          refreshToken: null,
+          isAuthenticated: true,
+          isLoading: false
+        }
       }
-      
-      return {
-        user: mockUser,
-        token: null, // В моковом режиме не нужны токены
-        refreshToken: null,
-        isAuthenticated: true,
-        isLoading: false
-      }
-    }
     
     const token = localStorage.getItem('admin_token')
     const refreshToken = localStorage.getItem('admin_refresh_token')
@@ -120,11 +120,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const response = await apiService.getCurrentUser()
       if (response.success) {
-        const user = response.data
+        const apiUser = response.data as ApiUser
+        // Преобразуем _id в id для совместимости с frontend
+        const normalizedUser: User = {
+          id: apiUser._id,
+          email: apiUser.email,
+          name: apiUser.name,
+          role: apiUser.role,
+          permissions: apiUser.permissions,
+          isActive: apiUser.isActive,
+          createdAt: apiUser.createdAt,
+          updatedAt: apiUser.updatedAt
+        }
         // Сохраняем пользователя в localStorage
-        localStorage.setItem('admin_user', JSON.stringify(user))
+        localStorage.setItem('admin_user', JSON.stringify(normalizedUser))
         setAuthState({
-          user,
+          user: normalizedUser,
           token,
           refreshToken: localStorage.getItem('admin_refresh_token'),
           isAuthenticated: true,
@@ -136,9 +147,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const mockUser = {
           id: '1',
           email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
-          role: 'SUPER_ADMIN' as UserRole,
+          name: 'Администратор Системы',
+          role: UserRole.SUPER_ADMIN,
+          permissions: [],
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -170,9 +181,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const mockUser = {
           id: '1',
           email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
-          role: 'SUPER_ADMIN' as UserRole,
+          name: 'Администратор Системы',
+          role: UserRole.SUPER_ADMIN,
+          permissions: [],
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -217,9 +228,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const mockUser = {
           id: '1',
           email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
-          role: 'SUPER_ADMIN' as UserRole,
+          name: 'Администратор Системы',
+          role: UserRole.SUPER_ADMIN,
+          permissions: [],
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -235,44 +246,26 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return
       }
       
-      // Проверяем моковые данные для входа
-      if (credentials.email === 'admin@sro-au.ru' && credentials.password === 'Admin123!') {
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
-          role: 'SUPER_ADMIN' as UserRole,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        
-        const mockToken = 'mock_token_' + Date.now()
-        const mockRefreshToken = 'mock_refresh_token_' + Date.now()
-        
-        localStorage.setItem('admin_token', mockToken)
-        localStorage.setItem('admin_refresh_token', mockRefreshToken)
-        localStorage.setItem('admin_user', JSON.stringify(mockUser))
-        
-        setAuthState({
-          user: mockUser,
-          token: mockToken,
-          refreshToken: mockRefreshToken,
-          isAuthenticated: true,
-          isLoading: false
-        })
-        return
-      }
-      
       // Пытаемся войти через API
       const response = await apiService.login(credentials)
       
-      if (response.success) {
+      if (response.success && response.data.user) {
+        // Преобразуем _id в id для совместимости с frontend
+        const apiUser = response.data.user as unknown as ApiUser
+        const normalizedUser: User = {
+          id: apiUser._id,
+          email: apiUser.email,
+          name: apiUser.name,
+          role: apiUser.role,
+          permissions: apiUser.permissions,
+          isActive: apiUser.isActive,
+          createdAt: apiUser.createdAt,
+          updatedAt: apiUser.updatedAt
+        }
         // Сохраняем пользователя в localStorage
-        localStorage.setItem('admin_user', JSON.stringify(response.data.user))
+        localStorage.setItem('admin_user', JSON.stringify(normalizedUser))
         setAuthState({
-          user: response.data.user,
+          user: normalizedUser,
           token: response.data.token,
           refreshToken: response.data.refreshToken,
           isAuthenticated: true,
@@ -289,9 +282,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const mockUser = {
           id: '1',
           email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
-          role: 'SUPER_ADMIN' as UserRole,
+          name: 'Администратор Системы',
+          role: UserRole.SUPER_ADMIN,
+          permissions: [],
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -340,11 +333,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       
       const response = await apiService.getCurrentUser()
       if (response.success) {
+        // Преобразуем _id в id для совместимости с frontend
+        const apiUser = response.data as ApiUser
+        const normalizedUser: User = {
+          id: apiUser._id,
+          email: apiUser.email,
+          name: apiUser.name,
+          role: apiUser.role,
+          permissions: apiUser.permissions,
+          isActive: apiUser.isActive,
+          createdAt: apiUser.createdAt,
+          updatedAt: apiUser.updatedAt
+        }
         // Сохраняем обновленного пользователя в localStorage
-        localStorage.setItem('admin_user', JSON.stringify(response.data))
+        localStorage.setItem('admin_user', JSON.stringify(normalizedUser))
         setAuthState(prev => ({
           ...prev,
-          user: response.data
+          user: normalizedUser
         }))
       }
     } catch (error: any) {

@@ -17,6 +17,7 @@ import { CreateDisciplinaryMeasureDto } from './dto/create-disciplinary-measure.
 import { UpdateDisciplinaryMeasureDto } from './dto/update-disciplinary-measure.dto';
 import { DisciplinaryMeasureQueryDto } from './dto/disciplinary-measure-query.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { ResponseUtil } from '@/common/utils/response.util';
 
 @Controller('disciplinary-measures')
 @UseGuards(JwtAuthGuard)
@@ -25,14 +26,16 @@ export class DisciplinaryMeasuresController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createDisciplinaryMeasureDto: CreateDisciplinaryMeasureDto, @Request() req) {
-    return this.disciplinaryMeasuresService.create(createDisciplinaryMeasureDto, req.user.userId);
+  async create(@Body() createDisciplinaryMeasureDto: CreateDisciplinaryMeasureDto, @Request() req) {
+    const measure = await this.disciplinaryMeasuresService.create(createDisciplinaryMeasureDto, req.user.id);
+    return ResponseUtil.created(measure, 'Дисциплинарная мера успешно создана');
   }
 
   @Get()
   async findAll(@Query() query: DisciplinaryMeasureQueryDto) {
     try {
-      return await this.disciplinaryMeasuresService.findAll(query);
+      const result = await this.disciplinaryMeasuresService.findAll(query);
+      return ResponseUtil.paginated(result.data, result.pagination, 'Дисциплинарные меры успешно получены');
     } catch (error) {
       console.error('Error in findAll disciplinary measures:', error);
       throw error;
@@ -40,27 +43,31 @@ export class DisciplinaryMeasuresController {
   }
 
   @Get('statistics')
-  getStatistics() {
-    return this.disciplinaryMeasuresService.getStatistics();
+  async getStatistics() {
+    const statistics = await this.disciplinaryMeasuresService.getStatistics();
+    return ResponseUtil.success(statistics, 'Статистика дисциплинарных мер получена');
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.disciplinaryMeasuresService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const measure = await this.disciplinaryMeasuresService.findOne(id);
+    return ResponseUtil.success(measure, 'Дисциплинарная мера получена');
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateDisciplinaryMeasureDto: UpdateDisciplinaryMeasureDto,
     @Request() req,
   ) {
-    return this.disciplinaryMeasuresService.update(id, updateDisciplinaryMeasureDto, req.user.userId);
+    const measure = await this.disciplinaryMeasuresService.update(id, updateDisciplinaryMeasureDto, req.user.id);
+    return ResponseUtil.updated(measure, 'Дисциплинарная мера успешно обновлена');
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.disciplinaryMeasuresService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.disciplinaryMeasuresService.remove(id);
+    return ResponseUtil.deleted('Дисциплинарная мера успешно удалена');
   }
 }

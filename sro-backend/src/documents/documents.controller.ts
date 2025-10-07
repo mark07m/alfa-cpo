@@ -24,6 +24,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { RequirePermissions } from '@/auth/decorators/permissions.decorator';
 import { UserRole, Permission } from '@/common/types';
+import { ResponseUtil } from '@/common/utils/response.util';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -36,36 +37,42 @@ export class DocumentsController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.DOCUMENTS_CREATE)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createDocumentDto: CreateDocumentDto, @Request() req) {
-    return this.documentsService.create(createDocumentDto, req.user.userId);
+  async create(@Body() createDocumentDto: CreateDocumentDto, @Request() req) {
+    const document = await this.documentsService.create(createDocumentDto, req.user.id);
+    return ResponseUtil.created(document, 'Документ успешно создан');
   }
 
   @Get()
-  findAll(@Query() query: DocumentQueryDto) {
-    return this.documentsService.findAll(query);
+  async findAll(@Query() query: DocumentQueryDto) {
+    const result = await this.documentsService.findAll(query);
+    return ResponseUtil.paginated(result.data, result.pagination, 'Документы успешно получены');
   }
 
   @Get('public')
-  getPublicDocuments(@Query() query: DocumentQueryDto) {
-    return this.documentsService.getPublicDocuments(query);
+  async getPublicDocuments(@Query() query: DocumentQueryDto) {
+    const result = await this.documentsService.getPublicDocuments(query);
+    return ResponseUtil.paginated(result.data, result.pagination, 'Публичные документы получены');
   }
 
   @Get('categories')
-  getCategories() {
-    return this.documentsService.getCategories();
+  async getCategories() {
+    const categories = await this.documentsService.getCategories();
+    return ResponseUtil.success(categories, 'Категории документов получены');
   }
 
   @Get('category/:category')
-  getDocumentsByCategory(
+  async getDocumentsByCategory(
     @Param('category') category: string,
     @Query('limit') limit?: number
   ) {
-    return this.documentsService.getDocumentsByCategory(category, limit);
+    const documents = await this.documentsService.getDocumentsByCategory(category, limit);
+    return ResponseUtil.success(documents, 'Документы по категории получены');
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.documentsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const document = await this.documentsService.findOne(id);
+    return ResponseUtil.success(document, 'Документ получен');
   }
 
   @Get(':id/download')
@@ -104,8 +111,9 @@ export class DocumentsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.DOCUMENTS_UPDATE)
-  update(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto, @Request() req) {
-    return this.documentsService.update(id, updateDocumentDto, req.user.userId);
+  async update(@Param('id') id: string, @Body() updateDocumentDto: UpdateDocumentDto, @Request() req) {
+    const document = await this.documentsService.update(id, updateDocumentDto, req.user.id);
+    return ResponseUtil.updated(document, 'Документ успешно обновлен');
   }
 
   @Delete(':id')
@@ -113,7 +121,8 @@ export class DocumentsController {
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.DOCUMENTS_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.documentsService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.documentsService.remove(id);
+    return ResponseUtil.deleted('Документ успешно удален');
   }
 }

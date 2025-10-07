@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Environment Variables</title>
+</head>
+<body>
+    <h1>Environment Variables Test</h1>
+    <div id="output"></div>
+    
+    <script>
+        // Test API call
+        async function testApi() {
+            const output = document.getElementById('output');
+            
+            try {
+                // Test health endpoint
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                output.innerHTML = `
+                    <h2>API Test Results:</h2>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong> ${JSON.stringify(data, null, 2)}</p>
+                    <p><strong>URL:</strong> http://localhost:3001/api/health</p>
+                `;
+            } catch (error) {
+                output.innerHTML = `
+                    <h2>API Test Error:</h2>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <p><strong>Type:</strong> ${error.name}</p>
+                `;
+            }
+        }
+        
+        // Run test
+        testApi();
+    </script>
+</body>
+</html>

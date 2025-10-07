@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
-import { ApiResponse, PaginatedResponse, LoginCredentials, User, AuthState, UserRole } from '@/types/admin'
+import { ApiResponse, PaginatedResponse, LoginCredentials, User, ApiUser, AuthState, UserRole } from '@/types/admin'
 import { mockUsers, mockEvents, mockNews, mockDocuments, mockPages } from '@/data/mockData'
 
 class ApiService {
@@ -241,7 +241,10 @@ class ApiService {
     }
     
     try {
-      await this.api!.post('/auth/logout')
+      const refreshToken = this.getRefreshToken()
+      if (refreshToken) {
+        await this.api!.post('/auth/logout', { refreshToken })
+      }
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
@@ -258,14 +261,18 @@ class ApiService {
     return response.data
   }
 
-  async getCurrentUser(): Promise<ApiResponse<User>> {
+  async getCurrentUser(): Promise<ApiResponse<ApiUser>> {
     if (this.useMockData) {
       throw new Error('MOCK_MODE')
     }
     
     try {
       const response = await this.api!.get('/auth/profile')
-      return response.data
+      // Backend возвращает сырые данные, оборачиваем в ApiResponse
+      return {
+        success: true,
+        data: response.data
+      }
     } catch (error: any) {
       console.log('getCurrentUser error:', error)
       // Если API недоступен, возвращаем моковые данные
@@ -279,12 +286,12 @@ class ApiService {
           error.response?.status === 503 ||
           !error.response) {
         console.info('API unavailable, returning mock user')
-        const mockUser: User = {
-          id: '1',
+        const mockUser: ApiUser = {
+          _id: '1',
           email: 'admin@sro-au.ru',
-          firstName: 'Администратор',
-          lastName: 'Системы',
+          name: 'Администратор Системы',
           role: UserRole.SUPER_ADMIN,
+          permissions: [],
           isActive: true,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
@@ -486,7 +493,8 @@ class ApiService {
     try {
       await this.api!.get('/health')
       return true
-    } catch {
+    } catch (error) {
+      console.error('Health check failed:', error)
       return false
     }
   }

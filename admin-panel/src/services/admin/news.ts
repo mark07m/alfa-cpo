@@ -19,7 +19,7 @@ export interface NewsService {
 }
 
 class NewsServiceImpl implements NewsService {
-  async getNews(filters: NewsFilters & PaginationParams = {}): Promise<ApiResponse<{ news: News[]; pagination: any }>> {
+  async getNews(filters: NewsFilters & PaginationParams = { page: 1, limit: 10 }): Promise<ApiResponse<{ news: News[]; pagination: any }>> {
     try {
       const params = new URLSearchParams()
       
@@ -33,7 +33,7 @@ class NewsServiceImpl implements NewsService {
       if (filters.sortBy) params.append('sortBy', filters.sortBy)
       if (filters.sortOrder) params.append('sortOrder', filters.sortOrder)
 
-      const response = await apiService.get(`/news?${params.toString()}`) as ApiResponse<{ news: News[]; pagination: any }>
+      const response = await apiService.get(`/news?${params.toString()}`) as ApiResponse<{ data: News[]; pagination: any }>
       console.log('News service response:', response) // Debug log
       
       // Ensure we always return a valid response
@@ -45,7 +45,15 @@ class NewsServiceImpl implements NewsService {
         }
       }
       
-      return response
+      // Backend now returns data directly, not wrapped in news property
+      return {
+        success: response.success,
+        data: { 
+          news: response.data.data, 
+          pagination: response.data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }
+        },
+        message: response.message
+      }
     } catch (error: any) {
       console.error('Failed to fetch news:', error)
       if (error.message === 'MOCK_MODE') {
@@ -103,8 +111,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.post('/news', newsData) as ApiResponse<News>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: null as any,
@@ -117,8 +128,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.put(`/news/${id}`, newsData) as ApiResponse<News>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: null as any,
@@ -131,8 +145,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.delete(`/news/${id}`) as ApiResponse<void>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: undefined as any,
@@ -145,8 +162,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.delete('/news/bulk', { data: { ids } }) as ApiResponse<void>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to bulk delete news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: undefined as any,
@@ -159,8 +179,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.patch(`/news/${id}/status`, { status }) as ApiResponse<News>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update news status:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: null as any,
@@ -201,8 +224,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.post('/news/categories', categoryData) as ApiResponse<NewsCategory>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create news category:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: null as any,
@@ -215,8 +241,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.put(`/news/categories/${id}`, categoryData) as ApiResponse<NewsCategory>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update news category:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: null as any,
@@ -229,8 +258,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.delete(`/news/categories/${id}`) as ApiResponse<void>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete news category:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: undefined as any,
@@ -244,8 +276,11 @@ class NewsServiceImpl implements NewsService {
       const params = category ? `?category=${category}` : ''
       const response = await apiService.get(`/news/public${params}`) as ApiResponse<News[]>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch public news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: [],
@@ -258,8 +293,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.get(`/news/search?q=${encodeURIComponent(query)}`) as ApiResponse<News[]>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to search news:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: [],
@@ -272,8 +310,11 @@ class NewsServiceImpl implements NewsService {
     try {
       const response = await apiService.get(`/news/category/${category}`) as ApiResponse<News[]>
       return response
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch news by category:', error)
+      if (error.message === 'MOCK_MODE') {
+        throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
       return {
         success: false,
         data: [],
@@ -307,9 +348,9 @@ const mockNews: News[] = [
     author: {
       id: '1',
       email: 'admin@sro-au.ru',
-      firstName: 'Администратор',
-      lastName: 'СРО',
+      name: 'Администратор СРО',
       role: UserRole.SUPER_ADMIN,
+      permissions: ['*'],
       isActive: true,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z'
@@ -341,9 +382,9 @@ const mockNews: News[] = [
     author: {
       id: '1',
       email: 'admin@sro-au.ru',
-      firstName: 'Администратор',
-      lastName: 'СРО',
+      name: 'Администратор СРО',
       role: UserRole.SUPER_ADMIN,
+      permissions: ['*'],
       isActive: true,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z'
@@ -372,9 +413,9 @@ const mockNews: News[] = [
     author: {
       id: '1',
       email: 'admin@sro-au.ru',
-      firstName: 'Администратор',
-      lastName: 'СРО',
+      name: 'Администратор СРО',
       role: UserRole.SUPER_ADMIN,
+      permissions: ['*'],
       isActive: true,
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z'

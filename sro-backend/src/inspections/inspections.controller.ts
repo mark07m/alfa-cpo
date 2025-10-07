@@ -17,6 +17,7 @@ import { CreateInspectionDto } from './dto/create-inspection.dto';
 import { UpdateInspectionDto } from './dto/update-inspection.dto';
 import { InspectionQueryDto } from './dto/inspection-query.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { ResponseUtil } from '@/common/utils/response.util';
 
 @Controller('inspections')
 @UseGuards(JwtAuthGuard)
@@ -25,14 +26,16 @@ export class InspectionsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createInspectionDto: CreateInspectionDto, @Request() req) {
-    return this.inspectionsService.create(createInspectionDto, req.user.userId);
+  async create(@Body() createInspectionDto: CreateInspectionDto, @Request() req) {
+    const inspection = await this.inspectionsService.create(createInspectionDto, req.user.id);
+    return ResponseUtil.created(inspection, 'Проверка успешно создана');
   }
 
   @Get()
   async findAll(@Query() query: InspectionQueryDto) {
     try {
-      return await this.inspectionsService.findAll(query);
+      const result = await this.inspectionsService.findAll(query);
+      return ResponseUtil.paginated(result.data, result.pagination, 'Проверки успешно получены');
     } catch (error) {
       console.error('Error in findAll inspections:', error);
       throw error;
@@ -40,27 +43,31 @@ export class InspectionsController {
   }
 
   @Get('statistics')
-  getStatistics() {
-    return this.inspectionsService.getStatistics();
+  async getStatistics() {
+    const statistics = await this.inspectionsService.getStatistics();
+    return ResponseUtil.success(statistics, 'Статистика проверок получена');
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.inspectionsService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const inspection = await this.inspectionsService.findOne(id);
+    return ResponseUtil.success(inspection, 'Проверка получена');
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateInspectionDto: UpdateInspectionDto,
     @Request() req,
   ) {
-    return this.inspectionsService.update(id, updateInspectionDto, req.user.userId);
+    const inspection = await this.inspectionsService.update(id, updateInspectionDto, req.user.id);
+    return ResponseUtil.updated(inspection, 'Проверка успешно обновлена');
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.inspectionsService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.inspectionsService.remove(id);
+    return ResponseUtil.deleted('Проверка успешно удалена');
   }
 }

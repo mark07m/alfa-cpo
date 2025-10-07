@@ -10,18 +10,7 @@ export class CreateUserDto {
   password: string;
 
   @IsString()
-  firstName: string;
-
-  @IsString()
-  lastName: string;
-
-  @IsString()
-  @IsOptional()
-  middleName?: string;
-
-  @IsString()
-  @IsOptional()
-  phone?: string;
+  name: string;
 
   @IsOptional()
   isActive?: boolean;

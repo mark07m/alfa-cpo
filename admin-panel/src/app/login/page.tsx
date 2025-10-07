@@ -134,12 +134,56 @@ export default function LoginPage() {
             </div>
             <h2 className="text-2xl font-bold text-gray-900">Вход в админ панель</h2>
             <p className="text-gray-600">СРО арбитражных управляющих</p>
+            
+            {/* Mobile demo credentials info */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-center mb-2">
+                <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xs font-semibold text-blue-900">Данные для входа</h3>
+              </div>
+              <div className="text-xs text-blue-800 space-y-1">
+                <div className="flex justify-between">
+                  <span className="font-medium">Email:</span>
+                  <span className="font-mono bg-blue-100 px-1 py-0.5 rounded text-xs">aaadmin@sro-au.ru</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Пароль:</span>
+                  <span className="font-mono bg-blue-100 px-1 py-0.5 rounded text-xs">Admin123!</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Desktop header */}
           <div className="hidden lg:block text-center">
             <h2 className="text-3xl font-bold text-gray-900">Добро пожаловать</h2>
             <p className="mt-2 text-gray-600">Войдите в свою учетную запись</p>
+            
+            {/* Demo credentials info */}
+            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <div className="flex items-center justify-center mb-2">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-sm font-semibold text-blue-900">Данные для входа</h3>
+              </div>
+              <div className="text-sm text-blue-800 space-y-1">
+                <div className="flex justify-between">
+                  <span className="font-medium">Email:</span>
+                  <span className="font-mono bg-blue-100 px-2 py-1 rounded">aaadmin@sro-au.ru</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Пароль:</span>
+                  <span className="font-mono bg-blue-100 px-2 py-1 rounded">Admin123!</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
@@ -159,16 +203,25 @@ export default function LoginPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    Email адрес
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                      Email адрес
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, email: 'aaadmin@sro-au.ru' }))}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Заполнить
+                    </button>
+                  </div>
                   <input
                     id="email"
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="admin@example.com"
+                    placeholder="aaadmin@sro-au.ru"
                     className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                       errors.email 
                         ? 'border-red-300 bg-red-50' 
@@ -182,9 +235,18 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                    Пароль
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                      Пароль
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, password: 'Admin123!' }))}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Заполнить
+                    </button>
+                  </div>
                   <div className="relative">
                     <input
                       id="password"
@@ -218,23 +280,33 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Вход...
-                  </div>
-                ) : (
-                  'Войти'
-                )}
-              </button>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ email: 'aaadmin@sro-au.ru', password: 'Admin123!' })}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  Заполнить все поля
+                </button>
+                
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Вход...
+                    </div>
+                  ) : (
+                    'Войти'
+                  )}
+                </button>
+              </div>
             </form>
 
             <div className="mt-6 pt-6 border-t border-gray-200">

@@ -17,6 +17,7 @@ import { CreatePageDto } from './dto/create-page.dto';
 import { UpdatePageDto } from './dto/update-page.dto';
 import { PageQueryDto } from './dto/page-query.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
+import { ResponseUtil } from '@/common/utils/response.util';
 
 @Controller('pages')
 export class PagesController {
@@ -25,58 +26,67 @@ export class PagesController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createPageDto: CreatePageDto, @Request() req) {
-    return this.pagesService.create(createPageDto, req.user.userId);
+  async create(@Body() createPageDto: CreatePageDto, @Request() req) {
+    const page = await this.pagesService.create(createPageDto, req.user.id);
+    return ResponseUtil.created(page, 'Страница успешно создана');
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  findAll(@Query() query: PageQueryDto) {
-    return this.pagesService.findAll(query);
+  async findAll(@Query() query: PageQueryDto) {
+    const result = await this.pagesService.findAll(query);
+    return ResponseUtil.paginated(result.data, result.pagination, 'Страницы успешно получены');
   }
 
   @Get('statistics')
   @UseGuards(JwtAuthGuard)
-  getStatistics() {
-    return this.pagesService.getStatistics();
+  async getStatistics() {
+    const statistics = await this.pagesService.getStatistics();
+    return ResponseUtil.success(statistics, 'Статистика страниц получена');
   }
 
   @Get('templates')
   @UseGuards(JwtAuthGuard)
-  getTemplates() {
-    return this.pagesService.getTemplates();
+  async getTemplates() {
+    const templates = await this.pagesService.getTemplates();
+    return ResponseUtil.success(templates, 'Шаблоны страниц получены');
   }
 
   @Get('slugs')
-  getSlugs() {
-    return this.pagesService.getSlugs();
+  async getSlugs() {
+    const slugs = await this.pagesService.getSlugs();
+    return ResponseUtil.success(slugs, 'Слаги страниц получены');
   }
 
   @Get('slug/:slug')
-  findBySlug(@Param('slug') slug: string) {
-    return this.pagesService.findBySlug(slug);
+  async findBySlug(@Param('slug') slug: string) {
+    const page = await this.pagesService.findBySlug(slug);
+    return ResponseUtil.success(page, 'Страница получена');
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.pagesService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const page = await this.pagesService.findOne(id);
+    return ResponseUtil.success(page, 'Страница получена');
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updatePageDto: UpdatePageDto,
     @Request() req,
   ) {
-    return this.pagesService.update(id, updatePageDto, req.user.userId);
+    const page = await this.pagesService.update(id, updatePageDto, req.user.id);
+    return ResponseUtil.updated(page, 'Страница успешно обновлена');
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string) {
-    return this.pagesService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.pagesService.remove(id);
+    return ResponseUtil.deleted('Страница успешно удалена');
   }
 }
