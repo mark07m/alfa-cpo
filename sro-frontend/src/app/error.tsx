@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import { ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import Button from '@/components/ui/Button';
 
@@ -37,12 +38,12 @@ export default function Error({
           </Button>
           
           <div className="text-center">
-            <a 
+            <Link 
               href="/"
               className="inline-flex items-center text-beige-600 hover:text-beige-700 transition-colors"
             >
               Вернуться на главную
-            </a>
+            </Link>
           </div>
         </div>
 
