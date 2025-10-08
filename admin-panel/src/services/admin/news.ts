@@ -48,7 +48,7 @@ class NewsServiceImpl implements NewsService {
       // Backend returns data in format { data: [...], pagination: {...} }
       // Transform API data to match frontend News interface
       const transformedNews = response.data.map((newsItem: any) => ({
-        id: newsItem._id,
+        id: newsItem._id || newsItem.id,
         title: newsItem.title,
         content: newsItem.content,
         excerpt: newsItem.excerpt,
@@ -97,7 +97,9 @@ class NewsServiceImpl implements NewsService {
         imageUrl: newsItem.imageUrl,
         seoTitle: newsItem.seoTitle,
         seoDescription: newsItem.seoDescription,
-        seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
       }))
 
       return {
@@ -141,7 +143,7 @@ class NewsServiceImpl implements NewsService {
       if (response.data) {
         const newsItem = response.data as any
         const transformedNews: News = {
-          id: newsItem._id,
+          id: newsItem._id || newsItem.id,
           title: newsItem.title,
           content: newsItem.content,
           excerpt: newsItem.excerpt,
@@ -190,7 +192,9 @@ class NewsServiceImpl implements NewsService {
           imageUrl: newsItem.imageUrl,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
-          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+          seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
         }
         
         return {
@@ -250,7 +254,7 @@ class NewsServiceImpl implements NewsService {
       if (response.data) {
         const newsItem = response.data as any
         const transformedNews: News = {
-          id: newsItem._id,
+          id: newsItem._id || newsItem.id,
           title: newsItem.title,
           content: newsItem.content,
           excerpt: newsItem.excerpt,
@@ -299,7 +303,9 @@ class NewsServiceImpl implements NewsService {
           imageUrl: newsItem.imageUrl,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
-          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+          seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
         }
         
         return {
@@ -348,7 +354,7 @@ class NewsServiceImpl implements NewsService {
       if (response.data) {
         const newsItem = response.data as any
         const transformedNews: News = {
-          id: newsItem._id,
+          id: newsItem._id || newsItem.id,
           title: newsItem.title,
           content: newsItem.content,
           excerpt: newsItem.excerpt,
@@ -397,7 +403,9 @@ class NewsServiceImpl implements NewsService {
           imageUrl: newsItem.imageUrl,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
-          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+          seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
         }
         
         return {
@@ -478,7 +486,7 @@ class NewsServiceImpl implements NewsService {
       // Backend returns data in format { data: [...] }
       // Transform API data to match frontend NewsCategory interface
       const transformedCategories = response.data.map((category: any) => ({
-        id: category._id,
+        id: category._id || category.id,
         name: category.name,
         slug: category.slug,
         color: category.color || '#6B7280',
@@ -534,7 +542,7 @@ class NewsServiceImpl implements NewsService {
       if (response.data) {
         const category = response.data as any
         const transformedCategory: NewsCategory = {
-          id: category._id,
+          id: category._id || category.id,
           name: category.name,
           slug: category.slug,
           color: category.color || '#6B7280',
@@ -582,7 +590,7 @@ class NewsServiceImpl implements NewsService {
       if (response.data) {
         const category = response.data as any
         const transformedCategory: NewsCategory = {
-          id: category._id,
+          id: category._id || category.id,
           name: category.name,
           slug: category.slug,
           color: category.color || '#6B7280',
@@ -638,7 +646,7 @@ class NewsServiceImpl implements NewsService {
       // Transform response data to match frontend News interface
       if (response.data) {
         const transformedNews = response.data.map((newsItem: any) => ({
-          id: newsItem._id,
+          id: newsItem._id || newsItem.id,
           title: newsItem.title,
           content: newsItem.content,
           excerpt: newsItem.excerpt,
@@ -687,7 +695,9 @@ class NewsServiceImpl implements NewsService {
           imageUrl: newsItem.imageUrl,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
-          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+          seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
         }))
         
         return {
@@ -718,7 +728,7 @@ class NewsServiceImpl implements NewsService {
       // Transform response data to match frontend News interface
       if (response.data) {
         const transformedNews = response.data.map((newsItem: any) => ({
-          id: newsItem._id,
+          id: newsItem._id || newsItem.id,
           title: newsItem.title,
           content: newsItem.content,
           excerpt: newsItem.excerpt,
@@ -767,7 +777,9 @@ class NewsServiceImpl implements NewsService {
           imageUrl: newsItem.imageUrl,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
-          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+          seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
         }))
         
         return {
@@ -798,7 +810,7 @@ class NewsServiceImpl implements NewsService {
       // Transform response data to match frontend News interface
       if (response.data) {
         const transformedNews = response.data.map((newsItem: any) => ({
-          id: newsItem._id,
+          id: newsItem._id || newsItem.id,
           title: newsItem.title,
           content: newsItem.content,
           excerpt: newsItem.excerpt,
@@ -847,7 +859,9 @@ class NewsServiceImpl implements NewsService {
           imageUrl: newsItem.imageUrl,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
-          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+          seoKeywords: Array.isArray(newsItem.seoKeywords) 
+          ? newsItem.seoKeywords.join(', ') 
+          : newsItem.seoKeywords || ''
         }))
         
         return {

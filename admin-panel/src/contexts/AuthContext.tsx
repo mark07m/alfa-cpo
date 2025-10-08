@@ -262,8 +262,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           createdAt: apiUser.createdAt,
           updatedAt: apiUser.updatedAt
         }
-        // Сохраняем пользователя в localStorage
+        // Сохраняем пользователя и токены в localStorage
         localStorage.setItem('admin_user', JSON.stringify(normalizedUser))
+        localStorage.setItem('admin_token', response.data.token)
+        localStorage.setItem('admin_refresh_token', response.data.refreshToken)
         setAuthState({
           user: normalizedUser,
           token: response.data.token,

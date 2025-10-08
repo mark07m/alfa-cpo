@@ -424,7 +424,7 @@ export const mockNews: News[] = [
     createdAt: '2024-01-15T09:00:00Z',
     updatedAt: '2024-01-15T09:00:00Z',
     author: mockUsers[0],
-    imageUrl: '/images/news-1.jpg',
+    imageUrl: null,
     seoTitle: 'Новые требования к арбитражным управляющим 2024',
     seoDescription: 'Обзор новых требований к арбитражным управляющим с 1 января 2024 года',
     seoKeywords: 'арбитражные управляющие, требования, 2024, СРО'
@@ -440,7 +440,7 @@ export const mockNews: News[] = [
     createdAt: '2024-01-20T13:00:00Z',
     updatedAt: '2024-01-20T13:00:00Z',
     author: mockUsers[0],
-    imageUrl: '/images/news-2.jpg'
+    imageUrl: null
   },
   {
     id: '3',

@@ -84,7 +84,7 @@ export class NewsController {
 
   @Post('categories')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.NEWS_CREATE)
   @HttpCode(HttpStatus.CREATED)
   async createNewsCategory(@Body() createCategoryDto: CreateNewsCategoryDto) {
@@ -94,7 +94,7 @@ export class NewsController {
 
   @Put('categories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.NEWS_UPDATE)
   async updateNewsCategory(@Param('id') id: string, @Body() updateCategoryDto: UpdateNewsCategoryDto) {
     const category = await this.newsService.updateNewsCategory(id, updateCategoryDto);
@@ -103,7 +103,7 @@ export class NewsController {
 
   @Delete('categories/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.NEWS_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteNewsCategory(@Param('id') id: string) {
@@ -119,7 +119,7 @@ export class NewsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.NEWS_UPDATE)
   async update(@Param('id') id: string, @Body() updateNewsDto: UpdateNewsDto, @Request() req) {
     const news = await this.newsService.update(id, updateNewsDto, req.user.id);
@@ -128,7 +128,7 @@ export class NewsController {
 
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
   @RequirePermissions(Permission.NEWS_UPDATE)
   async updateStatus(@Param('id') id: string, @Body() body: { status: string }, @Request() req) {
     const news = await this.newsService.updateStatus(id, body.status, req.user.id);
