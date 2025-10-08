@@ -13,12 +13,17 @@ import {
   HttpStatus,
   Res,
   StreamableFile,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentQueryDto } from './dto/document-query.dto';
+import { UploadDocumentDto } from './dto/upload-document.dto';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
@@ -27,6 +32,38 @@ import { UserRole, Permission } from '@/common/types';
 import { ResponseUtil } from '@/common/utils/response.util';
 import * as fs from 'fs';
 import * as path from 'path';
+import { memoryStorage } from 'multer';
+import { extname } from 'path';
+import { randomUUID } from 'crypto';
+
+// Настройка Multer для загрузки документов
+const multerConfig = {
+  storage: memoryStorage(),
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain',
+      'text/csv',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new BadRequestException('Неподдерживаемый тип файла'), false);
+    }
+  },
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB
+  },
+};
 
 @Controller('documents')
 export class DocumentsController {
@@ -40,6 +77,36 @@ export class DocumentsController {
   async create(@Body() createDocumentDto: CreateDocumentDto, @Request() req) {
     const document = await this.documentsService.create(createDocumentDto, req.user.id);
     return ResponseUtil.created(document, 'Документ успешно создан');
+  }
+
+  @Post('upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @RequirePermissions(Permission.DOCUMENTS_CREATE)
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @HttpCode(HttpStatus.CREATED)
+  async uploadDocument(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() uploadDocumentDto: UploadDocumentDto,
+    @Request() req: any,
+  ) {
+    if (!file) {
+      throw new BadRequestException('Файл не предоставлен');
+    }
+
+    // Обрабатываем валидацию tags и isPublic
+    if (uploadDocumentDto.tags && typeof uploadDocumentDto.tags === 'string') {
+      const tagsString = uploadDocumentDto.tags as any;
+      (uploadDocumentDto as any).tags = tagsString.split(',').map(tag => tag.trim());
+    }
+    
+    if (uploadDocumentDto.isPublic && typeof uploadDocumentDto.isPublic === 'string') {
+      const isPublicString = uploadDocumentDto.isPublic as any;
+      (uploadDocumentDto as any).isPublic = isPublicString === 'true';
+    }
+
+    const document = await this.documentsService.uploadDocument(file, uploadDocumentDto, req.user.id);
+    return ResponseUtil.created(document, 'Документ успешно загружен');
   }
 
   @Get()
@@ -107,6 +174,35 @@ export class DocumentsController {
     fileStream.pipe(res);
   }
 
+  @Get(':id/preview')
+  async previewDocument(@Param('id') id: string, @Res() res: Response) {
+    const document = await this.documentsService.findOne(id);
+    
+    if (!document.isPublic) {
+      return res.status(HttpStatus.FORBIDDEN).json({
+        message: 'Документ недоступен для просмотра'
+      });
+    }
+
+    // Проверяем существование файла
+    const filePath = path.join(process.cwd(), 'uploads', 'documents', document.fileName);
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(HttpStatus.NOT_FOUND).json({
+        message: 'Файл не найден на сервере'
+      });
+    }
+
+    // Устанавливаем заголовки для просмотра
+    res.setHeader('Content-Type', document.mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${document.originalName}"`);
+    res.setHeader('Content-Length', document.fileSize);
+
+    // Создаем поток для чтения файла
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
@@ -124,5 +220,15 @@ export class DocumentsController {
   async remove(@Param('id') id: string) {
     await this.documentsService.remove(id);
     return ResponseUtil.deleted('Документ успешно удален');
+  }
+
+  @Delete('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @RequirePermissions(Permission.DOCUMENTS_DELETE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async bulkRemove(@Body() body: { ids: string[] }) {
+    await this.documentsService.bulkRemove(body.ids);
+    return ResponseUtil.deleted('Документы успешно удалены');
   }
 }

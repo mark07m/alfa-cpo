@@ -8,8 +8,8 @@ class ApiService {
   private useMockData: boolean
 
   constructor() {
-    // Используем frontend API routes вместо прямого обращения к backend
-    this.baseURL = process.env.NEXT_PUBLIC_FRONTEND_API_URL || '/api'
+    // Используем backend API напрямую
+    this.baseURL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001/api'
     this.useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
     
     // В моковом режиме не создаем axios instance

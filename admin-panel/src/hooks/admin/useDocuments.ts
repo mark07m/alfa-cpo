@@ -36,6 +36,7 @@ interface UseDocumentsReturn {
   bulkDeleteDocuments: (ids: string[]) => Promise<{ success: boolean; error?: string }>
   uploadDocument: (uploadData: DocumentUpload) => Promise<{ success: boolean; data?: Document; error?: string }>
   downloadDocument: (id: string) => Promise<void>
+  previewDocument: (id: string) => Promise<string>
   
   // Методы для работы с категориями документов
   fetchDocumentCategories: () => Promise<void>
@@ -271,6 +272,17 @@ export function useDocuments(): UseDocumentsReturn {
     }
   }, [documents])
 
+  const previewDocument = useCallback(async (id: string): Promise<string> => {
+    try {
+      const previewUrl = await documentsService.previewDocument(id)
+      return previewUrl
+    } catch (err) {
+      console.error('Error previewing document:', err)
+      setError('Ошибка при предварительном просмотре документа')
+      throw err
+    }
+  }, [])
+
   const fetchDocumentCategories = useCallback(async () => {
     try {
       const response = await documentsService.getDocumentCategories()
@@ -473,6 +485,7 @@ export function useDocuments(): UseDocumentsReturn {
     bulkDeleteDocuments,
     uploadDocument,
     downloadDocument,
+    previewDocument,
     
     // Методы для работы с категориями документов
     fetchDocumentCategories,

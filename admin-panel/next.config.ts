@@ -13,6 +13,22 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  
+  // Настройки для оптимизации изображений
+  images: {
+    // Отключаем оптимизацию изображений в режиме разработки для избежания ошибок
+    unoptimized: process.env.NODE_ENV === 'development',
+    // Разрешенные домены для внешних изображений
+    domains: [],
+    // Разрешенные форматы изображений
+    formats: ['image/webp', 'image/avif'],
+    // Настройки для статических изображений
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Разрешенные типы файлов
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
 };
 
 export default nextConfig;

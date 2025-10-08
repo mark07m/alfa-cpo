@@ -51,7 +51,7 @@ export default function EditNewsPage() {
         createdAt: '2024-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z'
       },
-      imageUrl: '/images/news-1.jpg',
+      imageUrl: '/images/news-1.svg',
       seoTitle: 'Новые требования к арбитражным управляющим 2024',
       seoDescription: 'Обзор новых требований к арбитражным управляющим с 1 января 2024 года',
       seoKeywords: 'арбитражные управляющие, требования, 2024, СРО'

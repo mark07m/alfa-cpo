@@ -199,13 +199,15 @@ export function DocumentsList({
 
         {/* Список документов */}
         <div className="space-y-4">
-          {documents.map((document) => {
+          {documents.map((document, index) => {
             const isSelected = selectedDocuments.some(selected => selected.id === document.id)
             const isDeleting = deletingId === document.id
+            // Ensure we have a unique key - use id if available, otherwise use index
+            const uniqueKey = document.id || `document-${index}`
 
             return (
               <div
-                key={document.id}
+                key={uniqueKey}
                 className={`border rounded-lg p-4 transition-colors ${
                   isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                 } ${isDeleting ? 'opacity-50' : ''}`}
@@ -285,7 +287,7 @@ export function DocumentsList({
                           <div className="mt-2 flex flex-wrap items-center gap-2">
                             {document.tags?.slice(0, 3).map((tag, index) => (
                               <span
-                                key={index}
+                                key={`${uniqueKey}-tag-${index}-${tag}`}
                                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
                               >
                                 <TagIcon className="h-3 w-3 mr-1" />

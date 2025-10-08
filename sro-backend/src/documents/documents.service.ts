@@ -5,6 +5,10 @@ import { DocumentModel, DocumentDocument } from '@/database/schemas/document.sch
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentQueryDto } from './dto/document-query.dto';
+import { UploadDocumentDto } from './dto/upload-document.dto';
+import * as fs from 'fs';
+import * as path from 'path';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class DocumentsService {
@@ -21,6 +25,56 @@ export class DocumentsService {
     });
 
     return document.save();
+  }
+
+  async uploadDocument(
+    file: Express.Multer.File,
+    uploadDocumentDto: UploadDocumentDto,
+    userId: string,
+  ): Promise<DocumentModel> {
+    try {
+      // Создаем уникальное имя файла
+      const fileExtension = path.extname(file.originalname);
+      const fileName = `${randomUUID()}${fileExtension}`;
+      
+      // Создаем директории
+      const uploadDir = path.join(process.cwd(), 'uploads', 'documents');
+      await fs.promises.mkdir(uploadDir, { recursive: true });
+
+      const filePath = path.join(uploadDir, fileName);
+      const fileUrl = `/uploads/documents/${fileName}`;
+
+      // Сохраняем файл
+      await fs.promises.writeFile(filePath, file.buffer);
+
+      // Определяем тип файла
+      const fileType = fileExtension.substring(1).toLowerCase();
+
+      // Создаем документ
+      const document = new this.documentModel({
+        title: uploadDocumentDto.title,
+        description: uploadDocumentDto.description,
+        category: uploadDocumentDto.category,
+        fileUrl,
+        fileName,
+        originalName: file.originalname,
+        fileSize: file.size,
+        fileType,
+        mimeType: file.mimetype,
+        version: uploadDocumentDto.version || '1.0',
+        isPublic: uploadDocumentDto.isPublic || false,
+        tags: uploadDocumentDto.tags || [],
+        uploadedAt: new Date(),
+        downloadCount: 0,
+        createdBy: new Types.ObjectId(userId),
+        updatedBy: new Types.ObjectId(userId),
+      });
+
+      return document.save();
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      throw new BadRequestException('Ошибка при загрузке документа');
+    }
   }
 
   async findAll(query: DocumentQueryDto) {
@@ -140,6 +194,19 @@ export class DocumentsService {
     const result = await this.documentModel.findByIdAndDelete(id).exec();
     if (!result) {
       throw new NotFoundException('Документ не найден');
+    }
+  }
+
+  async bulkRemove(ids: string[]): Promise<void> {
+    // Валидируем все ID
+    const validIds = ids.filter(id => Types.ObjectId.isValid(id));
+    if (validIds.length === 0) {
+      throw new BadRequestException('Неверные ID документов');
+    }
+
+    const result = await this.documentModel.deleteMany({ _id: { $in: validIds } }).exec();
+    if (result.deletedCount === 0) {
+      throw new NotFoundException('Документы не найдены');
     }
   }
 

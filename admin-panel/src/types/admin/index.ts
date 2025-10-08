@@ -229,6 +229,13 @@ export interface DocumentCategory {
   updatedAt: string;
 }
 
+// Формат категорий, возвращаемый backend API
+export interface ApiDocumentCategory {
+  value: string;
+  label: string;
+  count: number;
+}
+
 export interface DocumentMetadata {
   author?: string;
   publisher?: string;
@@ -238,9 +245,13 @@ export interface DocumentMetadata {
 
 export interface DocumentFilters {
   search?: string;
-  category?: string;
-  fileType?: string;
+  category?: 'regulatory' | 'rules' | 'reports' | 'compensation-fund' | 'labor-activity' | 'accreditation' | 'other';
+  tag?: string; // Backend поддерживает только один тег
   isPublic?: boolean;
+  sortBy?: 'title' | 'uploadedAt' | 'downloadCount' | 'fileSize';
+  sortOrder?: 'asc' | 'desc';
+  // Дополнительные фильтры для UI (не поддерживаются backend)
+  fileType?: string;
   dateFrom?: string;
   dateTo?: string;
   tags?: string[];
@@ -253,9 +264,10 @@ export interface DocumentUpload {
   file: File;
   title: string;
   description?: string;
-  category: string;
+  category: 'regulatory' | 'rules' | 'reports' | 'compensation-fund' | 'labor-activity' | 'accreditation' | 'other';
   tags?: string[];
   isPublic?: boolean;
+  version?: string;
   metadata?: DocumentMetadata;
 }
 
