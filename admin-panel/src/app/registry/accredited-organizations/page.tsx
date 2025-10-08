@@ -124,28 +124,27 @@ export default function AccreditedOrganizationsPage() {
   }
 
   return (
-      <div className="space-y-6">
-        {/* Описание и действия */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-gray-500">
-              Управление реестром аккредитованных организаций
-            </p>
-          </div>
-          <div className="mt-4 sm:mt-0">
-            <div className="flex items-center space-x-4 text-sm text-gray-500">
-              <div className="flex items-center">
-                <BuildingOfficeIcon className="h-4 w-4 mr-1" />
-                <span>Всего: {pagination.total}</span>
-              </div>
-              {selectedIds.length > 0 && (
-                <div className="flex items-center text-blue-600">
-                  <span>Выбрано: {selectedIds.length}</span>
-                </div>
-              )}
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Аккредитованные организации</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Управление реестром аккредитованных организаций
+        </p>
+      </div>
+
+      {/* Статистика */}
+      <div className="flex items-center space-x-4 text-sm text-gray-500">
+        <div className="flex items-center">
+          <BuildingOfficeIcon className="h-4 w-4 mr-1" />
+          <span>Всего: {pagination.total}</span>
         </div>
+        {selectedIds.length > 0 && (
+          <div className="flex items-center text-blue-600">
+            <span>Выбрано: {selectedIds.length}</span>
+          </div>
+        )}
+      </div>
 
         {/* Фильтры */}
         <AccreditedOrganizationsFilters

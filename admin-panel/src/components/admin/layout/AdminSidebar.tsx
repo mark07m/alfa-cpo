@@ -18,6 +18,7 @@ import {
   ChartBarIcon,
   DocumentDuplicateIcon,
   BuildingOffice2Icon,
+  BanknotesIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline'
 
@@ -62,6 +63,7 @@ const navigation: NavigationItem[] = [
     children: [
       { name: 'Арбитражные управляющие', href: '/registry/arbitrators', icon: UserGroupIcon },
       { name: 'Аккредитованные организации', href: '/registry/accredited-organizations', icon: BuildingOffice2Icon },
+      { name: 'Компенсационный фонд', href: '/registry/compensation-fund', icon: BanknotesIcon },
       { name: 'Статистика', href: '/registry/statistics', icon: ChartBarIcon }
     ]
   },

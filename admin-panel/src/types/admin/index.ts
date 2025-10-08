@@ -738,3 +738,66 @@ export interface AccreditedOrganizationFormData {
     email: string;
   }[];
 }
+
+// Типы для компенсационного фонда
+export interface CompensationFund {
+  id: string;
+  amount: number;
+  currency: string;
+  lastUpdated: string;
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    bik: string;
+    correspondentAccount: string;
+    inn: string;
+    kpp: string;
+  };
+  documents?: string[];
+  history: CompensationFundHistory[];
+  createdBy: string;
+  updatedBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompensationFundHistory {
+  date: string;
+  operation: string;
+  amount: number;
+  description: string;
+  documentUrl?: string;
+}
+
+export interface CompensationFundStatistics {
+  totalAmount: number;
+  currency: string;
+  monthlyContributions: number;
+  monthlyExpenses: number;
+  netChange: number;
+  contributionCount: number;
+  expenseCount: number;
+  lastOperationDate: string;
+  averageMonthlyContribution: number;
+  averageMonthlyExpense: number;
+}
+
+export interface CompensationFundFormData {
+  amount: number;
+  currency: string;
+  bankDetails: {
+    bankName: string;
+    accountNumber: string;
+    bik: string;
+    correspondentAccount: string;
+    inn: string;
+    kpp: string;
+  };
+}
+
+export interface CompensationFundHistoryFormData {
+  operation: string;
+  amount: number;
+  description: string;
+  documentUrl?: string;
+}

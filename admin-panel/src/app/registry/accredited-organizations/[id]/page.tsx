@@ -1,7 +1,6 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { useAccreditedOrganization } from '@/hooks/admin/useAccreditedOrganizations';
 import { Button } from '@/components/admin/ui/Button';
 import { 
@@ -68,81 +67,58 @@ export default function AccreditedOrganizationPage() {
 
   if (loading) {
     return (
-      <AdminLayout
-        title="Загрузка..."
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр', href: '/registry' },
-          { label: 'Аккредитованные организации', href: '/registry/accredited-organizations' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-500">Загрузка организации...</p>
-        </div>
-      </AdminLayout>
+      <div className="text-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-2 text-sm text-gray-500">Загрузка организации...</p>
+      </div>
     );
   }
 
   if (error || !organization) {
     return (
-      <AdminLayout
-        title="Ошибка"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр', href: '/registry' },
-          { label: 'Аккредитованные организации', href: '/registry/accredited-organizations' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
-          <p className="mt-1 text-sm text-gray-500">{error || 'Организация не найдена'}</p>
-          <div className="mt-6">
-            <Button onClick={() => router.push('/registry/accredited-organizations')}>
-              Вернуться к списку
-            </Button>
-          </div>
+      <div className="text-center py-12">
+        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
+        <p className="mt-1 text-sm text-gray-500">{error || 'Организация не найдена'}</p>
+        <div className="mt-6">
+          <Button onClick={() => router.push('/registry/accredited-organizations')}>
+            Вернуться к списку
+          </Button>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout
-      title={organization.name}
-      breadcrumbs={[
-        { label: 'Дашборд', href: '/' },
-        { label: 'Реестр', href: '/registry' },
-        { label: 'Аккредитованные организации', href: '/registry/accredited-organizations' }
-      ]}
-    >
-      <div className="space-y-6">
-        {/* Действия */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/registry/accredited-organizations')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              <span>Назад</span>
-            </Button>
-            <div>
-              <p className="text-sm text-gray-500">
-                Аккредитованная организация • {organization.accreditationNumber}
-              </p>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">{organization.name}</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Аккредитованная организация • {organization.accreditationNumber}
+        </p>
+      </div>
+
+      {/* Действия */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
           <Button
-            onClick={() => router.push(`/registry/accredited-organizations/${organization.id}/edit`)}
+            variant="outline"
+            onClick={() => router.push('/registry/accredited-organizations')}
             className="flex items-center space-x-2"
           >
-            <PencilIcon className="h-4 w-4" />
-            <span>Редактировать</span>
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>Назад</span>
           </Button>
         </div>
+        <Button
+          onClick={() => router.push(`/registry/accredited-organizations/${organization.id}/edit`)}
+          className="flex items-center space-x-2"
+        >
+          <PencilIcon className="h-4 w-4" />
+          <span>Редактировать</span>
+        </Button>
+      </div>
 
         {/* Статус и предупреждения */}
         <div className="flex items-center space-x-4">
@@ -348,7 +324,6 @@ export default function AccreditedOrganizationPage() {
             </div>
           </div>
         )}
-      </div>
-    </AdminLayout>
+    </div>
   );
 }

@@ -116,9 +116,10 @@ export default function RegistryStatisticsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Описание */}
+      {/* Заголовок страницы */}
       <div>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900">Статистика реестра</h1>
+        <p className="text-sm text-gray-500 mt-1">
           Аналитика и отчеты по реестру арбитражных управляющих
         </p>
       </div>

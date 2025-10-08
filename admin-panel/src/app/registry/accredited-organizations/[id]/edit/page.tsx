@@ -4,7 +4,6 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAccreditedOrganizations, useAccreditedOrganization } from '@/hooks/admin/useAccreditedOrganizations';
 import { AccreditedOrganizationForm } from '@/components/admin/accreditedOrganizations/AccreditedOrganizationForm';
 import { AccreditedOrganizationFormData } from '@/types/admin';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export default function EditAccreditedOrganizationPage() {
@@ -28,67 +27,42 @@ export default function EditAccreditedOrganizationPage() {
 
   if (fetchLoading) {
     return (
-      <AdminLayout
-        title="Загрузка..."
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр', href: '/registry' },
-          { label: 'Аккредитованные организации', href: '/registry/accredited-organizations' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-500">Загрузка организации...</p>
-        </div>
-      </AdminLayout>
+      <div className="text-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-2 text-sm text-gray-500">Загрузка организации...</p>
+      </div>
     );
   }
 
   if (error || !organization) {
     return (
-      <AdminLayout
-        title="Ошибка"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр', href: '/registry' },
-          { label: 'Аккредитованные организации', href: '/registry/accredited-organizations' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
-          <p className="mt-1 text-sm text-gray-500">{error || 'Организация не найдена'}</p>
-        </div>
-      </AdminLayout>
+      <div className="text-center py-12">
+        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
+        <p className="mt-1 text-sm text-gray-500">{error || 'Организация не найдена'}</p>
+      </div>
     );
   }
 
   return (
-    <AdminLayout
-      title="Редактирование аккредитованной организации"
-      breadcrumbs={[
-        { label: 'Дашборд', href: '/' },
-        { label: 'Реестр', href: '/registry' },
-        { label: 'Аккредитованные организации', href: '/registry/accredited-organizations' }
-      ]}
-    >
-      <div className="space-y-6">
-        <div>
-          <p className="text-sm text-gray-500">
-            Редактирование данных аккредитованной организации: {organization.name}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <AccreditedOrganizationForm
-            initialData={organization}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            loading={updateLoading}
-            isEdit={true}
-          />
-        </div>
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Редактирование аккредитованной организации</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Редактирование данных аккредитованной организации: {organization.name}
+        </p>
       </div>
-    </AdminLayout>
+
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <AccreditedOrganizationForm
+          initialData={organization}
+          onSubmit={handleSubmit}
+          onCancel={handleCancel}
+          loading={updateLoading}
+          isEdit={true}
+        />
+      </div>
+    </div>
   );
 }

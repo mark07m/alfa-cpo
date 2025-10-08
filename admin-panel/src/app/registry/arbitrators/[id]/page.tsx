@@ -3,7 +3,6 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useArbitrator } from '@/hooks/admin/useArbitrators';
 import { Button } from '@/components/admin/ui/Button';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { 
   PencilIcon, 
   ArrowLeftIcon,
@@ -53,85 +52,65 @@ export default function ArbitratorDetailsPage() {
 
   if (loading) {
     return (
-      <AdminLayout
-        title="Загрузка..."
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр', href: '/registry' },
-          { label: 'Арбитражные управляющие', href: '/registry/arbitrators' },
-          { label: 'Просмотр' }
-        ]}
-      >
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/registry/arbitrators')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              <span>Назад</span>
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Загрузка...</h1>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            </div>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/registry/arbitrators')}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>Назад</span>
+          </Button>
+          <h1 className="text-2xl font-bold text-gray-900">Загрузка...</h1>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           </div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   if (error || !arbitrator) {
     return (
-      <AdminLayout
-        title="Ошибка"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр', href: '/registry' },
-          { label: 'Арбитражные управляющие', href: '/registry/arbitrators' },
-          { label: 'Просмотр' }
-        ]}
-      >
-        <div className="space-y-6">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              onClick={() => router.push('/registry/arbitrators')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              <span>Назад</span>
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Ошибка</h1>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-            <p className="text-red-600 mb-4">
-              {error || 'Арбитражный управляющий не найден'}
-            </p>
-            <Button onClick={() => router.push('/registry/arbitrators')}>
-              Вернуться к списку
-            </Button>
-          </div>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/registry/arbitrators')}
+            className="flex items-center space-x-2"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span>Назад</span>
+          </Button>
+          <h1 className="text-2xl font-bold text-gray-900">Ошибка</h1>
         </div>
-      </AdminLayout>
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <p className="text-red-600 mb-4">
+            {error || 'Арбитражный управляющий не найден'}
+          </p>
+          <Button onClick={() => router.push('/registry/arbitrators')}>
+            Вернуться к списку
+          </Button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <AdminLayout
-      title={arbitrator.fullName}
-      breadcrumbs={[
-        { label: 'Дашборд', href: '/' },
-        { label: 'Реестр', href: '/registry' },
-        { label: 'Арбитражные управляющие', href: '/registry/arbitrators' }
-      ]}
-    >
-      <div className="space-y-6">
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">{arbitrator.fullName}</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Арбитражный управляющий • {arbitrator.registryNumber}
+        </p>
+      </div>
+
       {/* Действия */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -143,11 +122,6 @@ export default function ArbitratorDetailsPage() {
             <ArrowLeftIcon className="h-4 w-4" />
             <span>Назад</span>
           </Button>
-          <div>
-            <p className="text-sm text-gray-500">
-              Арбитражный управляющий • {arbitrator.registryNumber}
-            </p>
-          </div>
         </div>
         <Button
           onClick={() => router.push(`/registry/arbitrators/${arbitrator.id}/edit`)}
@@ -451,7 +425,6 @@ export default function ArbitratorDetailsPage() {
           </div>
         </div>
       </div>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }

@@ -2,27 +2,24 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useArbitrators } from '@/hooks/admin/useArbitrators';
+import { arbitratorsService } from '@/services/admin/arbitrators';
 import { ArbitratorFilters, Arbitrator } from '@/types/admin';
-import { PageWithTable } from '@/components/admin/layout/PageWithTable';
+import { PageWithTableSimple } from '@/components/admin/layout/PageWithTableSimple';
 import { Button } from '@/components/admin/ui/Button';
 import { Badge } from '@/components/admin/ui/Badge';
+import { ArbitratorsImportExport } from '@/components/admin/arbitrators/ArbitratorsImportExport';
 import { 
   PlusIcon, 
-  DocumentArrowDownIcon, 
-  DocumentArrowUpIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { Modal } from '@/components/admin/ui/Modal';
-import { Alert } from '@/components/admin/ui/Alert';
 
 export default function ArbitratorsPage() {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [showImportModal, setShowImportModal] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   
@@ -87,6 +84,34 @@ export default function ArbitratorsPage() {
       console.error('Error exporting arbitrators:', error);
     }
   }, [exportArbitrators, filters]);
+
+  const handleExportCsv = useCallback(async () => {
+    try {
+      const blob = await arbitratorsService.exportArbitratorsCsv(filters);
+      
+      // Создаем ссылку для скачивания
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `arbitrators-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export CSV error:', error);
+    }
+  }, [filters]);
+
+  const handleImport = useCallback(async (file: File) => {
+    try {
+      const result = await importArbitrators(file);
+      return result;
+    } catch (error) {
+      console.error('Import error:', error);
+      throw error;
+    }
+  }, [importArbitrators]);
 
   const handleSearch = useCallback((value: string) => {
     setSearchValue(value);
@@ -303,8 +328,16 @@ export default function ArbitratorsPage() {
   );
 
   return (
-    <div>
-      <PageWithTable
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Арбитражные управляющие</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Управление реестром арбитражных управляющих
+        </p>
+      </div>
+
+      <PageWithTableSimple
         data={arbitrators}
         loading={loading}
         error={error}
@@ -325,26 +358,19 @@ export default function ArbitratorsPage() {
         filters={filtersComponent}
         showFilters={showFilters}
         onToggleFilters={() => setShowFilters(!showFilters)}
-        title="Арбитражные управляющие"
-        description="Управление реестром арбитражных управляющих"
         primaryAction={{
           label: 'Добавить управляющего',
           onClick: handleCreate,
           icon: <PlusIcon className="h-4 w-4" />
         }}
         secondaryActions={[
-          {
-            label: 'Экспорт',
-            onClick: handleExport,
-            icon: <DocumentArrowDownIcon className="h-4 w-4" />,
-            variant: 'outline'
-          },
-          {
-            label: 'Импорт',
-            onClick: () => setShowImportModal(true),
-            icon: <DocumentArrowUpIcon className="h-4 w-4" />,
-            variant: 'outline'
-          },
+          <ArbitratorsImportExport
+            key="import-export"
+            onImport={handleImport}
+            onExport={handleExport}
+            onExportCsv={handleExportCsv}
+            loading={loading}
+          />,
           ...(selectedIds.length > 0 ? [{
             label: `Удалить выбранные (${selectedIds.length})`,
             onClick: handleBulkDelete,
@@ -362,50 +388,6 @@ export default function ArbitratorsPage() {
         }}
         onRefresh={refetch}
       />
-
-      {/* Модальное окно импорта */}
-      <Modal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        title="Импорт арбитражных управляющих"
-        size="lg"
-      >
-        <div className="space-y-4">
-          <Alert variant="info">
-            Поддерживаются файлы в формате Excel (.xlsx) и CSV (.csv)
-          </Alert>
-          
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-            <DocumentArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-600">
-              Перетащите файл сюда или нажмите для выбора
-            </p>
-            <input
-              type="file"
-              accept=".xlsx,.csv"
-              className="mt-4"
-            />
-          </div>
-          
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowImportModal(false)}
-            >
-              Отмена
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                // TODO: Implement import logic
-                setShowImportModal(false);
-              }}
-            >
-              Импортировать
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

@@ -87,14 +87,10 @@ export const arbitratorsService = {
     try {
       const params = new URLSearchParams();
       
+      // Поддерживаемые фильтры в backend
       if (filters.search) params.append('search', filters.search);
       if (filters.status) params.append('status', filters.status);
       if (filters.region) params.append('region', filters.region);
-      if (filters.city) params.append('city', filters.city);
-      if (filters.inn) params.append('inn', filters.inn);
-      if (filters.registryNumber) params.append('registryNumber', filters.registryNumber);
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-      if (filters.dateTo) params.append('dateTo', filters.dateTo);
       if (filters.sortBy) params.append('sortBy', filters.sortBy);
       if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
       if (filters.page) params.append('page', filters.page.toString());
@@ -103,7 +99,17 @@ export const arbitratorsService = {
       console.log('Making API request to:', `/registry?${params.toString()}`);
       const response = await apiService.get(`/registry?${params.toString()}`);
       console.log('API service response:', response);
-      return response.data;
+      
+      // Преобразуем ответ в ожидаемый формат
+      return {
+        data: response.data || [],
+        pagination: response.pagination || {
+          page: 1,
+          limit: 10,
+          total: 0,
+          pages: 0
+        }
+      };
     } catch (error: any) {
       console.error('Error fetching arbitrators:', error);
       
@@ -148,25 +154,45 @@ export const arbitratorsService = {
 
   // Получить арбитражного управляющего по ID
   async getArbitrator(id: string): Promise<Arbitrator> {
-    const response = await apiService.get(`/registry/${id}`);
-    return response.data;
+    try {
+      const response = await apiService.get(`/registry/${id}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching arbitrator:', error);
+      throw error;
+    }
   },
 
   // Создать арбитражного управляющего
   async createArbitrator(data: ArbitratorFormData): Promise<Arbitrator> {
-    const response = await apiService.post('/registry', data);
-    return response.data;
+    try {
+      const response = await apiService.post('/registry', data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error creating arbitrator:', error);
+      throw error;
+    }
   },
 
   // Обновить арбитражного управляющего
   async updateArbitrator(id: string, data: Partial<ArbitratorFormData>): Promise<Arbitrator> {
-    const response = await apiService.patch(`/registry/${id}`, data);
-    return response.data;
+    try {
+      const response = await apiService.patch(`/registry/${id}`, data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error updating arbitrator:', error);
+      throw error;
+    }
   },
 
   // Удалить арбитражного управляющего
   async deleteArbitrator(id: string): Promise<void> {
-    await apiService.delete(`/registry/${id}`);
+    try {
+      await apiService.delete(`/registry/${id}`);
+    } catch (error: any) {
+      console.error('Error deleting arbitrator:', error);
+      throw error;
+    }
   },
 
   // Получить статистику по реестру
@@ -256,62 +282,115 @@ export const arbitratorsService = {
 
   // Импорт из Excel/CSV
   async importArbitrators(file: File): Promise<{ success: number; errors: string[] }> {
-    const formData = new FormData();
-    formData.append('file', file);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
 
-    const response = await apiService.post('/registry/import', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+      const response = await apiService.post('/registry/import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error importing arbitrators:', error);
+      throw error;
+    }
   },
 
   // Экспорт в Excel
   async exportArbitrators(filters: ArbitratorFilters = {}): Promise<Blob> {
-    const params = new URLSearchParams();
-    
-    if (filters.search) params.append('search', filters.search);
-    if (filters.status) params.append('status', filters.status);
-    if (filters.region) params.append('region', filters.region);
-    if (filters.city) params.append('city', filters.city);
-    if (filters.inn) params.append('inn', filters.inn);
-    if (filters.registryNumber) params.append('registryNumber', filters.registryNumber);
-    if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
-    if (filters.dateTo) params.append('dateTo', filters.dateTo);
-    if (filters.sortBy) params.append('sortBy', filters.sortBy);
-    if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+    try {
+      const params = new URLSearchParams();
+      
+      // Поддерживаемые фильтры в backend
+      if (filters.search) params.append('search', filters.search);
+      if (filters.status) params.append('status', filters.status);
+      if (filters.region) params.append('region', filters.region);
+      if (filters.sortBy) params.append('sortBy', filters.sortBy);
+      if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-    const response = await apiService.get(`/registry/export?${params.toString()}`, {
-      responseType: 'blob',
-    });
-    return response.data;
+      const response = await apiService.get(`/registry/export/excel?${params.toString()}`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error exporting arbitrators:', error);
+      throw error;
+    }
   },
 
-  // Получить историю изменений
-  async getArbitratorHistory(id: string): Promise<any[]> {
-    const response = await apiService.get(`/registry/${id}/history`);
-    return response.data;
+  // Экспорт в CSV
+  async exportArbitratorsCsv(filters: ArbitratorFilters = {}): Promise<Blob> {
+    try {
+      const params = new URLSearchParams();
+      
+      // Поддерживаемые фильтры в backend
+      if (filters.search) params.append('search', filters.search);
+      if (filters.status) params.append('status', filters.status);
+      if (filters.region) params.append('region', filters.region);
+      if (filters.sortBy) params.append('sortBy', filters.sortBy);
+      if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
+
+      const response = await apiService.get(`/registry/export/csv?${params.toString()}`, {
+        responseType: 'blob',
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Error exporting arbitrators to CSV:', error);
+      throw error;
+    }
   },
 
-  // Массовые операции
-  async bulkUpdateStatus(ids: string[], status: 'active' | 'excluded' | 'suspended'): Promise<void> {
-    await apiService.patch('/registry/bulk/status', { ids, status });
+  // Поиск по ИНН
+  async findByInn(inn: string): Promise<Arbitrator | null> {
+    try {
+      const response = await apiService.get(`/registry/inn/${inn}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      console.error('Error finding arbitrator by INN:', error);
+      throw error;
+    }
   },
 
-  async bulkDelete(ids: string[]): Promise<void> {
-    await apiService.delete('/registry/bulk', { data: { ids } });
+  // Поиск по номеру реестра
+  async findByRegistryNumber(registryNumber: string): Promise<Arbitrator | null> {
+    try {
+      const response = await apiService.get(`/registry/number/${registryNumber}`);
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
+      console.error('Error finding arbitrator by registry number:', error);
+      throw error;
+    }
   },
 
-  // Проверка уникальности ИНН
+  // Проверка уникальности ИНН (используем поиск по ИНН)
   async checkInnUnique(inn: string, excludeId?: string): Promise<boolean> {
-    const response = await apiService.get(`/registry/check/inn/${inn}${excludeId ? `?exclude=${excludeId}` : ''}`);
-    return response.data.unique;
+    try {
+      const arbitrator = await this.findByInn(inn);
+      if (!arbitrator) return true;
+      return excludeId ? arbitrator.id === excludeId : false;
+    } catch (error: any) {
+      console.error('Error checking INN uniqueness:', error);
+      return false;
+    }
   },
 
-  // Проверка уникальности номера в реестре
+  // Проверка уникальности номера в реестре (используем поиск по номеру)
   async checkRegistryNumberUnique(registryNumber: string, excludeId?: string): Promise<boolean> {
-    const response = await apiService.get(`/registry/check/registry-number/${registryNumber}${excludeId ? `?exclude=${excludeId}` : ''}`);
-    return response.data.unique;
+    try {
+      const arbitrator = await this.findByRegistryNumber(registryNumber);
+      if (!arbitrator) return true;
+      return excludeId ? arbitrator.id === excludeId : false;
+    } catch (error: any) {
+      console.error('Error checking registry number uniqueness:', error);
+      return false;
+    }
   },
 };

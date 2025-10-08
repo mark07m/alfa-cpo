@@ -90,41 +90,41 @@ export default function CompensationFundPage() {
   }
 
   return (
-      <div className="space-y-6">
-        {/* Заголовок и действия */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Компенсационный фонд</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Управление компенсационным фондом СРО
-            </p>
-          </div>
-          <div className="mt-4 sm:mt-0 flex space-x-3">
-            <Button
-              variant="outline"
-              onClick={handleExportHistory}
-              disabled={loading}
-            >
-              <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-              Экспорт истории
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleExportStatistics}
-              disabled={loading}
-            >
-              <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-              Экспорт статистики
-            </Button>
-            <Button
-              onClick={() => setShowEditForm(true)}
-              disabled={loading}
-            >
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Редактировать
-            </Button>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Компенсационный фонд</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Управление компенсационным фондом СРО
+        </p>
+      </div>
+
+      {/* Действия */}
+      <div className="flex flex-col sm:flex-row gap-3 justify-end">
+        <Button
+          variant="outline"
+          onClick={handleExportHistory}
+          disabled={loading}
+        >
+          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+          Экспорт истории
+        </Button>
+        <Button
+          variant="outline"
+          onClick={handleExportStatistics}
+          disabled={loading}
+        >
+          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+          Экспорт статистики
+        </Button>
+        <Button
+          onClick={() => setShowEditForm(true)}
+          disabled={loading}
+        >
+          <PencilIcon className="h-4 w-4 mr-2" />
+          Редактировать
+        </Button>
+      </div>
 
         {/* Навигация по вкладкам */}
         <div className="border-b border-gray-200">

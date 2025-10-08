@@ -25,6 +25,15 @@ export function formatDateTime(date: string | Date): string {
   })
 }
 
+export function formatCurrency(amount: number, currency: string = 'RUB'): string {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(amount)
+}
+
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
   

@@ -1,6 +1,5 @@
 'use client';
 
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { useAccreditedOrganizationStats } from '@/hooks/admin/useAccreditedOrganizations';
 import { StatCard } from '@/components/admin/ui/StatCard';
 import { 
@@ -20,54 +19,30 @@ export default function AccreditedOrganizationsStatisticsPage() {
 
   if (loading) {
     return (
-      <AdminLayout
-        title="Статистика аккредитованных организаций"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-500">Загрузка статистики...</p>
-        </div>
-      </AdminLayout>
+      <div className="text-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="mt-2 text-sm text-gray-500">Загрузка статистики...</p>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout
-        title="Статистика аккредитованных организаций"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
-          <p className="mt-1 text-sm text-gray-500">{error}</p>
-        </div>
-      </AdminLayout>
+      <div className="text-center py-12">
+        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
+        <p className="mt-1 text-sm text-gray-500">{error}</p>
+      </div>
     );
   }
 
   if (!stats) {
     return (
-      <AdminLayout
-        title="Статистика аккредитованных организаций"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Нет данных</h3>
-          <p className="mt-1 text-sm text-gray-500">Статистика недоступна</p>
-        </div>
-      </AdminLayout>
+      <div className="text-center py-12">
+        <ChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Нет данных</h3>
+        <p className="mt-1 text-sm text-gray-500">Статистика недоступна</p>
+      </div>
     );
   }
 
@@ -86,20 +61,14 @@ export default function AccreditedOrganizationsStatisticsPage() {
   ];
 
   return (
-    <AdminLayout
-      title="Статистика аккредитованных организаций"
-      breadcrumbs={[
-        { label: 'Дашборд', href: '/' },
-        { label: 'Реестр' }
-      ]}
-    >
-      <div className="space-y-6">
-        {/* Описание */}
-        <div>
-          <p className="text-sm text-gray-500">
-            Аналитика и отчеты по реестру аккредитованных организаций
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Заголовок страницы */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Статистика аккредитованных организаций</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Аналитика и отчеты по реестру аккредитованных организаций
+        </p>
+      </div>
 
         {/* Основная статистика */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -224,7 +193,6 @@ export default function AccreditedOrganizationsStatisticsPage() {
             </div>
           </div>
         </div>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }
