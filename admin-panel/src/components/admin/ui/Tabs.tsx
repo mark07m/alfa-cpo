@@ -84,6 +84,7 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
 
   return (
     <button
+      type="button"
       onClick={() => !disabled && setActiveTab(value)}
       disabled={disabled}
       className={cn(

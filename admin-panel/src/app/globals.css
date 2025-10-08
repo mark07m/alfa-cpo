@@ -98,6 +98,39 @@ body {
   @apply block w-full rounded-md border-neutral-300 shadow-sm focus:border-beige-500 focus:ring-beige-500 sm:text-sm;
 }
 
+/* Responsive table styles */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .table-responsive th,
+  .table-responsive td {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .table-responsive .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .table-responsive .action-buttons button {
+    padding: 0.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-responsive th,
+  .table-responsive td {
+    padding: 0.25rem 0.125rem;
+    font-size: 0.75rem;
+  }
+  
+  .table-responsive .truncate {
+    max-width: 100px;
+  }
+}
+
 /* Print styles */
 @media print {
   .no-print {

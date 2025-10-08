@@ -23,9 +23,6 @@ import { Select } from '@/components/admin/ui/Select';
 import { Checkbox } from '@/components/admin/ui/Checkbox';
 import { Badge } from '@/components/admin/ui/Badge';
 import { Table } from '@/components/admin/ui/Table';
-import { Modal } from '@/components/admin/ui/Modal';
-import { PageForm } from '@/components/admin/pages/PageForm';
-import { PagePreview } from '@/components/admin/pages/PagePreview';
 import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 
@@ -33,11 +30,6 @@ export default function PagesPage() {
   const router = useRouter();
   const [filters, setFilters] = useState<PageFilters>({});
   const [selectedPages, setSelectedPages] = useState<string[]>([]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [editingPage, setEditingPage] = useState<Page | null>(null);
-  const [previewPage, setPreviewPage] = useState<Page | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
   const {
@@ -85,18 +77,15 @@ export default function PagesPage() {
   };
 
   const handleCreatePage = () => {
-    setEditingPage(null);
-    setShowCreateModal(true);
+    router.push('/pages/create');
   };
 
   const handleEditPage = (page: Page) => {
-    setEditingPage(page);
-    setShowEditModal(true);
+    router.push(`/pages/${page.id}/edit`);
   };
 
   const handlePreviewPage = (page: Page) => {
-    setPreviewPage(page);
-    setShowPreviewModal(true);
+    router.push(`/pages/${page.id}/view`);
   };
 
   const handleDeletePage = async (id: string) => {
@@ -167,27 +156,29 @@ export default function PagesPage() {
           className="h-4 w-4 rounded border-neutral-300 text-beige-600 focus:ring-beige-500"
         />
       ),
-      width: 'w-12',
+      width: 'w-16',
     },
     {
       key: 'title' as const,
       title: 'Заголовок',
       sortable: true,
       render: (title: string, page: Page) => (
-        <div className="flex items-center">
-          {page.isHomePage && <HomeIcon className="h-4 w-4 text-amber-500 mr-2" title="Главная страница" />}
-          {page.showInMenu && <LinkIcon className="h-4 w-4 text-blue-500 mr-2" title="Отображается в меню" />}
-          <span className="font-medium">{title}</span>
+        <div className="flex items-center min-w-0">
+          {page.isHomePage && <HomeIcon className="h-4 w-4 text-amber-500 mr-2 flex-shrink-0" title="Главная страница" />}
+          {page.showInMenu && <LinkIcon className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" title="Отображается в меню" />}
+          <span className="font-medium truncate">{title}</span>
         </div>
       ),
+      width: 'w-1/4',
     },
     {
       key: 'slug' as const,
       title: 'URL (slug)',
       sortable: true,
       render: (slug: string) => (
-        <code className="text-sm bg-neutral-100 px-2 py-1 rounded">/{slug}</code>
+        <code className="text-sm bg-neutral-100 px-2 py-1 rounded truncate block">/{slug}</code>
       ),
+      width: 'w-1/6',
     },
     {
       key: 'template' as const,
@@ -198,6 +189,7 @@ export default function PagesPage() {
           {PageTemplate[template] || template}
         </Badge>
       ),
+      width: 'w-20',
     },
     {
       key: 'status' as const,
@@ -208,27 +200,30 @@ export default function PagesPage() {
           {getStatusLabel(status)}
         </Badge>
       ),
+      width: 'w-24',
     },
     {
       key: 'updatedAt' as const,
-      title: 'Последнее обновление',
+      title: 'Обновлено',
       sortable: true,
       render: (date: string) => (
         <span className="text-sm text-neutral-600">
           {new Date(date).toLocaleDateString('ru-RU')}
         </span>
       ),
+      width: 'w-20',
     },
     {
       key: 'actions' as const,
       title: 'Действия',
       render: (value: unknown, page: Page) => (
-        <div className="flex space-x-2">
+        <div className="flex space-x-1">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handlePreviewPage(page)}
             title="Предпросмотр"
+            className="p-1"
           >
             <EyeIcon className="h-4 w-4" />
           </Button>
@@ -237,6 +232,7 @@ export default function PagesPage() {
             size="sm"
             onClick={() => handleEditPage(page)}
             title="Редактировать"
+            className="p-1"
           >
             <PencilIcon className="h-4 w-4" />
           </Button>
@@ -245,12 +241,13 @@ export default function PagesPage() {
             size="sm"
             onClick={() => handleDeletePage(page.id)}
             title="Удалить"
+            className="p-1"
           >
             <TrashIcon className="h-4 w-4" />
           </Button>
         </div>
       ),
-      width: 'w-32',
+      width: 'w-28',
     },
   ];
 
@@ -415,47 +412,6 @@ export default function PagesPage() {
         emptyMessage="Нет страниц для отображения. Создайте первую страницу."
       />
 
-      {/* Modals */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title="Создать страницу"
-        size="xl"
-      >
-        <PageForm
-          page={null}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            fetchPages();
-          }}
-          onCancel={() => setShowCreateModal(false)}
-        />
-      </Modal>
-
-      <Modal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        title="Редактировать страницу"
-        size="xl"
-      >
-        <PageForm
-          page={editingPage}
-          onSuccess={() => {
-            setShowEditModal(false);
-            fetchPages();
-          }}
-          onCancel={() => setShowEditModal(false)}
-        />
-      </Modal>
-
-      <Modal
-        isOpen={showPreviewModal}
-        onClose={() => setShowPreviewModal(false)}
-        title={`Предпросмотр: ${previewPage?.title}`}
-        size="xl"
-      >
-        {previewPage && <PagePreview page={previewPage} />}
-      </Modal>
       </div>
     </AdminLayout>
   );

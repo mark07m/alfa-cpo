@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест интеграции страниц</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Тест интеграции модуля страниц</h1>
+    
+    <div class="test-section info">
+        <h3>Информация о тесте</h3>
+        <p>Этот тест проверяет интеграцию модуля страниц с реальным API backend.</p>
+        <p><strong>Backend URL:</strong> http://localhost:3001/api</p>
+        <p><strong>Admin Panel URL:</strong> http://localhost:3002</p>
+    </div>
+
+    <div class="test-section">
+        <h3>1. Проверка доступности API</h3>
+        <button onclick="testApiHealth()">Проверить API</button>
+        <div id="api-health-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. Авторизация</h3>
+        <button onclick="testLogin()">Войти в систему</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. Получение списка страниц</h3>
+        <button onclick="testGetPages()">Получить страницы</button>
+        <div id="get-pages-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>4. Создание новой страницы</h3>
+        <button onclick="testCreatePage()">Создать страницу</button>
+        <div id="create-page-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>5. Обновление страницы</h3>
+        <button onclick="testUpdatePage()">Обновить страницу</button>
+        <div id="update-page-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>6. Удаление страницы</h3>
+        <button onclick="testDeletePage()">Удалить страницу</button>
+        <div id="delete-page-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>7. Проверка админ панели</h3>
+        <button onclick="testAdminPanel()">Открыть админ панель</button>
+        <div id="admin-panel-result"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+        let createdPageId = null;
+
+        async function testApiHealth() {
+            const resultDiv = document.getElementById('api-health-result');
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="success">✅ API работает корректно<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ API недоступен<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка подключения к API: ${error.message}</div>`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            try {
+                const response = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'test-debug@test.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.data.token;
+                    resultDiv.innerHTML = `<div class="success">✅ Авторизация успешна<br><pre>${JSON.stringify(data.data.user, null, 2)}</pre></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Ошибка авторизации<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка авторизации: ${error.message}</div>`;
+            }
+        }
+
+        async function testGetPages() {
+            const resultDiv = document.getElementById('get-pages-result');
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Сначала выполните авторизацию</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3001/api/pages', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="success">✅ Страницы получены (${data.data.length} шт.)<br><pre>${JSON.stringify(data.pagination, null, 2)}</pre></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Ошибка получения страниц<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка получения страниц: ${error.message}</div>`;
+            }
+        }
+
+        async function testCreatePage() {
+            const resultDiv = document.getElementById('create-page-result');
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error">❌ Сначала выполните авторизацию</div>';
+                return;
+            }
+
+            try {
+                const pageData = {
+                    slug: 'test-page-' + Date.now(),
+                    title: 'Тестовая страница ' + new Date().toLocaleString(),
+                    content: '<p>Это тестовая страница для проверки интеграции API</p><h2>Заголовок</h2><p>Контент с <strong>форматированием</strong></p>',
+                    excerpt: 'Краткое описание тестовой страницы',
+                    status: 'draft',
+                    template: 'default',
+                    seoTitle: 'Тестовая страница - СРО АУ',
+                    seoDescription: 'Описание тестовой страницы',
+                    seoKeywords: ['тест', 'страница', 'сро', 'api']
+                };
+
+                const response = await fetch('http://localhost:3001/api/pages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(pageData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    createdPageId = data.data._id;
+                    resultDiv.innerHTML = `<div class="success">✅ Страница создана<br><pre>${JSON.stringify(data.data, null, 2)}</pre></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Ошибка создания страницы<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка создания страницы: ${error.message}</div>`;
+            }
+        }
+
+        async function testUpdatePage() {
+            const resultDiv = document.getElementById('update-page-result');
+            if (!authToken || !createdPageId) {
+                resultDiv.innerHTML = '<div class="error">❌ Сначала создайте страницу</div>';
+                return;
+            }
+
+            try {
+                const updateData = {
+                    status: 'published',
+                    content: '<p>Это обновленная тестовая страница</p><h2>Новый заголовок</h2><p>Обновленный контент с <em>курсивом</em> и <strong>жирным текстом</strong></p><ul><li>Элемент списка 1</li><li>Элемент списка 2</li></ul>',
+                    seoTitle: 'Обновленная тестовая страница - СРО АУ'
+                };
+
+                const response = await fetch(`http://localhost:3001/api/pages/${createdPageId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="success">✅ Страница обновлена<br><pre>${JSON.stringify(data.data, null, 2)}</pre></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Ошибка обновления страницы<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка обновления страницы: ${error.message}</div>`;
+            }
+        }
+
+        async function testDeletePage() {
+            const resultDiv = document.getElementById('delete-page-result');
+            if (!authToken || !createdPageId) {
+                resultDiv.innerHTML = '<div class="error">❌ Сначала создайте страницу</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3001/api/pages/${createdPageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ Страница удалена</div>';
+                    createdPageId = null;
+                } else {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<div class="error">❌ Ошибка удаления страницы<br><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Ошибка удаления страницы: ${error.message}</div>`;
+            }
+        }
+
+        function testAdminPanel() {
+            const resultDiv = document.getElementById('admin-panel-result');
+            resultDiv.innerHTML = '<div class="info">ℹ️ Открытие админ панели в новом окне...</div>';
+            window.open('http://localhost:3002/pages', '_blank');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест страницы редактирования документа</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3B82F6;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        .test-link:hover {
+            background-color: #2563EB;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            background-color: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #A7F3D0;
+        }
+        .error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #FECACA;
+        }
+        .info {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            border: 1px solid #BFDBFE;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест страницы редактирования документа</h1>
+    
+    <div class="test-container">
+        <h2>Доступные тестовые ссылки</h2>
+        <p>Нажмите на ссылки ниже для тестирования различных сценариев:</p>
+        
+        <a href="http://localhost:3002/documents/1/edit" class="test-link">
+            Редактировать документ ID: 1
+        </a>
+        
+        <a href="http://localhost:3002/documents/2/edit" class="test-link">
+            Редактировать документ ID: 2
+        </a>
+        
+        <a href="http://localhost:3002/documents/3/edit" class="test-link">
+            Редактировать документ ID: 3
+        </a>
+        
+        <a href="http://localhost:3002/documents/undefined/edit" class="test-link">
+            Тест с undefined ID (должна показать ошибку)
+        </a>
+        
+        <a href="http://localhost:3002/documents/999/edit" class="test-link">
+            Тест с несуществующим ID (должна показать ошибку)
+        </a>
+        
+        <a href="http://localhost:3002/documents/1" class="test-link">
+            Просмотр документа ID: 1
+        </a>
+        
+        <a href="http://localhost:3002/documents" class="test-link">
+            Список документов
+        </a>
+    </div>
+    
+    <div class="test-container">
+        <h2>Ожидаемое поведение</h2>
+        <div class="info">
+            <strong>Страница редактирования (/documents/[id]/edit):</strong>
+            <ul>
+                <li>Должна загружать данные документа по ID</li>
+                <li>Должна отображать форму с полями: название, описание, категория, теги, версия, публичность</li>
+                <li>Должна показывать информацию о файле (размер, тип, дата загрузки)</li>
+                <li>Должна позволять редактировать метаданные (автор, издатель, язык, страницы)</li>
+                <li>Должна сохранять изменения и перенаправлять на список документов</li>
+                <li>При несуществующем ID должна показывать сообщение "Документ не найден"</li>
+            </ul>
+        </div>
+        
+        <div class="info">
+            <strong>Страница просмотра (/documents/[id]):</strong>
+            <ul>
+                <li>Должна отображать полную информацию о документе</li>
+                <li>Должна показывать кнопки: Скачать, Редактировать, Удалить</li>
+                <li>Должна отображать теги, метаданные и историю изменений</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Проверка функциональности</h2>
+        <div id="test-results">
+            <p>Нажмите на ссылки выше для тестирования...</p>
+        </div>
+    </div>
+    
+    <script>
+        // Простая проверка доступности страниц
+        async function testPage(url, expectedStatus = 200) {
+            try {
+                const response = await fetch(url);
+                const status = response.status;
+                
+                const resultDiv = document.getElementById('test-results');
+                const statusClass = status === expectedStatus ? 'success' : 'error';
+                
+                resultDiv.innerHTML += `
+                    <div class="status ${statusClass}">
+                        <strong>${url}</strong><br>
+                        Статус: ${status} ${status === expectedStatus ? '✓' : '✗'}<br>
+                        Время: ${new Date().toLocaleTimeString()}
+                    </div>
+                `;
+            } catch (error) {
+                const resultDiv = document.getElementById('test-results');
+                resultDiv.innerHTML += `
+                    <div class="status error">
+                        <strong>${url}</strong><br>
+                        Ошибка: ${error.message}<br>
+                        Время: ${new Date().toLocaleTimeString()}
+                    </div>
+                `;
+            }
+        }
+        
+        // Автоматическое тестирование при загрузке страницы
+        window.addEventListener('load', () => {
+            const testUrls = [
+                'http://localhost:3002/documents',
+                'http://localhost:3002/documents/1',
+                'http://localhost:3002/documents/1/edit'
+            ];
+            
+            testUrls.forEach(url => {
+                setTimeout(() => testPage(url), 1000);
+            });
+        });
+    </script>
+</body>
+</html>

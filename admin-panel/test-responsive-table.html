@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адаптивная таблица - Тест</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Responsive table styles */
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.875rem;
+            }
+            
+            .table-responsive th,
+            .table-responsive td {
+                padding: 0.5rem 0.25rem;
+            }
+            
+            .table-responsive .action-buttons {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .table-responsive .action-buttons button {
+                padding: 0.25rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .table-responsive th,
+            .table-responsive td {
+                padding: 0.25rem 0.125rem;
+                font-size: 0.75rem;
+            }
+            
+            .table-responsive .truncate {
+                max-width: 100px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-4">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6">Адаптивная таблица страниц</h1>
+        
+        <div class="bg-white rounded-lg border border-neutral-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full table-fixed divide-y divide-neutral-200 table-responsive">
+                    <thead class="bg-neutral-50">
+                        <tr>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-16">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">Выбор</span>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 w-1/4">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">Заголовок</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-neutral-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"></path>
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 w-1/6">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">URL (slug)</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-neutral-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"></path>
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 w-20">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">Шаблон</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-neutral-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"></path>
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 w-24">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">Статус</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-neutral-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"></path>
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 w-20">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">Обновлено</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 text-neutral-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"></path>
+                                    </svg>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider w-28">
+                                <div class="flex items-center space-x-1">
+                                    <span class="truncate">Действия</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-neutral-200">
+                        <tr class="hover:bg-neutral-50">
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <input class="h-4 w-4 rounded border-neutral-300 text-beige-600 focus:ring-beige-500" type="checkbox">
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <div class="flex items-center min-w-0">
+                                        <span class="font-medium truncate">О СРО 2027 885384</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <code class="text-sm bg-neutral-100 px-2 py-1 rounded truncate block">/about-2027-885384</code>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <span class="inline-flex items-center rounded-full font-medium bg-blue-100 text-blue-800 px-2.5 py-1.5 text-sm border-0">about</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <span class="inline-flex items-center rounded-full font-medium bg-green-100 text-green-800 px-2.5 py-1.5 text-sm border-0">Опубликовано</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <span class="text-sm text-neutral-600">08.10.2025</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate action-buttons">
+                                    <div class="flex space-x-1">
+                                        <button class="inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500 shadow-sm h-8 px-3 text-sm p-1" title="Предпросмотр">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500 shadow-sm h-8 px-3 text-sm p-1" title="Редактировать">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm h-8 px-3 text-sm p-1" title="Удалить">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-neutral-50">
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <input class="h-4 w-4 rounded border-neutral-300 text-beige-600 focus:ring-beige-500" type="checkbox">
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <div class="flex items-center min-w-0">
+                                        <span class="font-medium truncate">О СРО 2027 588993</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <code class="text-sm bg-neutral-100 px-2 py-1 rounded truncate block">/about-2027-588993</code>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <span class="inline-flex items-center rounded-full font-medium bg-blue-100 text-blue-800 px-2.5 py-1.5 text-sm border-0">about</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <span class="inline-flex items-center rounded-full font-medium bg-green-100 text-green-800 px-2.5 py-1.5 text-sm border-0">Опубликовано</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate">
+                                    <span class="text-sm text-neutral-600">08.10.2025</span>
+                                </div>
+                            </td>
+                            <td class="px-3 py-4 text-sm text-neutral-900">
+                                <div class="truncate action-buttons">
+                                    <div class="flex space-x-1">
+                                        <button class="inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500 shadow-sm h-8 px-3 text-sm p-1" title="Предпросмотр">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500 shadow-sm h-8 px-3 text-sm p-1" title="Редактировать">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"></path>
+                                            </svg>
+                                        </button>
+                                        <button class="inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-sm h-8 px-3 text-sm p-1" title="Удалить">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h2 class="text-lg font-semibold text-blue-900 mb-2">Изменения для адаптивности:</h2>
+            <ul class="text-sm text-blue-800 space-y-1">
+                <li>• Изменен <code>min-w-full</code> на <code>w-full table-fixed</code> для фиксированной ширины</li>
+                <li>• Добавлены пропорциональные ширины колонок (w-1/4, w-1/6, w-20, w-24, w-28)</li>
+                <li>• Уменьшен padding с px-6 на px-3 для экономии места</li>
+                <li>• Добавлен класс <code>truncate</code> для обрезки длинного текста</li>
+                <li>• Сокращен заголовок "Последнее обновление" на "Обновлено"</li>
+                <li>• Уменьшены кнопки действий и их отступы</li>
+                <li>• Добавлены адаптивные стили для мобильных устройств</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

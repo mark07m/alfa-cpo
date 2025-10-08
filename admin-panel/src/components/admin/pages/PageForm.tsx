@@ -29,13 +29,13 @@ const pageSchema = z.object({
   content: z.string().min(1, 'Содержимое обязательно'),
   excerpt: z.string().optional(),
   status: z.enum(['draft', 'published', 'archived']),
-  template: z.nativeEnum(PageTemplate),
+  template: z.nativeEnum(PageTemplate).optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   seoKeywords: z.string().optional(),
-  isHomePage: z.boolean().default(false),
-  showInMenu: z.boolean().default(true),
-  menuOrder: z.number().int().min(0).default(0),
+  isHomePage: z.boolean().optional(),
+  showInMenu: z.boolean().optional(),
+  menuOrder: z.number().int().min(0).optional(),
   parentId: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
   featuredImage: z.string().optional().nullable(),
@@ -91,6 +91,11 @@ export const PageForm: React.FC<PageFormProps> = ({ page, onSuccess, onCancel })
         imageUrl: page.imageUrl || null,
         featuredImage: page.featuredImage || null,
         publishedAt: page.publishedAt ? new Date(page.publishedAt).toISOString().split('T')[0] : null,
+        seoKeywords: Array.isArray(page.seoKeywords) ? page.seoKeywords.join(', ') : page.seoKeywords || '',
+        template: page.template || PageTemplate.DEFAULT,
+        isHomePage: page.isHomePage || false,
+        showInMenu: page.showInMenu || true,
+        menuOrder: page.menuOrder || 0,
       });
     } else {
       reset();
@@ -102,10 +107,15 @@ export const PageForm: React.FC<PageFormProps> = ({ page, onSuccess, onCancel })
     try {
       if (page) {
         // Update existing page
+        console.log('Updating page with ID:', page.id, 'Data:', data);
+        if (!page.id) {
+          throw new Error('ID страницы не найден');
+        }
         await pagesService.updatePage(page.id, data);
         toast.success('Страница успешно обновлена!');
       } else {
         // Create new page
+        console.log('Creating new page with data:', data);
         await pagesService.createPage(data);
         toast.success('Страница успешно создана!');
       }

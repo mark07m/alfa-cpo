@@ -290,18 +290,19 @@ export interface Page {
   content: string;
   excerpt?: string;
   status: 'draft' | 'published' | 'archived';
-  template: PageTemplate;
+  template?: string;
   seoTitle?: string;
   seoDescription?: string;
-  seoKeywords?: string;
-  isHomePage: boolean;
-  showInMenu: boolean;
-  menuOrder: number;
+  seoKeywords?: string[];
+  isHomePage?: boolean;
+  showInMenu?: boolean;
+  menuOrder?: number;
   parentId?: string;
   children?: Page[];
   imageUrl?: string;
   featuredImage?: string;
   customFields?: Record<string, unknown>;
+  metadata?: Record<string, any>;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -335,6 +336,8 @@ export interface PageFilters {
   dateFrom?: string;
   dateTo?: string;
   author?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface PageFormData {
@@ -347,9 +350,9 @@ export interface PageFormData {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
-  isHomePage: boolean;
-  showInMenu: boolean;
-  menuOrder: number;
+  isHomePage?: boolean;
+  showInMenu?: boolean;
+  menuOrder?: number;
   parentId?: string;
   imageUrl?: string;
   featuredImage?: string;

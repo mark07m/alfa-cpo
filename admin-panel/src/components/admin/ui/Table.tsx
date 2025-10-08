@@ -197,7 +197,7 @@ export const Table = <T extends { id: string }>({
   return (
     <div className={cn('bg-white rounded-lg border border-neutral-200 overflow-hidden', className)}>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-neutral-200">
+        <table className="w-full table-fixed divide-y divide-neutral-200 table-responsive">
           <thead className="bg-neutral-50">
             <tr>
               {columns.map((column, index) => (
@@ -205,15 +205,15 @@ export const Table = <T extends { id: string }>({
                   key={index}
                   scope="col"
                   className={cn(
-                    'px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider',
-                    column.width,
+                    'px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider',
+                    column.width || 'w-auto',
                     column.sortable && 'cursor-pointer hover:bg-neutral-100',
                     column.className
                   )}
                   onClick={() => column.sortable && onSort && handleSort(column.key)}
                 >
                   <div className="flex items-center space-x-1">
-                    <span>{column.title}</span>
+                    <span className="truncate">{column.title}</span>
                     {column.sortable && renderSortIcon(column.key)}
                   </div>
                 </th>
@@ -234,13 +234,18 @@ export const Table = <T extends { id: string }>({
                     <td
                       key={colIndex}
                       className={cn(
-                        'px-6 py-4 whitespace-nowrap text-sm text-neutral-900',
+                        'px-3 py-4 text-sm text-neutral-900',
                         column.className
                       )}
                     >
-                      {column.render
-                        ? column.render(row[column.key as keyof T], row)
-                        : String(row[column.key as keyof T] || '')}
+                      <div className={cn(
+                        'truncate',
+                        column.key === 'actions' && 'action-buttons'
+                      )}>
+                        {column.render
+                          ? column.render(row[column.key as keyof T], row)
+                          : String(row[column.key as keyof T] || '')}
+                      </div>
                     </td>
                   ))}
                 </tr>
