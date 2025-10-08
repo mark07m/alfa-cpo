@@ -5,7 +5,6 @@ import { useArbitrators } from '@/hooks/admin/useArbitrators';
 import { ArbitratorFilters, Arbitrator } from '@/types/admin';
 import { PageWithTable } from '@/components/admin/layout/PageWithTable';
 import { Button } from '@/components/admin/ui/Button';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { Badge } from '@/components/admin/ui/Badge';
 import { 
   PlusIcon, 
@@ -304,13 +303,7 @@ export default function ArbitratorsPage() {
   );
 
   return (
-    <AdminLayout
-      title="Арбитражные управляющие"
-      breadcrumbs={[
-        { label: 'Реестр', href: '/registry' },
-        { label: 'Арбитражные управляющие' }
-      ]}
-    >
+    <div>
       <PageWithTable
         data={arbitrators}
         loading={loading}
@@ -413,6 +406,6 @@ export default function ArbitratorsPage() {
           </div>
         </div>
       </Modal>
-    </AdminLayout>
+    </div>
   );
 }

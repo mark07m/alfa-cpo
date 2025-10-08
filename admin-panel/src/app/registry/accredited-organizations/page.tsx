@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { AccreditedOrganizationsList } from '@/components/admin/accreditedOrganizations/AccreditedOrganizationsList';
 import { AccreditedOrganizationsFilters } from '@/components/admin/accreditedOrganizations/AccreditedOrganizationsFilters';
 import { AccreditedOrganizationsActions } from '@/components/admin/accreditedOrganizations/AccreditedOrganizationsActions';
@@ -111,35 +110,20 @@ export default function AccreditedOrganizationsPage() {
 
   if (error) {
     return (
-      <AdminLayout
-        title="Реестр аккредитованных организаций"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="text-center py-12">
-          <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
-          <p className="mt-1 text-sm text-gray-500">{error}</p>
-          <div className="mt-6">
-            <Button onClick={() => fetchOrganizations(filters, { page: currentPage })}>
-              Попробовать снова
-            </Button>
-          </div>
+      <div className="text-center py-12">
+        <ExclamationTriangleIcon className="mx-auto h-12 w-12 text-red-400" />
+        <h3 className="mt-2 text-sm font-medium text-gray-900">Ошибка загрузки</h3>
+        <p className="mt-1 text-sm text-gray-500">{error}</p>
+        <div className="mt-6">
+          <Button onClick={() => fetchOrganizations(filters, { page: currentPage })}>
+            Попробовать снова
+          </Button>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout
-      title="Реестр аккредитованных организаций"
-      breadcrumbs={[
-        { label: 'Дашборд', href: '/' },
-        { label: 'Реестр' }
-      ]}
-    >
       <div className="space-y-6">
         {/* Описание и действия */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -269,6 +253,5 @@ export default function AccreditedOrganizationsPage() {
           </div>
         )}
       </div>
-    </AdminLayout>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useArbitratorStats } from '@/hooks/admin/useArbitrators';
 import { StatCard } from '@/components/admin/ui/StatCard';
-import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { 
   UserGroupIcon, 
   CheckCircleIcon, 
@@ -34,68 +33,44 @@ export default function RegistryStatisticsPage() {
 
   if (loading) {
     return (
-      <AdminLayout
-        title="Статистика реестра"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm text-gray-500">Загрузка данных...</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }, (_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-3/4"></div>
-                </div>
-              </div>
-            ))}
-          </div>
+      <div className="space-y-6">
+        <div>
+          <p className="text-sm text-gray-500">Загрузка данных...</p>
         </div>
-      </AdminLayout>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 4 }, (_, i) => (
+            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout
-        title="Статистика реестра"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm text-gray-500">Ошибка загрузки данных</p>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-            <p className="text-red-600">{error}</p>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <p className="text-sm text-gray-500">Ошибка загрузки данных</p>
         </div>
-      </AdminLayout>
+        <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+          <p className="text-red-600">{error}</p>
+        </div>
+      </div>
     );
   }
 
   if (!stats) {
     return (
-      <AdminLayout
-        title="Статистика реестра"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm text-gray-500">Нет данных для отображения</p>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <p className="text-sm text-gray-500">Нет данных для отображения</p>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
@@ -103,19 +78,11 @@ export default function RegistryStatisticsPage() {
   if (!stats || typeof stats !== 'object') {
     console.error('Invalid stats object:', stats);
     return (
-      <AdminLayout
-        title="Статистика реестра"
-        breadcrumbs={[
-          { label: 'Дашборд', href: '/' },
-          { label: 'Реестр' }
-        ]}
-      >
-        <div className="space-y-6">
-          <div>
-            <p className="text-sm text-red-500">Ошибка: некорректные данные статистики</p>
-          </div>
+      <div className="space-y-6">
+        <div>
+          <p className="text-sm text-red-500">Ошибка: некорректные данные статистики</p>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
@@ -148,21 +115,13 @@ export default function RegistryStatisticsPage() {
   ];
 
   return (
-    <AdminLayout
-      title="Статистика реестра"
-      breadcrumbs={[
-        { label: 'Дашборд', href: '/' },
-        { label: 'Реестр', href: '/registry' },
-        { label: 'Статистика' }
-      ]}
-    >
-      <div className="space-y-6">
-        {/* Описание */}
-        <div>
-          <p className="text-sm text-gray-500">
-            Аналитика и отчеты по реестру арбитражных управляющих
-          </p>
-        </div>
+    <div className="space-y-6">
+      {/* Описание */}
+      <div>
+        <p className="text-sm text-gray-500">
+          Аналитика и отчеты по реестру арбитражных управляющих
+        </p>
+      </div>
 
       {/* Основные показатели */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -346,7 +305,6 @@ export default function RegistryStatisticsPage() {
           <p className="text-sm text-gray-500 mt-1">Процент действующих управляющих</p>
         </div>
       </div>
-      </div>
-    </AdminLayout>
+    </div>
   );
 }
