@@ -234,7 +234,7 @@ export function DocumentsList({
                           </h3>
                           
                           {document.description && (
-                            <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                            <p className="mt-1 text-sm text-gray-600 truncate">
                               {document.description}
                             </p>
                           )}

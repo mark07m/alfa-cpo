@@ -67,7 +67,16 @@ class NewsServiceImpl implements NewsService {
         publishedAt: newsItem.publishedAt,
         createdAt: newsItem.createdAt,
         updatedAt: newsItem.updatedAt,
-        author: {
+        author: newsItem.author ? {
+          id: newsItem.author._id || newsItem.author.id || 'unknown',
+          email: newsItem.author.email || 'unknown@example.com',
+          name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+          role: newsItem.author.role || 'EDITOR' as any,
+          permissions: newsItem.author.permissions || [],
+          isActive: newsItem.author.isActive !== false,
+          createdAt: newsItem.author.createdAt || new Date().toISOString(),
+          updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+        } : {
           id: newsItem.createdBy || 'unknown',
           email: 'unknown@example.com',
           name: 'Неизвестный автор',

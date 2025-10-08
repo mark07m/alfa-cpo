@@ -214,7 +214,7 @@ export function EventsList({
                             {event.title}
                           </h3>
                           
-                          <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                          <p className="mt-1 text-sm text-gray-600 truncate">
                             {event.description}
                           </p>
 

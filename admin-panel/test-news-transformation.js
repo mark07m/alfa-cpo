@@ -19,8 +19,11 @@ async function testNewsTransformation() {
       console.log('Title:', rawItem.title);
       console.log('Status:', rawItem.status);
       console.log('Has category:', !!rawItem.category);
+      console.log('Category data:', rawItem.category);
       console.log('Has author:', !!rawItem.author);
+      console.log('Author data:', rawItem.author);
       console.log('CreatedBy:', rawItem.createdBy);
+      console.log('All fields:', Object.keys(rawItem));
       
       // Test transformation
       console.log('\n=== Transformed News Item ===');

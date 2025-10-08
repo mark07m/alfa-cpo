@@ -127,10 +127,10 @@ export function NewsList({
   return (
     <div className="bg-white shadow rounded-lg">
       <div className="overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left">
+              <th className="px-1 py-3 text-left w-8">
                 <input
                   type="checkbox"
                   checked={selectedNews.length === (news?.length || 0) && (news?.length || 0) > 0}
@@ -138,22 +138,22 @@ export function NewsList({
                   className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                 />
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
                 Новость
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                 Категория
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                 Статус
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20 hidden sm:table-cell">
                 Автор
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-1 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                 Дата
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-1 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
                 Действия
               </th>
             </tr>
@@ -166,7 +166,7 @@ export function NewsList({
                   selectedNews.some(item => item.id === newsItem.id) ? 'bg-amber-50' : ''
                 }`}
               >
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-1 py-2 whitespace-nowrap">
                   <input
                     type="checkbox"
                     checked={selectedNews.some(item => item.id === newsItem.id)}
@@ -174,107 +174,109 @@ export function NewsList({
                     className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
                   />
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-2 py-2">
                   <div className="flex items-start">
                     {newsItem.imageUrl && (
-                      <div className="flex-shrink-0 h-16 w-24 mr-4">
+                      <div className="flex-shrink-0 h-10 w-12 mr-2">
                         <Image
-                          className="h-16 w-24 rounded-lg object-cover"
+                          className="h-10 w-12 rounded object-cover"
                           src={newsItem.imageUrl}
                           alt={newsItem.title}
-                          width={96}
-                          height={64}
+                          width={48}
+                          height={40}
                         />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                      <h3 className="text-xs font-medium text-gray-900 truncate">
                         {newsItem.title}
                       </h3>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">
                         {newsItem.excerpt}
                       </p>
-                      <div className="mt-2 flex items-center text-xs text-gray-400">
-                        <span>ID: {newsItem.id}</span>
+                      <div className="mt-0.5 text-xs text-gray-400 truncate">
+                        ID: {newsItem.id.slice(-6)}
                       </div>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-1 py-2 whitespace-nowrap">
                   <span
-                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium truncate"
                     style={{
                       backgroundColor: getCategoryColor(newsItem.category.id) + '20',
                       color: getCategoryColor(newsItem.category.id)
                     }}
                   >
-                    {getCategoryName(newsItem.category.id)}
+                    {getCategoryName(newsItem.category.id).slice(0, 8)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-1 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     {getStatusIcon(newsItem.status)}
-                    <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(newsItem.status)}`}>
-                      {getStatusText(newsItem.status)}
+                    <span className={`ml-1 inline-flex items-center px-1 py-0.5 rounded-full text-xs font-medium ${getStatusColor(newsItem.status)}`}>
+                      {getStatusText(newsItem.status).slice(0, 3)}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {newsItem.author.firstName} {newsItem.author.lastName}
+                <td className="px-1 py-2 whitespace-nowrap text-xs text-gray-900 hidden sm:table-cell">
+                  <div className="truncate">
+                    {newsItem.author?.name?.slice(0, 8) || 'Неизв.'}
+                  </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-1 py-2 whitespace-nowrap text-xs text-gray-500">
                   <div>
-                    <div>
+                    <div className="text-xs">
                       {newsItem.publishedAt
-                        ? format(new Date(newsItem.publishedAt), 'dd.MM.yyyy HH:mm', { locale: ru })
-                        : 'Не опубликовано'
+                        ? format(new Date(newsItem.publishedAt), 'dd.MM', { locale: ru })
+                        : 'Не опубл.'
                       }
                     </div>
                     <div className="text-xs text-gray-400">
-                      Создано: {format(new Date(newsItem.createdAt), 'dd.MM.yyyy', { locale: ru })}
+                      {format(new Date(newsItem.createdAt), 'dd.MM', { locale: ru })}
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end space-x-2">
+                <td className="px-1 py-2 whitespace-nowrap text-right text-xs font-medium">
+                  <div className="flex items-center justify-end space-x-0.5">
                     <button
                       onClick={() => window.open(`/news/${newsItem.id}`, '_blank')}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-gray-400 hover:text-gray-600 p-0.5"
                       title="Предварительный просмотр"
                     >
-                      <EyeIcon className="h-4 w-4" />
+                      <EyeIcon className="h-3 w-3" />
                     </button>
                     <a
                       href={`/news/${newsItem.id}/edit`}
-                      className="text-amber-600 hover:text-amber-900"
+                      className="text-amber-600 hover:text-amber-900 p-0.5"
                       title="Редактировать"
                     >
-                      <PencilIcon className="h-4 w-4" />
+                      <PencilIcon className="h-3 w-3" />
                     </a>
                     <div className="relative group">
                       <button
-                        className="text-gray-400 hover:text-gray-600"
+                        className="text-gray-400 hover:text-gray-600 p-0.5"
                         title="Изменить статус"
                       >
-                        <CheckCircleIcon className="h-4 w-4" />
+                        <CheckCircleIcon className="h-3 w-3" />
                       </button>
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                      <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                         <div className="py-1">
                           <button
                             onClick={() => onStatusChange(newsItem.id, 'published')}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            className="block w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             Опубликовать
                           </button>
                           <button
                             onClick={() => onStatusChange(newsItem.id, 'draft')}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            className="block w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             В черновики
                           </button>
                           <button
                             onClick={() => onStatusChange(newsItem.id, 'archived')}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            className="block w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             Архивировать
                           </button>
@@ -283,10 +285,10 @@ export function NewsList({
                     </div>
                     <button
                       onClick={() => onDeleteNews(newsItem.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 hover:text-red-900 p-0.5"
                       title="Удалить"
                     >
-                      <TrashIcon className="h-4 w-4" />
+                      <TrashIcon className="h-3 w-3" />
                     </button>
                   </div>
                 </td>
@@ -298,37 +300,38 @@ export function NewsList({
 
       {/* Пагинация */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div className="bg-white px-2 py-1 flex items-center justify-between border-t border-gray-200">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Предыдущая
+              ←
             </button>
+            <span className="text-xs text-gray-500 px-2">
+              {pagination.page} / {pagination.totalPages}
+            </span>
             <button
               onClick={() => onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="relative inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Следующая
+              →
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-700">
-                Показано{' '}
+              <p className="text-xs text-gray-700">
                 <span className="font-medium">
                   {(pagination.page - 1) * pagination.limit + 1}
-                </span>{' '}
-                -{' '}
+                </span>
+                -
                 <span className="font-medium">
                   {Math.min(pagination.page * pagination.limit, pagination.total)}
-                </span>{' '}
-                из{' '}
-                <span className="font-medium">{pagination.total}</span>{' '}
-                результатов
+                </span>
+                из
+                <span className="font-medium">{pagination.total}</span>
               </p>
             </div>
             <div>
@@ -336,29 +339,33 @@ export function NewsList({
                 <button
                   onClick={() => onPageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-1.5 py-1 rounded-l-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Предыдущая
+                  ←
                 </button>
-                {[...Array(pagination.totalPages)].map((_, i) => (
-                  <button
-                    key={i + 1}
-                    onClick={() => onPageChange(i + 1)}
-                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                      pagination.page === i + 1
-                        ? 'z-10 bg-amber-50 border-amber-500 text-amber-600'
-                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
+                {[...Array(Math.min(pagination.totalPages, 3))].map((_, i) => {
+                  const pageNum = pagination.page <= 2 ? i + 1 : pagination.page - 1 + i;
+                  if (pageNum > pagination.totalPages) return null;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => onPageChange(pageNum)}
+                      className={`relative inline-flex items-center px-2 py-1 border text-xs font-medium ${
+                        pagination.page === pageNum
+                          ? 'z-10 bg-amber-50 border-amber-500 text-amber-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
                 <button
                   onClick={() => onPageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="relative inline-flex items-center px-1.5 py-1 rounded-r-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Следующая
+                  →
                 </button>
               </nav>
             </div>
