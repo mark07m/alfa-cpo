@@ -27,8 +27,7 @@ class NewsServiceImpl implements NewsService {
       if (filters.search) params.append('search', filters.search)
       if (filters.category) params.append('category', filters.category)
       if (filters.status) params.append('status', filters.status)
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom)
-      if (filters.dateTo) params.append('dateTo', filters.dateTo)
+      if ((filters as any).featured !== undefined) params.append('featured', (filters as any).featured.toString())
       if (filters.page) params.append('page', filters.page.toString())
       if (filters.limit) params.append('limit', filters.limit.toString())
       if (filters.sortBy) params.append('sortBy', filters.sortBy)
@@ -53,7 +52,16 @@ class NewsServiceImpl implements NewsService {
         title: newsItem.title,
         content: newsItem.content,
         excerpt: newsItem.excerpt,
-        category: {
+        category: newsItem.category ? {
+          id: newsItem.category._id || newsItem.category.id,
+          name: newsItem.category.name,
+          slug: newsItem.category.slug,
+          color: newsItem.category.color || '#6B7280',
+          icon: newsItem.category.icon || 'document-text',
+          sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+          createdAt: newsItem.category.createdAt || new Date().toISOString(),
+          updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+        } : {
           id: 'default',
           name: 'Без категории',
           slug: 'uncategorized',
@@ -128,6 +136,70 @@ class NewsServiceImpl implements NewsService {
   async getNewsItem(id: string): Promise<ApiResponse<News>> {
     try {
       const response = await apiService.get(`/news/${id}`) as ApiResponse<News>
+      
+      // Transform the response data to match frontend News interface
+      if (response.data) {
+        const newsItem = response.data as any
+        const transformedNews: News = {
+          id: newsItem._id,
+          title: newsItem.title,
+          content: newsItem.content,
+          excerpt: newsItem.excerpt,
+          category: newsItem.category ? {
+            id: newsItem.category._id || newsItem.category.id,
+            name: newsItem.category.name,
+            slug: newsItem.category.slug,
+            color: newsItem.category.color || '#6B7280',
+            icon: newsItem.category.icon || 'document-text',
+            sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+            createdAt: newsItem.category.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+          } : {
+            id: 'default',
+            name: 'Без категории',
+            slug: 'uncategorized',
+            color: '#6B7280',
+            icon: 'document-text',
+            sortOrder: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          status: newsItem.status,
+          publishedAt: newsItem.publishedAt,
+          createdAt: newsItem.createdAt,
+          updatedAt: newsItem.updatedAt,
+          author: newsItem.author ? {
+            id: newsItem.author._id || newsItem.author.id || 'unknown',
+            email: newsItem.author.email || 'unknown@example.com',
+            name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+            role: newsItem.author.role || 'EDITOR' as any,
+            permissions: newsItem.author.permissions || [],
+            isActive: newsItem.author.isActive !== false,
+            createdAt: newsItem.author.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+          } : {
+            id: newsItem.createdBy || 'unknown',
+            email: 'unknown@example.com',
+            name: 'Неизвестный автор',
+            role: 'EDITOR' as any,
+            permissions: [],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          imageUrl: newsItem.imageUrl,
+          seoTitle: newsItem.seoTitle,
+          seoDescription: newsItem.seoDescription,
+          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        }
+        
+        return {
+          success: response.success,
+          data: transformedNews,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to fetch news item:', error)
@@ -155,7 +227,88 @@ class NewsServiceImpl implements NewsService {
 
   async createNews(newsData: Partial<News>): Promise<ApiResponse<News>> {
     try {
-      const response = await apiService.post('/news', newsData) as ApiResponse<News>
+      // Transform frontend News data to backend CreateNewsDto format
+      const createData = {
+        title: newsData.title,
+        content: newsData.content,
+        excerpt: newsData.excerpt,
+        publishedAt: newsData.publishedAt,
+        category: newsData.category?.id !== 'default' ? newsData.category?.id : undefined,
+        tags: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(tag => tag.trim()) : [],
+        featured: false, // Default value
+        imageUrl: newsData.imageUrl,
+        cover: newsData.imageUrl, // Map imageUrl to cover
+        status: newsData.status || 'draft',
+        seoTitle: newsData.seoTitle,
+        seoDescription: newsData.seoDescription,
+        seoKeywords: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(keyword => keyword.trim()) : []
+      }
+
+      const response = await apiService.post('/news', createData) as ApiResponse<News>
+      
+      // Transform response back to frontend format
+      if (response.data) {
+        const newsItem = response.data as any
+        const transformedNews: News = {
+          id: newsItem._id,
+          title: newsItem.title,
+          content: newsItem.content,
+          excerpt: newsItem.excerpt,
+          category: newsItem.category ? {
+            id: newsItem.category._id || newsItem.category.id,
+            name: newsItem.category.name,
+            slug: newsItem.category.slug,
+            color: newsItem.category.color || '#6B7280',
+            icon: newsItem.category.icon || 'document-text',
+            sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+            createdAt: newsItem.category.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+          } : {
+            id: 'default',
+            name: 'Без категории',
+            slug: 'uncategorized',
+            color: '#6B7280',
+            icon: 'document-text',
+            sortOrder: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          status: newsItem.status,
+          publishedAt: newsItem.publishedAt,
+          createdAt: newsItem.createdAt,
+          updatedAt: newsItem.updatedAt,
+          author: newsItem.author ? {
+            id: newsItem.author._id || newsItem.author.id || 'unknown',
+            email: newsItem.author.email || 'unknown@example.com',
+            name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+            role: newsItem.author.role || 'EDITOR' as any,
+            permissions: newsItem.author.permissions || [],
+            isActive: newsItem.author.isActive !== false,
+            createdAt: newsItem.author.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+          } : {
+            id: newsItem.createdBy || 'unknown',
+            email: 'unknown@example.com',
+            name: 'Неизвестный автор',
+            role: 'EDITOR' as any,
+            permissions: [],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          imageUrl: newsItem.imageUrl,
+          seoTitle: newsItem.seoTitle,
+          seoDescription: newsItem.seoDescription,
+          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        }
+        
+        return {
+          success: response.success,
+          data: transformedNews,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to create news:', error)
@@ -172,7 +325,88 @@ class NewsServiceImpl implements NewsService {
 
   async updateNews(id: string, newsData: Partial<News>): Promise<ApiResponse<News>> {
     try {
-      const response = await apiService.put(`/news/${id}`, newsData) as ApiResponse<News>
+      // Transform frontend News data to backend UpdateNewsDto format
+      const updateData = {
+        title: newsData.title,
+        content: newsData.content,
+        excerpt: newsData.excerpt,
+        publishedAt: newsData.publishedAt,
+        category: newsData.category?.id !== 'default' ? newsData.category?.id : undefined,
+        tags: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(tag => tag.trim()) : [],
+        featured: false, // Default value
+        imageUrl: newsData.imageUrl,
+        cover: newsData.imageUrl, // Map imageUrl to cover
+        status: newsData.status,
+        seoTitle: newsData.seoTitle,
+        seoDescription: newsData.seoDescription,
+        seoKeywords: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(keyword => keyword.trim()) : []
+      }
+
+      const response = await apiService.put(`/news/${id}`, updateData) as ApiResponse<News>
+      
+      // Transform response back to frontend format
+      if (response.data) {
+        const newsItem = response.data as any
+        const transformedNews: News = {
+          id: newsItem._id,
+          title: newsItem.title,
+          content: newsItem.content,
+          excerpt: newsItem.excerpt,
+          category: newsItem.category ? {
+            id: newsItem.category._id || newsItem.category.id,
+            name: newsItem.category.name,
+            slug: newsItem.category.slug,
+            color: newsItem.category.color || '#6B7280',
+            icon: newsItem.category.icon || 'document-text',
+            sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+            createdAt: newsItem.category.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+          } : {
+            id: 'default',
+            name: 'Без категории',
+            slug: 'uncategorized',
+            color: '#6B7280',
+            icon: 'document-text',
+            sortOrder: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          status: newsItem.status,
+          publishedAt: newsItem.publishedAt,
+          createdAt: newsItem.createdAt,
+          updatedAt: newsItem.updatedAt,
+          author: newsItem.author ? {
+            id: newsItem.author._id || newsItem.author.id || 'unknown',
+            email: newsItem.author.email || 'unknown@example.com',
+            name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+            role: newsItem.author.role || 'EDITOR' as any,
+            permissions: newsItem.author.permissions || [],
+            isActive: newsItem.author.isActive !== false,
+            createdAt: newsItem.author.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+          } : {
+            id: newsItem.createdBy || 'unknown',
+            email: 'unknown@example.com',
+            name: 'Неизвестный автор',
+            role: 'EDITOR' as any,
+            permissions: [],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          imageUrl: newsItem.imageUrl,
+          seoTitle: newsItem.seoTitle,
+          seoDescription: newsItem.seoDescription,
+          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        }
+        
+        return {
+          success: response.success,
+          data: transformedNews,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to update news:', error)
@@ -249,7 +483,7 @@ class NewsServiceImpl implements NewsService {
         slug: category.slug,
         color: category.color || '#6B7280',
         icon: category.icon || 'document-text',
-        sortOrder: category.order || 0,
+        sortOrder: category.sortOrder || category.order || 0,
         createdAt: category.createdAt,
         updatedAt: category.updatedAt
       }))
@@ -285,7 +519,38 @@ class NewsServiceImpl implements NewsService {
 
   async createNewsCategory(categoryData: Partial<NewsCategory>): Promise<ApiResponse<NewsCategory>> {
     try {
-      const response = await apiService.post('/news/categories', categoryData) as ApiResponse<NewsCategory>
+      // Transform frontend NewsCategory data to backend CreateNewsCategoryDto format
+      const createData = {
+        name: categoryData.name,
+        slug: categoryData.slug,
+        color: categoryData.color || '#6B7280',
+        icon: categoryData.icon || 'document-text',
+        sortOrder: categoryData.sortOrder || 0
+      }
+
+      const response = await apiService.post('/news/categories', createData) as ApiResponse<NewsCategory>
+      
+      // Transform response back to frontend format
+      if (response.data) {
+        const category = response.data as any
+        const transformedCategory: NewsCategory = {
+          id: category._id,
+          name: category.name,
+          slug: category.slug,
+          color: category.color || '#6B7280',
+          icon: category.icon || 'document-text',
+          sortOrder: category.sortOrder || category.order || 0,
+          createdAt: category.createdAt,
+          updatedAt: category.updatedAt
+        }
+        
+        return {
+          success: response.success,
+          data: transformedCategory,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to create news category:', error)
@@ -302,7 +567,38 @@ class NewsServiceImpl implements NewsService {
 
   async updateNewsCategory(id: string, categoryData: Partial<NewsCategory>): Promise<ApiResponse<NewsCategory>> {
     try {
-      const response = await apiService.put(`/news/categories/${id}`, categoryData) as ApiResponse<NewsCategory>
+      // Transform frontend NewsCategory data to backend UpdateNewsCategoryDto format
+      const updateData = {
+        name: categoryData.name,
+        slug: categoryData.slug,
+        color: categoryData.color || '#6B7280',
+        icon: categoryData.icon || 'document-text',
+        sortOrder: categoryData.sortOrder || 0
+      }
+
+      const response = await apiService.put(`/news/categories/${id}`, updateData) as ApiResponse<NewsCategory>
+      
+      // Transform response back to frontend format
+      if (response.data) {
+        const category = response.data as any
+        const transformedCategory: NewsCategory = {
+          id: category._id,
+          name: category.name,
+          slug: category.slug,
+          color: category.color || '#6B7280',
+          icon: category.icon || 'document-text',
+          sortOrder: category.sortOrder || category.order || 0,
+          createdAt: category.createdAt,
+          updatedAt: category.updatedAt
+        }
+        
+        return {
+          success: response.success,
+          data: transformedCategory,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to update news category:', error)
@@ -338,6 +634,69 @@ class NewsServiceImpl implements NewsService {
     try {
       const params = category ? `?category=${category}` : ''
       const response = await apiService.get(`/news/public${params}`) as ApiResponse<News[]>
+      
+      // Transform response data to match frontend News interface
+      if (response.data) {
+        const transformedNews = response.data.map((newsItem: any) => ({
+          id: newsItem._id,
+          title: newsItem.title,
+          content: newsItem.content,
+          excerpt: newsItem.excerpt,
+          category: newsItem.category ? {
+            id: newsItem.category._id || newsItem.category.id,
+            name: newsItem.category.name,
+            slug: newsItem.category.slug,
+            color: newsItem.category.color || '#6B7280',
+            icon: newsItem.category.icon || 'document-text',
+            sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+            createdAt: newsItem.category.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+          } : {
+            id: 'default',
+            name: 'Без категории',
+            slug: 'uncategorized',
+            color: '#6B7280',
+            icon: 'document-text',
+            sortOrder: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          status: newsItem.status,
+          publishedAt: newsItem.publishedAt,
+          createdAt: newsItem.createdAt,
+          updatedAt: newsItem.updatedAt,
+          author: newsItem.author ? {
+            id: newsItem.author._id || newsItem.author.id || 'unknown',
+            email: newsItem.author.email || 'unknown@example.com',
+            name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+            role: newsItem.author.role || 'EDITOR' as any,
+            permissions: newsItem.author.permissions || [],
+            isActive: newsItem.author.isActive !== false,
+            createdAt: newsItem.author.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+          } : {
+            id: newsItem.createdBy || 'unknown',
+            email: 'unknown@example.com',
+            name: 'Неизвестный автор',
+            role: 'EDITOR' as any,
+            permissions: [],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          imageUrl: newsItem.imageUrl,
+          seoTitle: newsItem.seoTitle,
+          seoDescription: newsItem.seoDescription,
+          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        }))
+        
+        return {
+          success: response.success,
+          data: transformedNews,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to fetch public news:', error)
@@ -355,6 +714,69 @@ class NewsServiceImpl implements NewsService {
   async searchNews(query: string): Promise<ApiResponse<News[]>> {
     try {
       const response = await apiService.get(`/news/search?q=${encodeURIComponent(query)}`) as ApiResponse<News[]>
+      
+      // Transform response data to match frontend News interface
+      if (response.data) {
+        const transformedNews = response.data.map((newsItem: any) => ({
+          id: newsItem._id,
+          title: newsItem.title,
+          content: newsItem.content,
+          excerpt: newsItem.excerpt,
+          category: newsItem.category ? {
+            id: newsItem.category._id || newsItem.category.id,
+            name: newsItem.category.name,
+            slug: newsItem.category.slug,
+            color: newsItem.category.color || '#6B7280',
+            icon: newsItem.category.icon || 'document-text',
+            sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+            createdAt: newsItem.category.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+          } : {
+            id: 'default',
+            name: 'Без категории',
+            slug: 'uncategorized',
+            color: '#6B7280',
+            icon: 'document-text',
+            sortOrder: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          status: newsItem.status,
+          publishedAt: newsItem.publishedAt,
+          createdAt: newsItem.createdAt,
+          updatedAt: newsItem.updatedAt,
+          author: newsItem.author ? {
+            id: newsItem.author._id || newsItem.author.id || 'unknown',
+            email: newsItem.author.email || 'unknown@example.com',
+            name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+            role: newsItem.author.role || 'EDITOR' as any,
+            permissions: newsItem.author.permissions || [],
+            isActive: newsItem.author.isActive !== false,
+            createdAt: newsItem.author.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+          } : {
+            id: newsItem.createdBy || 'unknown',
+            email: 'unknown@example.com',
+            name: 'Неизвестный автор',
+            role: 'EDITOR' as any,
+            permissions: [],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          imageUrl: newsItem.imageUrl,
+          seoTitle: newsItem.seoTitle,
+          seoDescription: newsItem.seoDescription,
+          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        }))
+        
+        return {
+          success: response.success,
+          data: transformedNews,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to search news:', error)
@@ -372,6 +794,69 @@ class NewsServiceImpl implements NewsService {
   async getNewsByCategory(category: string): Promise<ApiResponse<News[]>> {
     try {
       const response = await apiService.get(`/news/category/${category}`) as ApiResponse<News[]>
+      
+      // Transform response data to match frontend News interface
+      if (response.data) {
+        const transformedNews = response.data.map((newsItem: any) => ({
+          id: newsItem._id,
+          title: newsItem.title,
+          content: newsItem.content,
+          excerpt: newsItem.excerpt,
+          category: newsItem.category ? {
+            id: newsItem.category._id || newsItem.category.id,
+            name: newsItem.category.name,
+            slug: newsItem.category.slug,
+            color: newsItem.category.color || '#6B7280',
+            icon: newsItem.category.icon || 'document-text',
+            sortOrder: newsItem.category.sortOrder || newsItem.category.order || 0,
+            createdAt: newsItem.category.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.category.updatedAt || new Date().toISOString()
+          } : {
+            id: 'default',
+            name: 'Без категории',
+            slug: 'uncategorized',
+            color: '#6B7280',
+            icon: 'document-text',
+            sortOrder: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          status: newsItem.status,
+          publishedAt: newsItem.publishedAt,
+          createdAt: newsItem.createdAt,
+          updatedAt: newsItem.updatedAt,
+          author: newsItem.author ? {
+            id: newsItem.author._id || newsItem.author.id || 'unknown',
+            email: newsItem.author.email || 'unknown@example.com',
+            name: newsItem.author.name || newsItem.author.firstName + ' ' + newsItem.author.lastName || 'Неизвестный автор',
+            role: newsItem.author.role || 'EDITOR' as any,
+            permissions: newsItem.author.permissions || [],
+            isActive: newsItem.author.isActive !== false,
+            createdAt: newsItem.author.createdAt || new Date().toISOString(),
+            updatedAt: newsItem.author.updatedAt || new Date().toISOString()
+          } : {
+            id: newsItem.createdBy || 'unknown',
+            email: 'unknown@example.com',
+            name: 'Неизвестный автор',
+            role: 'EDITOR' as any,
+            permissions: [],
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          imageUrl: newsItem.imageUrl,
+          seoTitle: newsItem.seoTitle,
+          seoDescription: newsItem.seoDescription,
+          seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+        }))
+        
+        return {
+          success: response.success,
+          data: transformedNews,
+          message: response.message
+        }
+      }
+      
       return response
     } catch (error: any) {
       console.error('Failed to fetch news by category:', error)

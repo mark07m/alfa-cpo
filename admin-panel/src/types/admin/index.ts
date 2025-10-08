@@ -108,6 +108,7 @@ export interface NewsFilters {
   status?: string;
   dateFrom?: string;
   dateTo?: string;
+  featured?: boolean;
 }
 
 export interface Event {
