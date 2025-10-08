@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест подключения к API</title>
+</head>
+<body>
+    <h1>Тест подключения к API арбитражных управляющих</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        async function testApiConnection() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Тест 1: Проверка health endpoint
+                console.log('Тестируем health endpoint...');
+                const healthResponse = await fetch(`${API_URL}/health`);
+                const healthData = await healthResponse.json();
+                console.log('Health response:', healthData);
+                resultsDiv.innerHTML += '<p>✅ Health endpoint работает</p>';
+                
+                // Тест 2: Получение токена аутентификации
+                console.log('Получаем токен аутентификации...');
+                const loginResponse = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'aaadmin@sro-au.ru',
+                        password: 'Admin123!'
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    throw new Error(`Login failed: ${loginResponse.status}`);
+                }
+                
+                const loginData = await loginResponse.json();
+                console.log('Login response:', loginData);
+                resultsDiv.innerHTML += '<p>✅ Аутентификация работает</p>';
+                
+                const token = loginData.data.token;
+                
+                // Тест 3: Получение списка арбитражных управляющих
+                console.log('Получаем список арбитражных управляющих...');
+                const arbitratorsResponse = await fetch(`${API_URL}/registry`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!arbitratorsResponse.ok) {
+                    throw new Error(`Arbitrators request failed: ${arbitratorsResponse.status}`);
+                }
+                
+                const arbitratorsData = await arbitratorsResponse.json();
+                console.log('Arbitrators response:', arbitratorsData);
+                resultsDiv.innerHTML += `<p>✅ Список арбитражных управляющих получен (${arbitratorsData.data.length} записей)</p>`;
+                
+                // Тест 4: Создание нового арбитражного управляющего
+                console.log('Создаем нового арбитражного управляющего...');
+                const timestamp = Date.now();
+                const newManager = {
+                    fullName: 'Тестовый Арбитражный Управляющий',
+                    inn: `${timestamp.toString().slice(-12)}`,
+                    registryNumber: `TEST-${timestamp}`,
+                    phone: '79991234567',
+                    email: `test-${timestamp}@arbitrator.ru`,
+                    region: 'Москва',
+                    city: 'Москва',
+                    status: 'active',
+                    joinDate: new Date().toISOString(),
+                    birthDate: '1980-01-01T00:00:00.000Z',
+                    birthPlace: 'г. Москва',
+                    registrationDate: new Date().toISOString(),
+                    decisionNumber: 'РЕШ-TEST-001',
+                    education: 'Высшее юридическое образование',
+                    workExperience: '5 лет работы в сфере банкротства',
+                    internship: 'Прохождение стажировки в арбитражном суде',
+                    examCertificate: 'СЕРТ-TEST-001',
+                    postalAddress: 'г. Москва, ул. Тестовая, д. 1, кв. 10'
+                };
+                
+                const createResponse = await fetch(`${API_URL}/registry`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newManager)
+                });
+                
+                if (!createResponse.ok) {
+                    const errorData = await createResponse.json();
+                    throw new Error(`Create failed: ${createResponse.status} - ${JSON.stringify(errorData)}`);
+                }
+                
+                const createData = await createResponse.json();
+                console.log('Create response:', createData);
+                resultsDiv.innerHTML += '<p>✅ Создание арбитражного управляющего работает</p>';
+                
+                resultsDiv.innerHTML += '<p><strong>🎉 Все тесты прошли успешно! API работает корректно.</strong></p>';
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                resultsDiv.innerHTML += `<p>❌ Ошибка: ${error.message}</p>`;
+            }
+        }
+        
+        // Запускаем тест при загрузке страницы
+        testApiConnection();
+    </script>
+</body>
+</html>
+

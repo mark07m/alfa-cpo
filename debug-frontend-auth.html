@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Frontend Auth</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug Frontend Authentication</h1>
+    
+    <div class="section info">
+        <h3>📊 Current State</h3>
+        <div id="currentState">Loading...</div>
+    </div>
+
+    <div class="section">
+        <h3>🔐 Authentication Actions</h3>
+        <button onclick="login()">Login</button>
+        <button onclick="checkAuth()">Check Auth Status</button>
+        <button onclick="testUpdate()">Test Update</button>
+        <button onclick="clearAuth()">Clear Auth</button>
+    </div>
+
+    <div class="section">
+        <h3>📝 Logs</h3>
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001/api';
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logs.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateCurrentState() {
+            const state = {
+                token: localStorage.getItem('admin_token'),
+                refreshToken: localStorage.getItem('admin_refresh_token'),
+                user: localStorage.getItem('admin_user'),
+                isAuthenticated: !!localStorage.getItem('admin_token')
+            };
+            
+            document.getElementById('currentState').innerHTML = `
+                <pre>${JSON.stringify(state, null, 2)}</pre>
+            `;
+        }
+
+        async function login() {
+            try {
+                log('🔐 Attempting login...');
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@sro-au.ru',
+                        password: 'Admin123!'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    log('✅ Login successful', 'success');
+                    log(`User: ${data.data.user.name}, Role: ${data.data.user.role}`);
+                    
+                    // Store auth data
+                    localStorage.setItem('admin_token', data.data.token);
+                    localStorage.setItem('admin_refresh_token', data.data.refreshToken);
+                    localStorage.setItem('admin_user', JSON.stringify(data.data.user));
+                    
+                    updateCurrentState();
+                } else {
+                    log(`❌ Login failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkAuth() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    log('❌ No token found', 'error');
+                    return;
+                }
+
+                log('🔍 Checking auth status...');
+                const response = await fetch(`${API_BASE}/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Auth check successful', 'success');
+                    log(`User: ${data.name}, Role: ${data.role}, Permissions: ${JSON.stringify(data.permissions || [])}`);
+                } else {
+                    log(`❌ Auth check failed: ${response.status} - ${data.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Auth check error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testUpdate() {
+            try {
+                const token = localStorage.getItem('admin_token');
+                if (!token) {
+                    log('❌ No token found for update test', 'error');
+                    return;
+                }
+
+                log('✏️ Testing update...');
+                
+                // First get a record
+                const listResponse = await fetch(`${API_BASE}/registry`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const listData = await listResponse.json();
+                
+                if (!listData.data || listData.data.length === 0) {
+                    log('❌ No records found for update test', 'error');
+                    return;
+                }
+
+                const record = listData.data[0];
+                log(`Testing update on record: ${record._id}`);
+
+                // Try to update
+                const updateResponse = await fetch(`${API_BASE}/registry/${record._id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fullName: `${record.fullName} (debug test)`
+                    })
+                });
+
+                const updateData = await updateResponse.json();
+                
+                if (updateResponse.ok) {
+                    log('✅ Update successful!', 'success');
+                    log(`Updated: ${updateData.data.fullName}`);
+                } else {
+                    log(`❌ Update failed: ${updateResponse.status} - ${updateData.message}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Update test error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_refresh_token');
+            localStorage.removeItem('admin_user');
+            log('🧹 Auth data cleared', 'info');
+            updateCurrentState();
+        }
+
+        // Initialize
+        updateCurrentState();
+        log('🚀 Debug page loaded');
+    </script>
+</body>
+</html>

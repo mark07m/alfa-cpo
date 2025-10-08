@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отладка токена аутентификации</title>
+</head>
+<body>
+    <h1>Отладка токена аутентификации</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        async function debugAuth() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Проверяем, есть ли токен в localStorage
+                const existingToken = localStorage.getItem('admin_token');
+                console.log('Существующий токен:', existingToken ? existingToken.substring(0, 20) + '...' : 'НЕТ');
+                resultsDiv.innerHTML += `<p>Существующий токен: ${existingToken ? existingToken.substring(0, 20) + '...' : 'НЕТ'}</p>`;
+                
+                // Если токена нет, получаем новый
+                if (!existingToken) {
+                    console.log('Получаем новый токен...');
+                    const loginResponse = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: 'aaadmin@sro-au.ru',
+                            password: 'Admin123!'
+                        })
+                    });
+                    
+                    if (!loginResponse.ok) {
+                        throw new Error(`Login failed: ${loginResponse.status}`);
+                    }
+                    
+                    const loginData = await loginResponse.json();
+                    console.log('Login data:', loginData);
+                    
+                    if (loginData.success && loginData.data.token) {
+                        // Сохраняем токен
+                        localStorage.setItem('admin_token', loginData.data.token);
+                        localStorage.setItem('admin_refresh_token', loginData.data.refreshToken);
+                        localStorage.setItem('admin_user', JSON.stringify(loginData.data.user));
+                        
+                        resultsDiv.innerHTML += '<p>✅ Новый токен получен и сохранен</p>';
+                        
+                        // Тестируем API с токеном
+                        const arbitratorsResponse = await fetch(`${API_URL}/registry`, {
+                            headers: {
+                                'Authorization': `Bearer ${loginData.data.token}`,
+                                'Content-Type': 'application/json',
+                            }
+                        });
+                        
+                        if (arbitratorsResponse.ok) {
+                            const arbitratorsData = await arbitratorsResponse.json();
+                            console.log('Arbitrators data:', arbitratorsData);
+                            resultsDiv.innerHTML += `<p>✅ API работает, получено ${arbitratorsData.data.length} записей</p>`;
+                        } else {
+                            resultsDiv.innerHTML += `<p>❌ API не работает: ${arbitratorsResponse.status}</p>`;
+                        }
+                    } else {
+                        resultsDiv.innerHTML += '<p>❌ Не удалось получить токен</p>';
+                    }
+                } else {
+                    // Тестируем существующий токен
+                    console.log('Тестируем существующий токен...');
+                    const arbitratorsResponse = await fetch(`${API_URL}/registry`, {
+                        headers: {
+                            'Authorization': `Bearer ${existingToken}`,
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    if (arbitratorsResponse.ok) {
+                        const arbitratorsData = await arbitratorsResponse.json();
+                        console.log('Arbitrators data:', arbitratorsData);
+                        resultsDiv.innerHTML += `<p>✅ API работает с существующим токеном, получено ${arbitratorsData.data.length} записей</p>`;
+                    } else {
+                        resultsDiv.innerHTML += `<p>❌ API не работает с существующим токеном: ${arbitratorsResponse.status}</p>`;
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                resultsDiv.innerHTML += `<p>❌ Ошибка: ${error.message}</p>`;
+            }
+        }
+        
+        // Запускаем отладку при загрузке страницы
+        debugAuth();
+    </script>
+</body>
+</html>
+

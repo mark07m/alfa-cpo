@@ -30,6 +30,51 @@ export enum UserRole {
   EDITOR = 'EDITOR'
 }
 
+export enum Permission {
+  // Пользователи
+  USERS_READ = 'users:read',
+  USERS_CREATE = 'users:create',
+  USERS_UPDATE = 'users:update',
+  USERS_DELETE = 'users:delete',
+  
+  // Новости
+  NEWS_READ = 'news:read',
+  NEWS_CREATE = 'news:create',
+  NEWS_UPDATE = 'news:update',
+  NEWS_DELETE = 'news:delete',
+  NEWS_CATEGORY_CREATE = 'news:category:create',
+  NEWS_CATEGORY_UPDATE = 'news:category:update',
+  NEWS_CATEGORY_DELETE = 'news:category:delete',
+  
+  // Документы
+  DOCUMENTS_READ = 'documents:read',
+  DOCUMENTS_CREATE = 'documents:create',
+  DOCUMENTS_UPDATE = 'documents:update',
+  DOCUMENTS_DELETE = 'documents:delete',
+  
+  // Арбитражные управляющие
+  REGISTRY_READ = 'registry:read',
+  REGISTRY_CREATE = 'registry:create',
+  REGISTRY_UPDATE = 'registry:update',
+  REGISTRY_DELETE = 'registry:delete',
+  
+  // Мероприятия
+  EVENTS_READ = 'events:read',
+  EVENTS_CREATE = 'events:create',
+  EVENTS_UPDATE = 'events:update',
+  EVENTS_DELETE = 'events:delete',
+  
+  // Настройки
+  SETTINGS_READ = 'settings:read',
+  SETTINGS_UPDATE = 'settings:update',
+  
+  // Файлы
+  FILE_READ = 'file:read',
+  FILE_UPLOAD = 'file:upload',
+  FILE_UPDATE = 'file:update',
+  FILE_DELETE = 'file:delete',
+}
+
 export interface AuthState {
   user: User | null;
   token: string | null;

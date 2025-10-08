@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { arbitratorsService, ArbitratorFormData } from '@/services/admin/arbitrators';
+import { apiService } from '@/services/admin/api';
 import { Arbitrator, ArbitratorFilters, ArbitratorStats } from '@/types/admin';
 
 export function useArbitrators(initialFilters: ArbitratorFilters = {}) {
@@ -68,14 +69,17 @@ export function useArbitrators(initialFilters: ArbitratorFilters = {}) {
     try {
       setLoading(true);
       setError(null);
+      console.log('useArbitrators: Starting arbitrator update for ID:', id);
       const updatedArbitrator = await arbitratorsService.updateArbitrator(id, data);
+      console.log('useArbitrators: Arbitrator update successful');
       setArbitrators(prev => 
         (prev || []).map(arbitrator => 
           arbitrator.id === id ? updatedArbitrator : arbitrator
         )
       );
       return updatedArbitrator;
-    } catch (err) {
+    } catch (err: any) {
+      console.error('useArbitrators: Error updating arbitrator:', err);
       const errorMessage = err instanceof Error ? err.message : 'Ошибка обновления арбитражного управляющего';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -246,10 +250,40 @@ export function useArbitrator(id: string) {
     fetchArbitrator();
   }, [fetchArbitrator]);
 
+  const updateArbitrator = useCallback(async (data: ArbitratorFormData) => {
+    if (!id) {
+      console.error('useArbitrator: No ID provided for update');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('useArbitrator: Starting update for ID:', id, 'with data:', data);
+      const updatedArbitrator = await arbitratorsService.updateArbitrator(id, data);
+      console.log('useArbitrator: Update successful:', updatedArbitrator);
+      setArbitrator(updatedArbitrator);
+      return updatedArbitrator;
+    } catch (err: any) {
+      console.error('useArbitrator: Update failed:', err);
+      console.error('useArbitrator: Error details:', {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data
+      });
+      const errorMessage = err instanceof Error ? err.message : 'Ошибка обновления арбитражного управляющего';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
   return {
     arbitrator,
     loading,
     error,
     refetch: fetchArbitrator,
+    updateArbitrator,
   };
 }

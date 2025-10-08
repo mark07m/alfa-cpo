@@ -97,13 +97,21 @@ export const arbitratorsService = {
       if (filters.limit) params.append('limit', filters.limit.toString());
 
       console.log('Making API request to:', `/registry?${params.toString()}`);
-      const response = await apiService.get(`/registry?${params.toString()}`);
+      const response = await apiService.get<Arbitrator[]>(`/registry?${params.toString()}`);
       console.log('API service response:', response);
       
       // Преобразуем ответ в ожидаемый формат
+      const transformedData = ((response.data as unknown as Arbitrator[]) || []).map((item: any) => ({
+        ...item,
+        id: item._id, // Преобразуем _id в id для фронтенда
+        _id: item._id // Оставляем _id для совместимости
+      }));
+
       return {
-        data: response.data || [],
-        pagination: response.pagination || {
+        data: transformedData,
+        pagination: (response.pagination as any)?.pages !== undefined
+          ? (response.pagination as any)
+          : {
           page: 1,
           limit: 10,
           total: 0,
@@ -155,8 +163,13 @@ export const arbitratorsService = {
   // Получить арбитражного управляющего по ID
   async getArbitrator(id: string): Promise<Arbitrator> {
     try {
-      const response = await apiService.get(`/registry/${id}`);
-      return response.data;
+      const response = await apiService.get<Arbitrator>(`/registry/${id}`);
+      // Преобразуем _id в id для фронтенда
+      return {
+        ...(response.data as any),
+        id: (response.data as any)._id,
+        _id: (response.data as any)._id
+      };
     } catch (error: any) {
       console.error('Error fetching arbitrator:', error);
       throw error;
@@ -166,8 +179,13 @@ export const arbitratorsService = {
   // Создать арбитражного управляющего
   async createArbitrator(data: ArbitratorFormData): Promise<Arbitrator> {
     try {
-      const response = await apiService.post('/registry', data);
-      return response.data;
+      const response = await apiService.post<Arbitrator>('/registry', data);
+      // Преобразуем _id в id для фронтенда
+      return {
+        ...(response.data as any),
+        id: (response.data as any)._id,
+        _id: (response.data as any)._id
+      };
     } catch (error: any) {
       console.error('Error creating arbitrator:', error);
       throw error;
@@ -177,10 +195,36 @@ export const arbitratorsService = {
   // Обновить арбитражного управляющего
   async updateArbitrator(id: string, data: Partial<ArbitratorFormData>): Promise<Arbitrator> {
     try {
-      const response = await apiService.patch(`/registry/${id}`, data);
-      return response.data;
+      console.log('🔍 updateArbitrator: Starting update for ID:', id);
+      console.log('🔍 updateArbitrator: Data being sent:', JSON.stringify(data, null, 2));
+      
+      // Очищаем данные от undefined значений
+      const cleanedData = Object.fromEntries(
+        Object.entries(data).filter(([_, value]) => value !== undefined && value !== null && value !== '')
+      );
+      
+      console.log('🔍 updateArbitrator: Cleaned data:', JSON.stringify(cleanedData, null, 2));
+      
+      // Вызываем backend напрямую через общий apiService
+      const response = await apiService.patch<Arbitrator>(`/registry/${id}`, cleanedData);
+      console.log('✅ Arbitrator update successful:', response);
+      
+      // Преобразуем _id в id для фронтенда
+      return {
+        ...(response.data as any),
+        id: (response.data as any)._id,
+        _id: (response.data as any)._id
+      };
     } catch (error: any) {
-      console.error('Error updating arbitrator:', error);
+      console.error('❌ Error updating arbitrator:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
+      // Улучшенная обработка ошибок
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('Ошибка авторизации. Пожалуйста, войдите в систему заново.');
+      }
+      
       throw error;
     }
   },
@@ -198,10 +242,10 @@ export const arbitratorsService = {
   // Получить статистику по реестру
   async getArbitratorStats(): Promise<ArbitratorStats> {
     try {
-      const response = await apiService.get('/registry/statistics');
+      const response = await apiService.get<ArbitratorStats>('/registry/statistics');
       console.log('API response for stats:', response);
       console.log('Response data:', response.data);
-      return response.data;
+      return response.data as unknown as ArbitratorStats;
     } catch (error: any) {
       console.error('Error fetching arbitrator stats:', error);
       
@@ -286,12 +330,12 @@ export const arbitratorsService = {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await apiService.post('/registry/import', formData, {
+      const response = await apiService.post<{ success: number; errors: string[] }>('/registry/import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      return response.data;
+      return response.data as unknown as { success: number; errors: string[] };
     } catch (error: any) {
       console.error('Error importing arbitrators:', error);
       throw error;
@@ -310,10 +354,10 @@ export const arbitratorsService = {
       if (filters.sortBy) params.append('sortBy', filters.sortBy);
       if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-      const response = await apiService.get(`/registry/export/excel?${params.toString()}`, {
+      const response = await apiService.get<Blob>(`/registry/export/excel?${params.toString()}`, {
         responseType: 'blob',
       });
-      return response.data;
+      return response.data as unknown as Blob;
     } catch (error: any) {
       console.error('Error exporting arbitrators:', error);
       throw error;
@@ -332,10 +376,10 @@ export const arbitratorsService = {
       if (filters.sortBy) params.append('sortBy', filters.sortBy);
       if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-      const response = await apiService.get(`/registry/export/csv?${params.toString()}`, {
+      const response = await apiService.get<Blob>(`/registry/export/csv?${params.toString()}`, {
         responseType: 'blob',
       });
-      return response.data;
+      return response.data as unknown as Blob;
     } catch (error: any) {
       console.error('Error exporting arbitrators to CSV:', error);
       throw error;
@@ -345,12 +389,13 @@ export const arbitratorsService = {
   // Поиск по ИНН
   async findByInn(inn: string): Promise<Arbitrator | null> {
     try {
-      const response = await apiService.get(`/registry/inn/${inn}`);
-      return response.data;
+      const response = await apiService.get<Arbitrator>(`/registry/inn/${inn}`);
+      return response.data as unknown as Arbitrator;
     } catch (error: any) {
       if (error.response?.status === 404) {
         return null;
       }
+      // Don't log 404 errors as they are expected for uniqueness checks
       console.error('Error finding arbitrator by INN:', error);
       throw error;
     }
@@ -359,12 +404,13 @@ export const arbitratorsService = {
   // Поиск по номеру реестра
   async findByRegistryNumber(registryNumber: string): Promise<Arbitrator | null> {
     try {
-      const response = await apiService.get(`/registry/number/${registryNumber}`);
-      return response.data;
+      const response = await apiService.get<Arbitrator>(`/registry/number/${registryNumber}`);
+      return response.data as unknown as Arbitrator;
     } catch (error: any) {
       if (error.response?.status === 404) {
         return null;
       }
+      // Don't log 404 errors as they are expected for uniqueness checks
       console.error('Error finding arbitrator by registry number:', error);
       throw error;
     }
@@ -377,7 +423,10 @@ export const arbitratorsService = {
       if (!arbitrator) return true;
       return excludeId ? arbitrator.id === excludeId : false;
     } catch (error: any) {
-      console.error('Error checking INN uniqueness:', error);
+      // Don't log 404 errors as they are expected for uniqueness checks
+      if (error.response?.status !== 404) {
+        console.error('Error checking INN uniqueness:', error);
+      }
       return false;
     }
   },
@@ -389,7 +438,10 @@ export const arbitratorsService = {
       if (!arbitrator) return true;
       return excludeId ? arbitrator.id === excludeId : false;
     } catch (error: any) {
-      console.error('Error checking registry number uniqueness:', error);
+      // Don't log 404 errors as they are expected for uniqueness checks
+      if (error.response?.status !== 404) {
+        console.error('Error checking registry number uniqueness:', error);
+      }
       return false;
     }
   },

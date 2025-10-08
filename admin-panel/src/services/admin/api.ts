@@ -35,6 +35,13 @@ class ApiService {
         const token = this.getToken()
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
+          console.log('🔍 API request interceptor - adding token:', token.substring(0, 20) + '...');
+          console.log('🔍 API request interceptor - request URL:', config.url);
+          console.log('🔍 API request interceptor - request method:', config.method);
+        } else {
+          console.warn('🔍 API request interceptor - NO TOKEN FOUND! Request will fail with 403');
+          console.log('🔍 API request interceptor - request URL:', config.url);
+          console.log('🔍 API request interceptor - request method:', config.method);
         }
         return config
       },
@@ -50,8 +57,13 @@ class ApiService {
         return response;
       },
       async (error) => {
-        console.error('API response interceptor - error:', error);
         const originalRequest = error.config
+
+        // Handle 404 errors - let services handle them (e.g., for uniqueness checks)
+        if (error.response?.status === 404) {
+          // Don't log 404 errors as they are expected for uniqueness checks
+          return Promise.reject(error)
+        }
 
         // Handle network errors (server not running)
         if (error.code === 'NETWORK_ERROR' || 
@@ -60,7 +72,6 @@ class ApiService {
             error.code === 'ERR_NETWORK' ||
             error.code === 'EADDRINUSE' ||
             error.response?.status === 400 ||
-            error.response?.status === 404 ||
             error.response?.status === 503 ||
             !error.response) {
           console.info('API server not available, services will use mock data')
@@ -68,7 +79,10 @@ class ApiService {
           return Promise.reject(error)
         }
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Log other errors
+        console.error('API response interceptor - error:', error);
+
+        if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
           originalRequest._retry = true
 
           try {
@@ -95,7 +109,9 @@ class ApiService {
 
   private getToken(): string | null {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('admin_token')
+      const token = localStorage.getItem('admin_token')
+      console.log('🔍 ApiService.getToken():', token ? token.substring(0, 20) + '...' : 'NOT FOUND')
+      return token
     }
     return null
   }
@@ -326,8 +342,11 @@ class ApiService {
         success: true,
         data: response.data
       }
-    } catch (error) {
-      console.error('API GET error:', error);
+    } catch (error: any) {
+      // Don't log 404 errors as they are expected for uniqueness checks
+      if (error.response?.status !== 404) {
+        console.error('API GET error:', error);
+      }
       throw error;
     }
   }
@@ -367,10 +386,13 @@ class ApiService {
   }
 
   async patch<T>(endpoint: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    console.log('🔍 ApiService.patch: useMockData =', this.useMockData, 'endpoint =', endpoint)
     if (this.useMockData) {
+      console.log('🔍 ApiService.patch: using mock data')
       return this.getMockData<T>(endpoint)
     }
     
+    console.log('🔍 ApiService.patch: making real API call to', endpoint)
     const response = await this.api!.patch(endpoint, data, config)
     // Если ответ уже содержит data, возвращаем как есть
     if (response.data && response.data.data) {

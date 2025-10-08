@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useArbitrators } from '@/hooks/admin/useArbitrators';
 import { arbitratorsService } from '@/services/admin/arbitrators';
 import { ArbitratorFilters, Arbitrator } from '@/types/admin';
-import { PageWithTableSimple } from '@/components/admin/layout/PageWithTableSimple';
+import { PageWithTable } from '@/components/admin/layout/PageWithTable';
 import { Button } from '@/components/admin/ui/Button';
 import { Badge } from '@/components/admin/ui/Badge';
 import { ArbitratorsImportExport } from '@/components/admin/arbitrators/ArbitratorsImportExport';
@@ -329,65 +329,62 @@ export default function ArbitratorsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Заголовок страницы */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Арбитражные управляющие</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Управление реестром арбитражных управляющих
-        </p>
-      </div>
-
-      <PageWithTableSimple
-        data={arbitrators}
-        loading={loading}
-        error={error}
-        columns={columns}
-        pagination={pagination ? {
-          currentPage: pagination.page,
-          totalPages: pagination.pages,
-          totalItems: pagination.total,
-          itemsPerPage: pagination.limit,
-          onPageChange: handlePageChange
-        } : undefined}
-        onSort={handleSort}
-        sortKey={filters.sortBy as keyof Arbitrator}
-        sortDirection={filters.sortOrder as 'asc' | 'desc'}
-        searchValue={searchValue}
-        onSearchChange={handleSearch}
-        searchPlaceholder="Поиск по ФИО, email или номеру..."
-        filters={filtersComponent}
-        showFilters={showFilters}
-        onToggleFilters={() => setShowFilters(!showFilters)}
-        primaryAction={{
-          label: 'Добавить управляющего',
-          onClick: handleCreate,
-          icon: <PlusIcon className="h-4 w-4" />
-        }}
-        secondaryActions={[
+      <PageWithTable
+          data={arbitrators}
+          loading={loading}
+          error={error}
+          columns={columns}
+          pagination={pagination ? {
+            currentPage: pagination.page,
+            totalPages: pagination.pages,
+            totalItems: pagination.total,
+            itemsPerPage: pagination.limit,
+            onPageChange: handlePageChange
+          } : undefined}
+          onSort={handleSort}
+          sortKey={filters.sortBy as keyof Arbitrator}
+          sortDirection={filters.sortOrder as 'asc' | 'desc'}
+          searchValue={searchValue}
+          onSearchChange={handleSearch}
+          searchPlaceholder="Поиск по ФИО, email или номеру..."
+          filters={filtersComponent}
+          showFilters={showFilters}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+          title="Арбитражные управляющие"
+          description="Управление реестром арбитражных управляющих"
+          primaryAction={{
+            label: 'Добавить управляющего',
+            onClick: handleCreate,
+            icon: <PlusIcon className="h-4 w-4" />
+          }}
+          secondaryActions={[
+            ...(selectedIds.length > 0 ? [{
+              label: `Удалить выбранные (${selectedIds.length})`,
+              onClick: handleBulkDelete,
+              icon: <TrashIcon className="h-4 w-4" />,
+              variant: 'danger' as const
+            }] : [])
+          ]}
+          emptyState={{
+            title: 'Нет арбитражных управляющих',
+            description: 'Добавьте первого арбитражного управляющего в реестр',
+            action: {
+              label: 'Добавить управляющего',
+              onClick: handleCreate
+            }
+          }}
+          onRefresh={refetch}
+        />
+        
+        {/* Компонент импорта/экспорта */}
+        <div className="flex justify-end">
           <ArbitratorsImportExport
-            key="import-export"
             onImport={handleImport}
             onExport={handleExport}
             onExportCsv={handleExportCsv}
             loading={loading}
-          />,
-          ...(selectedIds.length > 0 ? [{
-            label: `Удалить выбранные (${selectedIds.length})`,
-            onClick: handleBulkDelete,
-            icon: <TrashIcon className="h-4 w-4" />,
-            variant: 'danger' as const
-          }] : [])
-        ]}
-        emptyState={{
-          title: 'Нет арбитражных управляющих',
-          description: 'Добавьте первого арбитражного управляющего в реестр',
-          action: {
-            label: 'Добавить управляющего',
-            onClick: handleCreate
-          }
-        }}
-        onRefresh={refetch}
-      />
+          />
+        </div>
     </div>
   );
 }

@@ -211,8 +211,14 @@ export function ArbitratorForm({
       };
 
       await onSubmit(formData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка отправки формы:', error);
+      
+      // Если это 403 ошибка, показываем более информативное сообщение
+      if (error.response?.status === 403) {
+        console.error('403 Forbidden error - возможно, токен истек или нет прав доступа');
+        // Можно добавить уведомление пользователю
+      }
     }
   };
 
@@ -221,10 +227,10 @@ export function ArbitratorForm({
       id: 'basic',
       label: 'Основная информация',
       content: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 ФИО <span className="text-red-500">*</span>
               </label>
               <Input
@@ -235,7 +241,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 ИНН <span className="text-red-500">*</span>
               </label>
               <Input
@@ -251,7 +257,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Номер в реестре СРО <span className="text-red-500">*</span>
               </label>
               <Input
@@ -263,7 +269,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 СНИЛС
               </label>
               <Input
@@ -275,7 +281,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Номер в Госреестре
               </label>
               <Input
@@ -286,7 +292,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата включения в Госреестр
               </label>
               <Input
@@ -297,7 +303,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Телефон <span className="text-red-500">*</span>
               </label>
               <Input
@@ -308,7 +314,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Email <span className="text-red-500">*</span>
               </label>
               <Input
@@ -320,7 +326,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Регион
               </label>
               <Input
@@ -331,7 +337,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Населенный пункт
               </label>
               <Input
@@ -342,7 +348,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Статус
               </label>
               <Select {...register('status')} error={errors.status?.message}>
@@ -353,7 +359,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата включения в реестр СРО <span className="text-red-500">*</span>
               </label>
               <Input
@@ -364,7 +370,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата исключения
               </label>
               <Input
@@ -374,8 +380,8 @@ export function ArbitratorForm({
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Причина исключения
               </label>
               <Textarea
@@ -393,10 +399,10 @@ export function ArbitratorForm({
       id: 'personal',
       label: 'Личная информация',
       content: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата рождения
               </label>
               <Input
@@ -407,7 +413,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Место рождения
               </label>
               <Input
@@ -418,7 +424,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата регистрации
               </label>
               <Input
@@ -429,7 +435,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Номер решения
               </label>
               <Input
@@ -446,7 +452,7 @@ export function ArbitratorForm({
       id: 'professional',
       label: 'Профессиональная подготовка',
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Образование
@@ -500,7 +506,7 @@ export function ArbitratorForm({
       id: 'legal',
       label: 'Дисквалификация и судимости',
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Дисквалификация
@@ -525,9 +531,9 @@ export function ArbitratorForm({
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата судимости
               </label>
               <Input
@@ -538,7 +544,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Номер судимости
               </label>
               <Input
@@ -548,8 +554,8 @@ export function ArbitratorForm({
               />
             </div>
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div className="sm:col-span-2 lg:col-span-3 xl:col-span-4">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Наименование судимости
               </label>
               <Input
@@ -566,10 +572,10 @@ export function ArbitratorForm({
       id: 'insurance',
       label: 'Страхование',
       content: (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Начало страхования
               </label>
               <Input
@@ -580,7 +586,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Окончание страхования
               </label>
               <Input
@@ -591,7 +597,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Сумма договора (₽)
               </label>
               <Input
@@ -603,7 +609,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Номер договора
               </label>
               <Input
@@ -614,7 +620,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Дата договора
               </label>
               <Input
@@ -625,7 +631,7 @@ export function ArbitratorForm({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-xs font-medium text-gray-700 mb-1">
                 Страховая компания
               </label>
               <Input
@@ -642,7 +648,7 @@ export function ArbitratorForm({
       id: 'additional',
       label: 'Дополнительно',
       content: (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Взнос в компенсационный фонд (₽)

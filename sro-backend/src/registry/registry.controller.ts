@@ -33,7 +33,7 @@ export class RegistryController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.REGISTRY_CREATE)
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createArbitraryManagerDto: CreateArbitraryManagerDto, @Request() req) {
@@ -84,7 +84,7 @@ export class RegistryController {
 
   @Post('import')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @RequirePermissions(Permission.REGISTRY_CREATE)
   @HttpCode(HttpStatus.OK)
   async import(@Body() importData: ImportRegistryDto, @Request() req) {
@@ -112,7 +112,7 @@ export class RegistryController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.REGISTRY_UPDATE)
   async update(@Param('id') id: string, @Body() updateArbitraryManagerDto: UpdateArbitraryManagerDto, @Request() req) {
     const manager = await this.registryService.update(id, updateArbitraryManagerDto, req.user.id);
@@ -121,7 +121,7 @@ export class RegistryController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @RequirePermissions(Permission.REGISTRY_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {

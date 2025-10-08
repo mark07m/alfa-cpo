@@ -227,3 +227,4 @@ export function PageWithTableSimple<T extends { id: string }>({
     </div>
   );
 }
+

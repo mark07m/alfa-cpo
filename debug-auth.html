@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth</title>
+</head>
+<body>
+    <h1>Debug Auth</h1>
+    <div id="output"></div>
+    
+    <script>
+        async function testAuth() {
+            const output = document.getElementById('output');
+            
+            try {
+                // Тест 1: Проверка переменных окружения
+                output.innerHTML += '<h2>1. Переменные окружения:</h2>';
+                output.innerHTML += `<p>NEXT_PUBLIC_USE_MOCK_DATA: ${process?.env?.NEXT_PUBLIC_USE_MOCK_DATA || 'undefined'}</p>`;
+                output.innerHTML += `<p>NEXT_PUBLIC_API_URL: ${process?.env?.NEXT_PUBLIC_API_URL || 'undefined'}</p>`;
+                
+                // Тест 2: API логин
+                output.innerHTML += '<h2>2. API логин:</h2>';
+                const loginResponse = await fetch('http://localhost:3001/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'aaadmin@sro-au.ru',
+                        password: 'Admin123!'
+                    })
+                });
+                
+                const loginData = await loginResponse.json();
+                output.innerHTML += `<p>Статус: ${loginResponse.status}</p>`;
+                output.innerHTML += `<p>Ответ: <pre>${JSON.stringify(loginData, null, 2)}</pre></p>`;
+                
+                if (loginData.success) {
+                    const token = loginData.data.token;
+                    output.innerHTML += `<p>Токен: ${token.substring(0, 20)}...</p>`;
+                    
+                    // Тест 3: Защищенный эндпоинт
+                    output.innerHTML += '<h2>3. Защищенный эндпоинт:</h2>';
+                    const protectedResponse = await fetch('http://localhost:3001/api/registry', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const protectedData = await protectedResponse.json();
+                    output.innerHTML += `<p>Статус: ${protectedResponse.status}</p>`;
+                    output.innerHTML += `<p>Найдено записей: ${protectedData.data?.length || 0}</p>`;
+                }
+                
+            } catch (error) {
+                output.innerHTML += `<p style="color: red;">Ошибка: ${error.message}</p>`;
+            }
+        }
+        
+        testAuth();
+    </script>
+</body>
+</html>

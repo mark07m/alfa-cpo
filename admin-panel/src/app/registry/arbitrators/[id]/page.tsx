@@ -2,7 +2,10 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useArbitrator } from '@/hooks/admin/useArbitrators';
+import { arbitratorsService } from '@/services/admin/arbitrators';
 import { Button } from '@/components/admin/ui/Button';
+import { ArbitratorForm } from '@/components/admin/arbitrators/ArbitratorForm';
+import { useState } from 'react';
 import { 
   PencilIcon, 
   ArrowLeftIcon,
@@ -15,7 +18,8 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -25,7 +29,11 @@ export default function ArbitratorDetailsPage() {
   const params = useParams();
   const id = params.id as string;
   
-  const { arbitrator, loading, error } = useArbitrator(id);
+  const { arbitrator, loading, error, updateArbitrator } = useArbitrator(id);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const formatDate = (dateString: string) => {
     try {
@@ -48,6 +56,45 @@ export default function ArbitratorDetailsPage() {
         {config.label}
       </span>
     );
+  };
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSave = async (data: any) => {
+    try {
+      setIsUpdating(true);
+      await updateArbitrator(data);
+      setIsEditing(false);
+      // Показать уведомление об успешном сохранении
+      alert('Арбитражный управляющий успешно обновлен');
+    } catch (error) {
+      console.error('Ошибка при сохранении:', error);
+      alert('Ошибка при сохранении изменений');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!arbitrator) return;
+    
+    try {
+      setIsDeleting(true);
+      await arbitratorsService.deleteArbitrator(arbitrator.id);
+      router.push('/registry/arbitrators');
+    } catch (error) {
+      console.error('Ошибка удаления арбитражного управляющего:', error);
+      alert('Ошибка при удалении арбитражного управляющего');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   if (loading) {
@@ -123,61 +170,93 @@ export default function ArbitratorDetailsPage() {
             <span>Назад</span>
           </Button>
         </div>
-        <Button
-          onClick={() => router.push(`/registry/arbitrators/${arbitrator.id}/edit`)}
-          className="flex items-center space-x-2"
-        >
-          <PencilIcon className="h-4 w-4" />
-          <span>Редактировать</span>
-        </Button>
+        <div className="flex items-center space-x-3">
+          <Button
+            onClick={handleEdit}
+            className="flex items-center space-x-2"
+            disabled={isUpdating}
+          >
+            <PencilIcon className="h-4 w-4" />
+            <span>{isEditing ? 'Отменить' : 'Редактировать'}</span>
+          </Button>
+          <Button
+            variant="danger"
+            onClick={() => setShowDeleteConfirm(true)}
+            className="flex items-center space-x-2"
+          >
+            <TrashIcon className="h-4 w-4" />
+            <span>Удалить</span>
+          </Button>
+        </div>
       </div>
 
-      {/* Основная информация */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-medium text-gray-900 flex items-center">
-            <UserIcon className="h-5 w-5 mr-2" />
-            Основная информация
-          </h2>
+      {/* Форма редактирования или просмотр данных */}
+      {isEditing ? (
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-base font-medium text-gray-900 flex items-center">
+              <PencilIcon className="h-4 w-4 mr-2" />
+              Редактирование арбитражного управляющего
+            </h2>
+          </div>
+          <div className="p-4">
+            <ArbitratorForm
+              initialData={arbitrator}
+              onSubmit={handleSave}
+              onCancel={handleCancelEdit}
+              loading={isUpdating}
+              isEdit={true}
+            />
+          </div>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">ФИО</label>
-              <p className="text-sm text-gray-900">{arbitrator.fullName}</p>
+      ) : (
+        <>
+          {/* Основная информация */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <h2 className="text-base font-medium text-gray-900 flex items-center">
+                <UserIcon className="h-4 w-4 mr-2" />
+                Основная информация
+              </h2>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">ИНН</label>
-              <p className="text-sm text-gray-900">{arbitrator.inn}</p>
+            <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">ФИО</label>
+              <p className="text-sm text-gray-900 truncate" title={arbitrator.fullName}>{arbitrator.fullName}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Номер в реестре СРО</label>
-              <p className="text-sm text-gray-900">{arbitrator.registryNumber}</p>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">ИНН</label>
+              <p className="text-sm text-gray-900 font-mono">{arbitrator.inn}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">СНИЛС</label>
-              <p className="text-sm text-gray-900">{arbitrator.snils || '—'}</p>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Номер в реестре СРО</label>
+              <p className="text-sm text-gray-900 font-mono">{arbitrator.registryNumber}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Номер в Госреестре</label>
-              <p className="text-sm text-gray-900">{arbitrator.stateRegistryNumber || '—'}</p>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">СНИЛС</label>
+              <p className="text-sm text-gray-900 font-mono">{arbitrator.snils || '—'}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Дата включения в Госреестр</label>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Номер в Госреестре</label>
+              <p className="text-sm text-gray-900 font-mono">{arbitrator.stateRegistryNumber || '—'}</p>
+            </div>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Дата включения в Госреестр</label>
               <p className="text-sm text-gray-900">
                 {arbitrator.stateRegistryDate ? formatDate(arbitrator.stateRegistryDate) : '—'}
               </p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Телефон</label>
-              <p className="text-sm text-gray-900">{arbitrator.phone}</p>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Телефон</label>
+              <p className="text-sm text-gray-900 font-mono">{arbitrator.phone}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Email</label>
-              <p className="text-sm text-gray-900">{arbitrator.email}</p>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+              <p className="text-sm text-gray-900 truncate" title={arbitrator.email}>{arbitrator.email}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Статус</label>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Статус</label>
               <div className="mt-1">{getStatusBadge(arbitrator.status)}</div>
             </div>
           </div>
@@ -186,25 +265,25 @@ export default function ArbitratorDetailsPage() {
 
       {/* Контактная информация */}
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <h2 className="text-lg font-medium text-gray-900 flex items-center">
-            <MapPinIcon className="h-5 w-5 mr-2" />
+        <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-base font-medium text-gray-900 flex items-center">
+            <MapPinIcon className="h-4 w-4 mr-2" />
             Контактная информация
           </h2>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Регион</label>
-              <p className="text-sm text-gray-900">{arbitrator.region || '—'}</p>
+        <div className="p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Регион</label>
+              <p className="text-sm text-gray-900 truncate" title={arbitrator.region || '—'}>{arbitrator.region || '—'}</p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Населенный пункт</label>
-              <p className="text-sm text-gray-900">{arbitrator.city || '—'}</p>
+            <div className="min-w-0">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Населенный пункт</label>
+              <p className="text-sm text-gray-900 truncate" title={arbitrator.city || '—'}>{arbitrator.city || '—'}</p>
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-500 mb-1">Почтовый адрес</label>
-              <p className="text-sm text-gray-900">{arbitrator.postalAddress || '—'}</p>
+            <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Почтовый адрес</label>
+              <p className="text-sm text-gray-900 break-words" title={arbitrator.postalAddress || '—'}>{arbitrator.postalAddress || '—'}</p>
             </div>
           </div>
         </div>
@@ -425,6 +504,52 @@ export default function ArbitratorDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Модальное окно подтверждения удаления */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0">
+                <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900">
+                  Подтверждение удаления
+                </h3>
+              </div>
+            </div>
+            <div className="mb-6">
+              <p className="text-sm text-gray-500">
+                Вы уверены, что хотите удалить арбитражного управляющего{' '}
+                <span className="font-medium text-gray-900">{arbitrator.fullName}</span>?
+              </p>
+              <p className="text-sm text-red-600 mt-2">
+                Это действие нельзя отменить.
+              </p>
+            </div>
+            <div className="flex justify-end space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                Отмена
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDelete}
+                loading={isDeleting}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Удаление...' : 'Удалить'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+        </>
+      )}
     </div>
   );
 }

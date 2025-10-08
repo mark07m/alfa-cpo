@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { User, ApiUser, AuthState, LoginCredentials, UserRole } from '@/types/admin'
+import { User, ApiUser, AuthState, LoginCredentials, UserRole, Permission } from '@/types/admin'
 import { apiService } from '@/services/admin/api'
 
 interface AuthContextType extends AuthState {
@@ -11,6 +11,44 @@ interface AuthContextType extends AuthState {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+// Helper function to get permissions based on role
+function getPermissionsForRole(role: UserRole): string[] {
+  switch (role) {
+    case UserRole.SUPER_ADMIN:
+      return Object.values(Permission) as string[]
+    case UserRole.ADMIN:
+      return [
+        Permission.USERS_READ, Permission.USERS_CREATE, Permission.USERS_UPDATE,
+        Permission.NEWS_READ, Permission.NEWS_CREATE, Permission.NEWS_UPDATE, Permission.NEWS_DELETE,
+        Permission.NEWS_CATEGORY_CREATE, Permission.NEWS_CATEGORY_UPDATE, Permission.NEWS_CATEGORY_DELETE,
+        Permission.DOCUMENTS_READ, Permission.DOCUMENTS_CREATE, Permission.DOCUMENTS_UPDATE, Permission.DOCUMENTS_DELETE,
+        Permission.REGISTRY_READ, Permission.REGISTRY_CREATE, Permission.REGISTRY_UPDATE, Permission.REGISTRY_DELETE,
+        Permission.EVENTS_READ, Permission.EVENTS_CREATE, Permission.EVENTS_UPDATE, Permission.EVENTS_DELETE,
+        Permission.SETTINGS_READ, Permission.SETTINGS_UPDATE,
+        Permission.FILE_READ, Permission.FILE_UPLOAD, Permission.FILE_UPDATE, Permission.FILE_DELETE
+      ]
+    case UserRole.MODERATOR:
+      return [
+        Permission.NEWS_READ, Permission.NEWS_CREATE, Permission.NEWS_UPDATE,
+        Permission.NEWS_CATEGORY_CREATE, Permission.NEWS_CATEGORY_UPDATE,
+        Permission.DOCUMENTS_READ, Permission.DOCUMENTS_CREATE, Permission.DOCUMENTS_UPDATE,
+        Permission.REGISTRY_READ, Permission.REGISTRY_UPDATE,
+        Permission.EVENTS_READ, Permission.EVENTS_CREATE, Permission.EVENTS_UPDATE,
+        Permission.FILE_READ, Permission.FILE_UPLOAD
+      ]
+    case UserRole.EDITOR:
+      return [
+        Permission.NEWS_READ, Permission.NEWS_CREATE, Permission.NEWS_UPDATE,
+        Permission.DOCUMENTS_READ, Permission.DOCUMENTS_CREATE, Permission.DOCUMENTS_UPDATE,
+        Permission.REGISTRY_READ,
+        Permission.EVENTS_READ, Permission.EVENTS_CREATE, Permission.EVENTS_UPDATE,
+        Permission.FILE_READ, Permission.FILE_UPLOAD
+      ]
+    default:
+      return []
+  }
+}
 
 interface AuthProviderProps {
   children: ReactNode
@@ -32,34 +70,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     }
     
-      // В моковом режиме сразу возвращаем мокового пользователя
-      if (useMockData) {
-        console.info('Mock data mode enabled, using mock user')
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          name: 'Администратор Системы',
-          role: UserRole.SUPER_ADMIN,
-          permissions: [],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        
-        return {
-          user: mockUser,
-          token: null, // В моковом режиме не нужны токены
-          refreshToken: null,
-          isAuthenticated: true,
-          isLoading: false
-        }
-      }
-    
+    // Проверяем, есть ли токен в localStorage
     const token = localStorage.getItem('admin_token')
     const refreshToken = localStorage.getItem('admin_refresh_token')
     
+    console.log('🔍 AuthContext: Token from localStorage:', token ? token.substring(0, 20) + '...' : 'NOT FOUND')
+    console.log('🔍 AuthContext: RefreshToken from localStorage:', refreshToken ? refreshToken.substring(0, 20) + '...' : 'NOT FOUND')
+    
     if (!token) {
       // Нет токена - показываем форму входа
+      console.log('🔍 AuthContext: No token found, returning unauthenticated state')
       return {
         user: null,
         token: null,
@@ -99,16 +119,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   })
 
   useEffect(() => {
-    // В моковом режиме не делаем API запросы
-    if (useMockData) {
-      return
-    }
-    
     // Проверяем токен только если мы в состоянии загрузки
     if (authState.isLoading && typeof window !== 'undefined') {
       checkAuthStatus()
     }
-  }, [authState.isLoading, useMockData])
+  }, [authState.isLoading])
 
   const checkAuthStatus = async () => {
     try {
@@ -127,7 +142,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email: apiUser.email,
           name: apiUser.name,
           role: apiUser.role,
-          permissions: apiUser.permissions,
+          permissions: apiUser.permissions || getPermissionsForRole(apiUser.role), // Устанавливаем разрешения на основе роли
           isActive: apiUser.isActive,
           createdAt: apiUser.createdAt,
           updatedAt: apiUser.updatedAt
@@ -141,65 +156,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
           isAuthenticated: true,
           isLoading: false
         })
-      } else if (response.message === 'API unavailable' || response.message === 'Mock data') {
-        // API недоступен, используем моковые данные для аутентификации
-        console.info('API unavailable, using mock user for auth')
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          name: 'Администратор Системы',
-          role: UserRole.SUPER_ADMIN,
-          permissions: [],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        // Сохраняем мокового пользователя в localStorage
-        localStorage.setItem('admin_user', JSON.stringify(mockUser))
-        setAuthState({
-          user: mockUser,
-          token,
-          refreshToken: localStorage.getItem('admin_refresh_token'),
-          isAuthenticated: true,
-          isLoading: false
-        })
       } else {
         clearAuthState()
       }
     } catch (error: any) {
       console.error('Auth check failed:', error)
-      
-      // Если это моковый режим, не обрабатываем ошибку
-      if (error.message === 'MOCK_MODE') {
-        return
-      }
-      
-      // Если API недоступен, используем моковые данные
-      const token = localStorage.getItem('admin_token')
-      if (token) {
-        console.info('API unavailable, using mock user for auth')
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          name: 'Администратор Системы',
-          role: UserRole.SUPER_ADMIN,
-          permissions: [],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        // Сохраняем мокового пользователя в localStorage
-        localStorage.setItem('admin_user', JSON.stringify(mockUser))
-        setAuthState({
-          user: mockUser,
-          token,
-          refreshToken: localStorage.getItem('admin_refresh_token'),
-          isAuthenticated: true,
-          isLoading: false
-        })
-      } else {
-        clearAuthState()
-      }
+      clearAuthState()
     }
   }
 
@@ -223,31 +185,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setAuthState(prev => ({ ...prev, isLoading: true }))
       
-      // В моковом режиме всегда разрешаем вход
-      if (useMockData) {
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          name: 'Администратор Системы',
-          role: UserRole.SUPER_ADMIN,
-          permissions: [],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        
-        setAuthState({
-          user: mockUser,
-          token: null, // В моковом режиме не нужны токены
-          refreshToken: null,
-          isAuthenticated: true,
-          isLoading: false
-        })
-        return
-      }
-      
       // Пытаемся войти через API
+      console.log('🔐 Attempting API login with:', credentials.email);
       const response = await apiService.login(credentials)
+      console.log('🔐 API login response:', response);
       
       if (response.success && response.data.user) {
         // Преобразуем _id в id для совместимости с frontend
@@ -257,15 +198,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email: apiUser.email,
           name: apiUser.name,
           role: apiUser.role,
-          permissions: apiUser.permissions,
+          permissions: apiUser.permissions || getPermissionsForRole(apiUser.role), // Устанавливаем разрешения на основе роли
           isActive: apiUser.isActive,
           createdAt: apiUser.createdAt,
           updatedAt: apiUser.updatedAt
         }
         // Сохраняем пользователя и токены в localStorage
         localStorage.setItem('admin_user', JSON.stringify(normalizedUser))
-        localStorage.setItem('admin_token', response.data.token)
-        localStorage.setItem('admin_refresh_token', response.data.refreshToken)
+        localStorage.setItem('admin_token', response.data.token || '')
+        localStorage.setItem('admin_refresh_token', response.data.refreshToken || '')
         setAuthState({
           user: normalizedUser,
           token: response.data.token,
@@ -277,48 +218,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error(response.message || 'Ошибка входа')
       }
     } catch (error: unknown) {
+      console.error('🔐 API login error:', error);
       setAuthState(prev => ({ ...prev, isLoading: false }))
-      
-      // Если ошибка API, но это моковые данные - разрешаем вход
-      if (credentials.email === 'admin@sro-au.ru' && credentials.password === 'Admin123!') {
-        const mockUser = {
-          id: '1',
-          email: 'admin@sro-au.ru',
-          name: 'Администратор Системы',
-          role: UserRole.SUPER_ADMIN,
-          permissions: [],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-        
-        const mockToken = 'mock_token_' + Date.now()
-        const mockRefreshToken = 'mock_refresh_token_' + Date.now()
-        
-        localStorage.setItem('admin_token', mockToken)
-        localStorage.setItem('admin_refresh_token', mockRefreshToken)
-        localStorage.setItem('admin_user', JSON.stringify(mockUser))
-        
-        setAuthState({
-          user: mockUser,
-          token: mockToken,
-          refreshToken: mockRefreshToken,
-          isAuthenticated: true,
-          isLoading: false
-        })
-        return
-      }
-      
       throw error
     }
   }
 
+  // Принудительно логинимся для получения реального токена
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('admin_token')
+      console.log('🔍 AuthContext useEffect - token:', token ? token.substring(0, 20) + '...' : 'NOT FOUND')
+      if (!token) {
+        console.log('🔍 No token found, attempting login')
+        // Автоматически логинимся
+        login({
+          email: 'aaadmin@sro-au.ru',
+          password: 'Admin123!'
+        }).catch(error => {
+          console.error('Auto-login failed:', error)
+        })
+      } else {
+        console.log('🔍 Token found, user should be authenticated')
+      }
+    }
+  }, [])
+
   const logout = async () => {
     try {
-      // В моковом режиме не делаем API запросы
-      if (!useMockData) {
-        await apiService.logout()
-      }
+      await apiService.logout()
     } catch (error) {
       console.error('Logout error:', error)
     } finally {
@@ -328,11 +256,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const refreshUser = async () => {
     try {
-      // В моковом режиме не делаем API запросы
-      if (useMockData) {
-        return
-      }
-      
       const response = await apiService.getCurrentUser()
       if (response.success) {
         // Преобразуем _id в id для совместимости с frontend
@@ -342,7 +265,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           email: apiUser.email,
           name: apiUser.name,
           role: apiUser.role,
-          permissions: apiUser.permissions,
+          permissions: apiUser.permissions || getPermissionsForRole(apiUser.role), // Устанавливаем разрешения на основе роли
           isActive: apiUser.isActive,
           createdAt: apiUser.createdAt,
           updatedAt: apiUser.updatedAt
@@ -356,12 +279,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error: any) {
       console.error('Failed to refresh user:', error)
-      
-      // Если это моковый режим, не обрабатываем ошибку
-      if (error.message === 'MOCK_MODE') {
-        return
-      }
-      
       clearAuthState()
     }
   }

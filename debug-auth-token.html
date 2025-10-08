@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Auth Token</title>
+</head>
+<body>
+    <h1>Debug Auth Token</h1>
+    <div id="output"></div>
+    
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            output.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+        
+        // Проверяем переменные окружения
+        log('🔍 Checking environment variables...');
+        log('NEXT_PUBLIC_USE_MOCK_DATA: ' + (process?.env?.NEXT_PUBLIC_USE_MOCK_DATA || 'undefined'));
+        log('NEXT_PUBLIC_API_URL: ' + (process?.env?.NEXT_PUBLIC_API_URL || 'undefined'));
+        
+        // Проверяем localStorage
+        log('🔍 Checking localStorage...');
+        const token = localStorage.getItem('admin_token');
+        const refreshToken = localStorage.getItem('admin_refresh_token');
+        const user = localStorage.getItem('admin_user');
+        
+        log('admin_token: ' + (token ? token.substring(0, 20) + '...' : 'NOT FOUND'));
+        log('admin_refresh_token: ' + (refreshToken ? refreshToken.substring(0, 20) + '...' : 'NOT FOUND'));
+        log('admin_user: ' + (user ? 'FOUND' : 'NOT FOUND'));
+        
+        if (user) {
+            try {
+                const userObj = JSON.parse(user);
+                log('User role: ' + userObj.role);
+                log('User permissions: ' + (userObj.permissions ? userObj.permissions.length : 0) + ' permissions');
+            } catch (e) {
+                log('Error parsing user: ' + e.message);
+            }
+        }
+        
+        // Тестируем API запрос
+        log('🔍 Testing API request...');
+        
+        if (token) {
+            fetch('http://localhost:3001/api/registry', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                log('API Response Status: ' + response.status);
+                if (response.status === 200) {
+                    log('✅ API request successful');
+                } else if (response.status === 401) {
+                    log('❌ API request failed: Unauthorized (401)');
+                } else if (response.status === 403) {
+                    log('❌ API request failed: Forbidden (403)');
+                } else {
+                    log('❌ API request failed with status: ' + response.status);
+                }
+                return response.text();
+            })
+            .then(data => {
+                log('API Response: ' + data.substring(0, 200) + '...');
+            })
+            .catch(error => {
+                log('❌ API request error: ' + error.message);
+            });
+        } else {
+            log('❌ No token available for API request');
+        }
+    </script>
+</body>
+</html>
+

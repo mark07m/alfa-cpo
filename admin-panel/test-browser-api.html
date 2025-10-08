@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест API в браузере</title>
+</head>
+<body>
+    <h1>Тест API в браузере</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_URL = 'http://localhost:3001/api';
+        
+        async function testApiConnection() {
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Тест 1: Health check
+                console.log('1. Проверяем health endpoint...');
+                const healthResponse = await fetch(`${API_URL}/health`);
+                const healthData = await healthResponse.json();
+                console.log('Health:', healthData);
+                resultsDiv.innerHTML += '<p>✅ Health endpoint работает</p>';
+                
+                // Тест 2: Аутентификация
+                console.log('2. Тестируем аутентификацию...');
+                const loginResponse = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'aaadmin@sro-au.ru',
+                        password: 'Admin123!'
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    throw new Error(`Login failed: ${loginResponse.status}`);
+                }
+                
+                const loginData = await loginResponse.json();
+                console.log('Login:', loginData);
+                resultsDiv.innerHTML += '<p>✅ Аутентификация работает</p>';
+                
+                const token = loginData.data.token;
+                console.log('Token:', token ? token.substring(0, 20) + '...' : 'Нет токена');
+                
+                // Тест 3: Получение списка арбитражных управляющих
+                console.log('3. Получаем список арбитражных управляющих...');
+                const arbitratorsResponse = await fetch(`${API_URL}/registry`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (!arbitratorsResponse.ok) {
+                    throw new Error(`Arbitrators request failed: ${arbitratorsResponse.status}`);
+                }
+                
+                const arbitratorsData = await arbitratorsResponse.json();
+                console.log('Arbitrators:', arbitratorsData);
+                resultsDiv.innerHTML += `<p>✅ Список арбитражных управляющих получен (${arbitratorsData.data.length} записей)</p>`;
+                
+                resultsDiv.innerHTML += '<p><strong>🎉 Все тесты прошли успешно! API работает корректно.</strong></p>';
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                resultsDiv.innerHTML += `<p>❌ Ошибка: ${error.message}</p>`;
+            }
+        }
+        
+        // Запускаем тест при загрузке страницы
+        testApiConnection();
+    </script>
+</body>
+</html>
+
