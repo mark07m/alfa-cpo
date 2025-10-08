@@ -128,9 +128,24 @@ export default function NewsPage() {
   }
 
   const getCategoryStats = () => {
-    const stats = newsCategories.map(category => ({
+    // Ensure we have valid categories data
+    if (!newsCategories || !Array.isArray(newsCategories)) {
+      console.log('getCategoryStats: No valid categories data', { newsCategories })
+      return []
+    }
+    
+    // Debug: Check for duplicate IDs
+    const ids = newsCategories.map(cat => cat.id)
+    const uniqueIds = [...new Set(ids)]
+    if (ids.length !== uniqueIds.length) {
+      console.warn('getCategoryStats: Duplicate category IDs detected', { ids, uniqueIds })
+    }
+    
+    const stats = newsCategories.map((category, index) => ({
       ...category,
-      count: news?.filter(n => n.category.id === category.id).length || 0
+      count: news?.filter(n => n.category?.id === category.id).length || 0,
+      // Ensure unique key by using index as fallback
+      uniqueKey: category.id || `category-${index}`
     }))
     return stats
   }
@@ -239,7 +254,7 @@ export default function NewsPage() {
                       Категории
                     </dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {newsCategories.length}
+                      {newsCategories?.length || 0}
                     </dd>
                   </dl>
                 </div>
@@ -254,7 +269,7 @@ export default function NewsPage() {
             <h3 className="text-lg font-medium text-gray-900 mb-4">Новости по категориям</h3>
             <div className="space-y-3">
               {getCategoryStats().map((category) => (
-                <div key={category.id} className="flex items-center justify-between">
+                <div key={category.uniqueKey} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div 
                       className="h-3 w-3 rounded-full mr-3"
@@ -338,7 +353,7 @@ export default function NewsPage() {
         {/* Фильтры */}
         <NewsFilters
           filters={filters}
-          categories={newsCategories}
+          categories={newsCategories || []}
           onFilterChange={handleFilterChange}
           onSearch={handleSearch}
           isOpen={showFilters}
@@ -358,7 +373,7 @@ export default function NewsPage() {
         {/* Список новостей */}
         <NewsList
           news={news}
-          categories={newsCategories}
+          categories={newsCategories || []}
           isLoading={isLoading}
           pagination={pagination}
           selectedNews={selectedNews}

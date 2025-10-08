@@ -92,11 +92,20 @@ export function NewsFilters({
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
           >
             <option value="">Все категории</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
+            {categories && Array.isArray(categories) ? (() => {
+              // Debug: Check for duplicate IDs
+              const ids = categories.map(cat => cat.id)
+              const uniqueIds = [...new Set(ids)]
+              if (ids.length !== uniqueIds.length) {
+                console.warn('NewsFilters: Duplicate category IDs detected', { ids, uniqueIds })
+              }
+              
+              return categories.map((category, index) => (
+                <option key={category.id || `category-${index}`} value={category.id}>
+                  {category.name}
+                </option>
+              ))
+            })() : null}
           </select>
         </div>
 

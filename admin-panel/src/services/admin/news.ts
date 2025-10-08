@@ -1,5 +1,6 @@
 import { apiService } from './api'
 import { News, NewsCategory, NewsFilters, PaginationParams, ApiResponse, UserRole } from '@/types/admin'
+import { mockNewsCategories, mockNews } from '@/data/mockData'
 
 export interface NewsService {
   getNews(filters?: NewsFilters & PaginationParams): Promise<ApiResponse<{ news: News[]; pagination: any }>>
@@ -33,7 +34,7 @@ class NewsServiceImpl implements NewsService {
       if (filters.sortBy) params.append('sortBy', filters.sortBy)
       if (filters.sortOrder) params.append('sortOrder', filters.sortOrder)
 
-      const response = await apiService.get(`/news?${params.toString()}`) as ApiResponse<{ data: News[]; pagination: any }>
+      const response = await apiService.get(`/news?${params.toString()}`) as ApiResponse<News[]> & { pagination?: any }
       console.log('News service response:', response) // Debug log
       
       // Ensure we always return a valid response
@@ -45,12 +46,48 @@ class NewsServiceImpl implements NewsService {
         }
       }
       
-      // Backend now returns data directly, not wrapped in news property
+      // Backend returns data in format { data: [...], pagination: {...} }
+      // Transform API data to match frontend News interface
+      const transformedNews = response.data.map((newsItem: any) => ({
+        id: newsItem._id,
+        title: newsItem.title,
+        content: newsItem.content,
+        excerpt: newsItem.excerpt,
+        category: {
+          id: 'default',
+          name: 'Без категории',
+          slug: 'uncategorized',
+          color: '#6B7280',
+          icon: 'document-text',
+          sortOrder: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        status: newsItem.status,
+        publishedAt: newsItem.publishedAt,
+        createdAt: newsItem.createdAt,
+        updatedAt: newsItem.updatedAt,
+        author: {
+          id: newsItem.createdBy || 'unknown',
+          email: 'unknown@example.com',
+          name: 'Неизвестный автор',
+          role: 'EDITOR' as any,
+          permissions: [],
+          isActive: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        imageUrl: newsItem.imageUrl,
+        seoTitle: newsItem.seoTitle,
+        seoDescription: newsItem.seoDescription,
+        seoKeywords: newsItem.seoKeywords?.join(', ') || ''
+      }))
+
       return {
         success: response.success,
         data: { 
-          news: response.data.data, 
-          pagination: response.data.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }
+          news: transformedNews, 
+          pagination: response.pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }
         },
         message: response.message
       }
@@ -195,7 +232,24 @@ class NewsServiceImpl implements NewsService {
   async getNewsCategories(): Promise<ApiResponse<NewsCategory[]>> {
     try {
       const response = await apiService.get('/news/categories') as ApiResponse<NewsCategory[]>
-      return response
+      // Backend returns data in format { data: [...] }
+      // Transform API data to match frontend NewsCategory interface
+      const transformedCategories = response.data.map((category: any) => ({
+        id: category._id,
+        name: category.name,
+        slug: category.slug,
+        color: category.color || '#6B7280',
+        icon: category.icon || 'document-text',
+        sortOrder: category.order || 0,
+        createdAt: category.createdAt,
+        updatedAt: category.updatedAt
+      }))
+
+      return {
+        success: response.success,
+        data: transformedCategories,
+        message: response.message
+      }
     } catch (error: any) {
       console.error('Failed to fetch news categories:', error)
       if (error.message === 'MOCK_MODE') {
@@ -325,146 +379,7 @@ class NewsServiceImpl implements NewsService {
 }
 
 // Моковые данные для демонстрации
-const mockNews: News[] = [
-  {
-    id: '1',
-    title: 'Новые требования к арбитражным управляющим в 2024 году',
-    content: 'Полный текст новости о новых требованиях...',
-    excerpt: 'С 1 января 2024 года вступают в силу новые требования к арбитражным управляющим...',
-    category: {
-      id: '1',
-      name: 'Законодательство',
-      slug: 'legislation',
-      color: '#3B82F6',
-      icon: 'document-text',
-      sortOrder: 1,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    },
-    status: 'published',
-    publishedAt: '2024-01-15T10:00:00Z',
-    createdAt: '2024-01-15T09:00:00Z',
-    updatedAt: '2024-01-15T09:00:00Z',
-    author: {
-      id: '1',
-      email: 'admin@sro-au.ru',
-      name: 'Администратор СРО',
-      role: UserRole.SUPER_ADMIN,
-      permissions: ['*'],
-      isActive: true,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    },
-    imageUrl: '/images/news-1.jpg',
-    seoTitle: 'Новые требования к арбитражным управляющим 2024',
-    seoDescription: 'Обзор новых требований к арбитражным управляющим с 1 января 2024 года',
-    seoKeywords: 'арбитражные управляющие, требования, 2024, СРО'
-  },
-  {
-    id: '2',
-    title: 'Семинар по повышению квалификации',
-    content: 'Полный текст новости о семинаре...',
-    excerpt: 'Приглашаем всех членов СРО на семинар по повышению квалификации...',
-    category: {
-      id: '2',
-      name: 'Мероприятия',
-      slug: 'events',
-      color: '#10B981',
-      icon: 'calendar',
-      sortOrder: 2,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    },
-    status: 'published',
-    publishedAt: '2024-01-20T14:00:00Z',
-    createdAt: '2024-01-20T13:00:00Z',
-    updatedAt: '2024-01-20T13:00:00Z',
-    author: {
-      id: '1',
-      email: 'admin@sro-au.ru',
-      name: 'Администратор СРО',
-      role: UserRole.SUPER_ADMIN,
-      permissions: ['*'],
-      isActive: true,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    },
-    imageUrl: '/images/news-2.jpg'
-  },
-  {
-    id: '3',
-    title: 'Изменения в реестре арбитражных управляющих',
-    content: 'Полный текст новости об изменениях в реестре...',
-    excerpt: 'В реестр арбитражных управляющих внесены изменения...',
-    category: {
-      id: '3',
-      name: 'Реестр',
-      slug: 'registry',
-      color: '#F59E0B',
-      icon: 'users',
-      sortOrder: 3,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    },
-    status: 'draft',
-    publishedAt: null,
-    createdAt: '2024-01-25T11:00:00Z',
-    updatedAt: '2024-01-25T11:00:00Z',
-    author: {
-      id: '1',
-      email: 'admin@sro-au.ru',
-      name: 'Администратор СРО',
-      role: UserRole.SUPER_ADMIN,
-      permissions: ['*'],
-      isActive: true,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    }
-  }
-]
 
-const mockNewsCategories: NewsCategory[] = [
-  {
-    id: '1',
-    name: 'Законодательство',
-    slug: 'legislation',
-    color: '#3B82F6',
-    icon: 'document-text',
-    sortOrder: 1,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '2',
-    name: 'Мероприятия',
-    slug: 'events',
-    color: '#10B981',
-    icon: 'calendar',
-    sortOrder: 2,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '3',
-    name: 'Реестр',
-    slug: 'registry',
-    color: '#F59E0B',
-    icon: 'users',
-    sortOrder: 3,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
-  },
-  {
-    id: '4',
-    name: 'Объявления',
-    slug: 'announcements',
-    color: '#EF4444',
-    icon: 'megaphone',
-    sortOrder: 4,
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
-  }
-]
 
 // Создаем экземпляр сервиса с fallback на моковые данные
 class NewsServiceWithFallback implements NewsService {

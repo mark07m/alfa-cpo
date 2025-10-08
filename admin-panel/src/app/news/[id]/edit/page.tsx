@@ -12,14 +12,14 @@ export default function EditNewsPage() {
   const params = useParams()
   const newsId = params.id as string
   
-  const { updateNews, categories, fetchCategories } = useNews()
+  const { updateNews, newsCategories, fetchNewsCategories } = useNews()
   const [news, setNews] = useState<News | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchCategories()
+    fetchNewsCategories()
     // В реальном приложении здесь был бы запрос для получения новости по ID
     // Пока используем моковые данные
     const mockNews: News = {
@@ -132,7 +132,7 @@ export default function EditNewsPage() {
 
         <NewsForm
           news={news}
-          categories={categories}
+          categories={newsCategories}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isSubmitting={isSubmitting}

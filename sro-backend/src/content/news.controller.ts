@@ -137,7 +137,7 @@ export class NewsController {
 
   @Delete('bulk')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.NEWS_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   async bulkRemove(@Body() body: { ids: string[] }) {
@@ -147,7 +147,7 @@ export class NewsController {
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.NEWS_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {

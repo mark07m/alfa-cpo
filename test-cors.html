@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+</head>
+<body>
+    <h1>CORS Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testCORS() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Test news API with CORS
+                const newsResponse = await fetch('http://localhost:3001/api/news', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!newsResponse.ok) {
+                    throw new Error(`HTTP error! status: ${newsResponse.status}`);
+                }
+                
+                const newsData = await newsResponse.json();
+                
+                resultDiv.innerHTML += '<h2>News API Response (CORS):</h2>';
+                resultDiv.innerHTML += '<pre>' + JSON.stringify(newsData, null, 2) + '</pre>';
+                
+                // Test categories API with CORS
+                const categoriesResponse = await fetch('http://localhost:3001/api/news/categories', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!categoriesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${categoriesResponse.status}`);
+                }
+                
+                const categoriesData = await categoriesResponse.json();
+                
+                resultDiv.innerHTML += '<h2>Categories API Response (CORS):</h2>';
+                resultDiv.innerHTML += '<pre>' + JSON.stringify(categoriesData, null, 2) + '</pre>';
+                
+            } catch (error) {
+                resultDiv.innerHTML += '<h2>Error:</h2>';
+                resultDiv.innerHTML += '<pre>' + error.message + '</pre>';
+            }
+        }
+        
+        testCORS();
+    </script>
+</body>
+</html>

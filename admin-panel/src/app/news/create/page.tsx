@@ -9,13 +9,13 @@ import { News } from '@/types/admin'
 
 export default function CreateNewsPage() {
   const router = useRouter()
-  const { createNews, categories, fetchCategories } = useNews()
+  const { createNews, newsCategories, fetchNewsCategories } = useNews()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchCategories()
-  }, [])
+    fetchNewsCategories()
+  }, [fetchNewsCategories])
 
   const handleSubmit = async (newsData: Partial<News>) => {
     setIsSubmitting(true)
@@ -66,7 +66,7 @@ export default function CreateNewsPage() {
         )}
 
         <NewsForm
-          categories={categories}
+          categories={newsCategories}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           isSubmitting={isSubmitting}

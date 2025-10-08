@@ -344,7 +344,7 @@ export function useNews(): UseNewsReturn {
   useEffect(() => {
     fetchNews()
     fetchNewsCategories()
-  }, [fetchNews, fetchNewsCategories])
+  }, []) // Убираем зависимости, чтобы избежать бесконечных циклов
 
   return {
     // Данные

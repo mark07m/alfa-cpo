@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Connection Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // Test news API
+                const newsResponse = await fetch('http://localhost:3001/api/news');
+                const newsData = await newsResponse.json();
+                
+                resultDiv.innerHTML += '<h2>News API Response:</h2>';
+                resultDiv.innerHTML += '<pre>' + JSON.stringify(newsData, null, 2) + '</pre>';
+                
+                // Test categories API
+                const categoriesResponse = await fetch('http://localhost:3001/api/news/categories');
+                const categoriesData = await categoriesResponse.json();
+                
+                resultDiv.innerHTML += '<h2>Categories API Response:</h2>';
+                resultDiv.innerHTML += '<pre>' + JSON.stringify(categoriesData, null, 2) + '</pre>';
+                
+            } catch (error) {
+                resultDiv.innerHTML += '<h2>Error:</h2>';
+                resultDiv.innerHTML += '<pre>' + error.message + '</pre>';
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>
