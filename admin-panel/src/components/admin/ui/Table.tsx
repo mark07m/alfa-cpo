@@ -196,8 +196,8 @@ export const Table = <T extends { id: string }>({
 
   return (
     <div className={cn('bg-white rounded-lg border border-neutral-200 overflow-hidden', className)}>
-      <div className="overflow-x-auto">
-        <table className="w-full table-fixed divide-y divide-neutral-200 table-responsive">
+      <div className="overflow-x-visible">
+        <table className="w-full table-auto divide-y divide-neutral-200 text-[11px] leading-tight [&_svg]:h-3 [&_svg]:w-3">
           <thead className="bg-neutral-50">
             <tr>
               {columns.map((column, index) => (
@@ -205,7 +205,7 @@ export const Table = <T extends { id: string }>({
                   key={index}
                   scope="col"
                   className={cn(
-                    'px-3 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider',
+                    'px-1 py-1 text-left text-[10px] font-medium text-neutral-500 uppercase tracking-wider',
                     column.width || 'w-auto',
                     column.sortable && 'cursor-pointer hover:bg-neutral-100',
                     column.className
@@ -234,13 +234,12 @@ export const Table = <T extends { id: string }>({
                     <td
                       key={colIndex}
                       className={cn(
-                        'px-3 py-4 text-sm text-neutral-900',
+                        'px-1 py-1 text-[11px] leading-tight text-neutral-900 break-words',
                         column.className
                       )}
                     >
                       <div className={cn(
-                        'truncate',
-                        column.key === 'actions' && 'action-buttons'
+                        column.key === 'actions' ? 'action-buttons flex flex-wrap items-center gap-1 text-[10px]' : 'whitespace-normal break-words'
                       )}>
                         {column.render
                           ? column.render(row[column.key as keyof T], row)

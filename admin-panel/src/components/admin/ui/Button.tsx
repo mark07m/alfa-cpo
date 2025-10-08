@@ -8,6 +8,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon?: React.ReactNode
   iconPosition?: 'left' | 'right'
   fullWidth?: boolean
+  iconOnly?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -19,6 +20,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     icon,
     iconPosition = 'left',
     fullWidth = false,
+    iconOnly = false,
     children, 
     disabled,
     ...props 
@@ -36,11 +38,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     }
     
     const sizes = {
-      xs: 'h-7 px-2 text-xs',
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 text-sm',
-      lg: 'h-11 px-6 text-base',
-      xl: 'h-12 px-8 text-lg'
+      xs: iconOnly ? 'h-7 px-1 text-xs' : 'h-7 px-2 text-xs',
+      sm: iconOnly ? 'h-8 px-2 text-sm' : 'h-8 px-3 text-sm',
+      md: iconOnly ? 'h-10 px-2 text-sm' : 'h-10 px-4 text-sm',
+      lg: iconOnly ? 'h-11 px-3 text-base' : 'h-11 px-6 text-base',
+      xl: iconOnly ? 'h-12 px-3 text-lg' : 'h-12 px-8 text-lg'
     }
 
     const iconSizes = {
@@ -88,13 +90,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         
         {!loading && icon && iconPosition === 'left' && (
-          <span className={cn(iconSizes[size], "mr-2")}>{icon}</span>
+          <span className={cn(iconSizes[size], iconOnly ? '' : 'mr-2')}>{icon}</span>
         )}
         
-        {children}
+        {!iconOnly && children}
         
         {!loading && icon && iconPosition === 'right' && (
-          <span className={cn(iconSizes[size], "ml-2")}>{icon}</span>
+          <span className={cn(iconSizes[size], iconOnly ? '' : 'ml-2')}>{icon}</span>
         )}
       </button>
     )

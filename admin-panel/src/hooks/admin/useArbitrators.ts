@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { arbitratorsService, ArbitratorFormData } from '@/services/admin/arbitrators';
 import { apiService } from '@/services/admin/api';
 import { Arbitrator, ArbitratorFilters, ArbitratorStats } from '@/types/admin';
@@ -7,10 +7,10 @@ export function useArbitrators(initialFilters: ArbitratorFilters = {}) {
   const [arbitrators, setArbitrators] = useState<Arbitrator[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<ArbitratorFilters>(initialFilters);
+  const [filters, setFilters] = useState<ArbitratorFilters>({ limit: 20, ...initialFilters });
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 20,
     total: 0,
     pages: 0,
   });
@@ -37,12 +37,20 @@ export function useArbitrators(initialFilters: ArbitratorFilters = {}) {
     }
   }, [filters]);
 
+  // Дебаунсим запросы при вводе в поиск, чтобы не дергать API на каждый символ
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
-    fetchArbitrators();
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      fetchArbitrators();
+    }, 300);
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
   }, [fetchArbitrators]);
 
   const updateFilters = useCallback((newFilters: Partial<ArbitratorFilters>) => {
-    setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
+    setFilters(prev => ({ ...prev, ...newFilters, page: newFilters.page ?? 1 }));
   }, []);
 
   const resetFilters = useCallback(() => {

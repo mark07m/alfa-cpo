@@ -114,9 +114,9 @@ export function PageWithTable<T extends { id: string }>({
     }
   };
 
-  if (loading) {
-    return <LoadingCard text="Загрузка данных..." />;
-  }
+  // Не прерываем рендер всей страницы при загрузке,
+  // чтобы не терять фокус у поля поиска. Вместо этого
+  // передаем флаг загрузки в таблицу ниже.
 
   if (error) {
     return (
@@ -226,22 +226,15 @@ export function PageWithTable<T extends { id: string }>({
 
       {/* Таблица */}
       <div className="bg-white rounded-lg border border-gray-200">
-        {data.length === 0 ? (
-          <EmptyTableState
-            title={emptyState?.title}
-            description={emptyState?.description}
-            action={emptyState?.action}
-          />
-        ) : (
-          <Table
-            data={data}
-            columns={columns}
-            pagination={pagination}
-            onSort={onSort}
-            sortKey={sortKey}
-            sortDirection={sortDirection}
-          />
-        )}
+        <Table
+          data={data}
+          columns={columns}
+          pagination={pagination}
+          loading={loading}
+          onSort={onSort}
+          sortKey={sortKey}
+          sortDirection={sortDirection}
+        />
       </div>
     </div>
   );

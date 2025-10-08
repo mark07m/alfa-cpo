@@ -149,7 +149,21 @@ export default function ArbitratorsPage() {
         />
       ),
       width: 'w-12',
-      className: 'text-center'
+      className: 'text-center',
+      render: (_value: unknown, row: Arbitrator) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(row.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedIds(prev => Array.from(new Set([...(prev || []), row.id])));
+            } else {
+              setSelectedIds(prev => (prev || []).filter(id => id !== row.id));
+            }
+          }}
+          className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+        />
+      )
     },
     {
       key: 'fullName' as keyof Arbitrator,
@@ -229,35 +243,39 @@ export default function ArbitratorsPage() {
     },
     {
       key: 'actions' as const,
-      title: 'Действия',
-      width: 'w-32',
+      title: '',
+      width: 'w-20',
+      className: 'text-right',
       render: (value: unknown, row: Arbitrator) => (
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center justify-end gap-1">
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => handleView(row.id)}
-            icon={<EyeIcon className="h-4 w-4" />}
-          >
-            Просмотр
-          </Button>
+            icon={<EyeIcon className="h-3 w-3" />}
+            iconOnly
+            aria-label="Просмотр"
+            title="Просмотр"
+          />
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => handleEdit(row.id)}
-            icon={<PencilIcon className="h-4 w-4" />}
-          >
-            Редактировать
-          </Button>
+            icon={<PencilIcon className="h-3 w-3" />}
+            iconOnly
+            aria-label="Редактировать"
+            title="Редактировать"
+          />
           <Button
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => handleDelete(row.id)}
-            icon={<TrashIcon className="h-4 w-4" />}
+            icon={<TrashIcon className="h-3 w-3" />}
             className="text-red-600 hover:text-red-700"
-          >
-            Удалить
-          </Button>
+            iconOnly
+            aria-label="Удалить"
+            title="Удалить"
+          />
         </div>
       )
     }

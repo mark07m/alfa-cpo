@@ -107,16 +107,19 @@ export const arbitratorsService = {
         _id: item._id // Оставляем _id для совместимости
       }));
 
+      const respPagination: any = (response as any).pagination || {};
+      const page = typeof respPagination.page === 'number' ? respPagination.page : (filters.page || 1);
+      const limit = typeof respPagination.limit === 'number' ? respPagination.limit : (filters.limit || 10);
+      const total = typeof respPagination.total === 'number' ? respPagination.total : transformedData.length;
+      const pages = typeof respPagination.pages === 'number'
+        ? respPagination.pages
+        : (typeof respPagination.totalPages === 'number'
+            ? respPagination.totalPages
+            : (limit > 0 ? Math.ceil(total / limit) : 0));
+
       return {
         data: transformedData,
-        pagination: (response.pagination as any)?.pages !== undefined
-          ? (response.pagination as any)
-          : {
-          page: 1,
-          limit: 10,
-          total: 0,
-          pages: 0
-        }
+        pagination: { page, limit, total, pages }
       };
     } catch (error: any) {
       console.error('Error fetching arbitrators:', error);
