@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Table } from '@/components/admin/ui/Table';
 import { Button } from '@/components/admin/ui/Button';
 import { Badge } from '@/components/admin/ui/Badge';
@@ -48,6 +49,7 @@ export function InspectionsList({
   onEdit,
   onDelete
 }: InspectionsListProps) {
+  const router = useRouter();
   const [sortField, setSortField] = useState<string>('plannedDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -88,8 +90,8 @@ export function InspectionsList({
     const Icon = config.icon;
 
     return (
-      <Badge color={config.color} className="flex items-center space-x-1">
-        <Icon className="h-4 w-4" />
+      <Badge color={config.color} size="sm" className="flex items-center space-x-1">
+        <Icon className="h-3 w-3" />
         <span>{config.text}</span>
       </Badge>
     );
@@ -97,7 +99,7 @@ export function InspectionsList({
 
   const getTypeBadge = (type: string) => {
     return (
-      <Badge color={type === 'planned' ? 'blue' : 'purple'}>
+      <Badge color={type === 'planned' ? 'blue' : 'purple'} size="sm">
         {type === 'planned' ? 'Плановая' : 'Внеплановая'}
       </Badge>
     );
@@ -113,13 +115,13 @@ export function InspectionsList({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100">
+        <div className="p-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-5 bg-gray-200 rounded-lg w-1/4"></div>
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+                <div key={i} className="h-20 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -130,10 +132,13 @@ export function InspectionsList({
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 text-center">
-          <div className="text-red-600 mb-2">Ошибка загрузки проверок</div>
-          <div className="text-gray-500">{error}</div>
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100">
+        <div className="p-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+            <XCircleIcon className="h-8 w-8 text-red-600" />
+          </div>
+          <div className="text-lg font-semibold text-red-600 mb-2">Ошибка загрузки проверок</div>
+          <div className="text-base text-gray-600">{error}</div>
         </div>
       </div>
     );
@@ -141,10 +146,13 @@ export function InspectionsList({
 
   if (inspections.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 text-center">
-          <div className="text-gray-500 mb-4">Проверки не найдены</div>
-          <div className="text-sm text-gray-400">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100">
+        <div className="p-12 text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+            <ClockIcon className="h-10 w-10 text-gray-400" />
+          </div>
+          <div className="text-lg font-semibold text-gray-900 mb-2">Проверки не найдены</div>
+          <div className="text-base text-gray-500">
             Создайте первую проверку, нажав кнопку "Создать проверку"
           </div>
         </div>
@@ -155,12 +163,12 @@ export function InspectionsList({
   const columns = [
     {
       key: 'select',
-      header: (
+      title: (
         <input
           type="checkbox"
           checked={selectedInspections.length === inspections.length && inspections.length > 0}
           onChange={(e) => handleSelectAll(e.target.checked)}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="w-3.5 h-3.5 rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
         />
       ),
       render: (value: any, inspection: Inspection) => (
@@ -168,125 +176,133 @@ export function InspectionsList({
           type="checkbox"
           checked={selectedInspections.includes(inspection.id)}
           onChange={(e) => handleSelectInspection(inspection.id, e.target.checked)}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="w-3.5 h-3.5 rounded border-gray-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
         />
-      )
+      ),
+      width: 'w-10'
     },
     {
       key: 'arbitratorName',
-      header: (
-        <button
-          onClick={() => handleSort('arbitratorName')}
-          className="flex items-center space-x-1 text-left font-medium text-gray-900 hover:text-gray-700"
-        >
-          <span>Арбитражный управляющий</span>
-          {sortField === 'arbitratorName' && (
-            <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-          )}
-        </button>
-      ),
+      title: 'Арбитражный управляющий',
+      sortable: true,
       render: (value: any, inspection: Inspection) => (
         <div>
-          <div className="font-medium text-gray-900">{inspection.arbitratorName}</div>
-          <div className="text-sm text-gray-500">ИНН: {inspection.arbitratorInn}</div>
+          <div className="font-medium text-sm text-gray-900">{inspection.arbitratorName || 'Не указано'}</div>
+          <div className="text-xs text-gray-500">ИНН: {inspection.arbitratorInn || '—'}</div>
         </div>
-      )
+      ),
+      width: 'w-48'
     },
     {
       key: 'inspectorName',
-      header: (
-        <button
-          onClick={() => handleSort('inspectorName')}
-          className="flex items-center space-x-1 text-left font-medium text-gray-900 hover:text-gray-700"
-        >
-          <span>Инспектор</span>
-          {sortField === 'inspectorName' && (
-            <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-          )}
-        </button>
-      ),
+      title: 'Инспектор',
+      sortable: true,
       render: (value: any, inspection: Inspection) => (
-        <div className="text-gray-900">{inspection.inspectorName}</div>
-      )
+        <div className="flex items-center space-x-1.5">
+          <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-amber-100 to-amber-200 rounded-full flex items-center justify-center">
+            <span className="text-xs font-bold text-amber-700">{inspection.inspectorName?.charAt(0) || '?'}</span>
+          </div>
+          <span className="text-sm font-medium text-gray-900">{inspection.inspectorName}</span>
+        </div>
+      ),
+      width: 'w-36'
     },
     {
       key: 'type',
-      header: 'Тип',
-      render: (value: any, inspection: Inspection) => getTypeBadge(inspection.type)
+      title: 'Тип',
+      render: (value: any, inspection: Inspection) => getTypeBadge(inspection.type),
+      width: 'w-28'
     },
     {
       key: 'status',
-      header: 'Статус',
-      render: (value: any, inspection: Inspection) => getStatusBadge(inspection.status)
+      title: 'Статус',
+      render: (value: any, inspection: Inspection) => getStatusBadge(inspection.status),
+      width: 'w-36'
     },
     {
       key: 'plannedDate',
-      header: (
-        <button
-          onClick={() => handleSort('plannedDate')}
-          className="flex items-center space-x-1 text-left font-medium text-gray-900 hover:text-gray-700"
-        >
-          <span>Дата проверки</span>
-          {sortField === 'plannedDate' && (
-            <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-          )}
-        </button>
-      ),
+      title: 'Дата',
+      sortable: true,
       render: (value: any, inspection: Inspection) => (
         <div>
-          <div className="text-gray-900">{formatDate(inspection.plannedDate)}</div>
+          <div className="text-sm font-medium text-gray-900">{formatDate(inspection.plannedDate)}</div>
           {inspection.actualDate && (
-            <div className="text-sm text-gray-500">
+            <div className="text-xs text-gray-500">
               Факт: {formatDate(inspection.actualDate)}
             </div>
           )}
         </div>
-      )
+      ),
+      width: 'w-24'
     },
     {
       key: 'description',
-      header: 'Описание',
+      title: 'Описание',
       render: (value: any, inspection: Inspection) => (
-        <div className="max-w-xs truncate text-gray-900" title={inspection.description}>
-          {inspection.description}
+        <div className="max-w-xs truncate text-sm text-gray-700" title={inspection.description}>
+          {inspection.description || 'Нет описания'}
         </div>
-      )
+      ),
+      width: 'w-64'
     },
     {
       key: 'actions',
-      header: 'Действия',
+      title: 'Действия',
       render: (value: any, inspection: Inspection) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit(inspection)}
-            className="flex items-center space-x-1"
+        <div className="flex items-center space-x-1">
+          <button
+            onClick={() => router.push(`/inspections/${inspection.id}`)}
+            className="p-1.5 rounded-md border border-gray-300 bg-white hover:bg-blue-50 hover:border-blue-400 text-gray-600 hover:text-blue-700 transition-all duration-150"
+            title="Просмотр"
           >
-            <PencilIcon className="h-4 w-4" />
-            <span>Изменить</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
+            <EyeIcon className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => router.push(`/inspections/${inspection.id}/edit`)}
+            className="p-1.5 rounded-md border border-gray-300 bg-white hover:bg-amber-50 hover:border-amber-400 text-gray-600 hover:text-amber-700 transition-all duration-150"
+            title="Редактировать"
+          >
+            <PencilIcon className="h-3.5 w-3.5" />
+          </button>
+          <button
             onClick={() => onDelete(inspection.id)}
-            className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+            className="p-1.5 rounded-md border border-gray-300 bg-white hover:bg-red-50 hover:border-red-400 text-red-600 hover:text-red-700 transition-all duration-150"
+            title="Удалить"
           >
-            <TrashIcon className="h-4 w-4" />
-            <span>Удалить</span>
-          </Button>
+            <TrashIcon className="h-3.5 w-3.5" />
+          </button>
         </div>
-      )
+      ),
+      width: 'w-28'
     }
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      <Table
-        columns={columns}
-        data={inspections}
-        className="min-w-full divide-y divide-gray-200"
-      />
+    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="overflow-x-auto">
+        <Table
+          columns={columns}
+          data={inspections}
+          onSort={handleSort}
+          sortKey={sortField}
+          sortDirection={sortDirection}
+          className="min-w-full"
+        />
+      </div>
+      {inspections.length > 0 && (
+        <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-600">
+              Показано <span className="font-semibold text-gray-900">{inspections.length}</span> {inspections.length === 1 ? 'проверка' : inspections.length < 5 ? 'проверки' : 'проверок'}
+            </span>
+            {selectedInspections.length > 0 && (
+              <span className="text-amber-600 font-semibold">
+                Выбрано: {selectedInspections.length}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
