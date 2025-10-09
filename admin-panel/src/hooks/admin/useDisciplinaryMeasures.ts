@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/services/admin/api';
+import { disciplinaryMeasuresService } from '@/services/admin/disciplinaryMeasures';
 
 interface DisciplinaryMeasure {
   id: string;
@@ -19,17 +19,18 @@ interface DisciplinaryMeasure {
 }
 
 interface CreateDisciplinaryMeasureData {
-  arbitratorId: string;
-  arbitratorName: string;
-  arbitratorInn: string;
-  type: 'warning' | 'reprimand' | 'exclusion' | 'suspension';
-  status: 'active' | 'appealed' | 'cancelled' | 'expired';
+  managerId: string;
+  type: 'warning' | 'reprimand' | 'exclusion' | 'suspension' | 'other';
+  status?: 'active' | 'cancelled' | 'expired';
   date: string;
   reason: string;
-  description: string;
-  duration?: string;
+  decisionNumber: string;
+  documents?: string[];
+  appealDeadline?: string;
+  appealStatus?: 'none' | 'submitted' | 'reviewed' | 'approved' | 'rejected';
+  appealNotes?: string;
   appealDate?: string;
-  appealResult?: string;
+  appealDecision?: string;
 }
 
 interface UpdateDisciplinaryMeasureData extends Partial<CreateDisciplinaryMeasureData> {
@@ -41,82 +42,29 @@ export function useDisciplinaryMeasures() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Моковые данные для демонстрации
-  const mockMeasures: DisciplinaryMeasure[] = [
-    {
-      id: '1',
-      arbitratorId: '1',
-      arbitratorName: 'Иванов Иван Иванович',
-      arbitratorInn: '123456789012',
-      type: 'warning',
-      status: 'active',
-      date: '2024-01-10T00:00:00Z',
-      reason: 'Нарушение сроков подачи документов',
-      description: 'Предупреждение о недопустимости нарушения сроков подачи документов в арбитражный суд',
-      duration: '1 год',
-      createdAt: '2024-01-10T09:00:00Z',
-      updatedAt: '2024-01-10T09:00:00Z'
-    },
-    {
-      id: '2',
-      arbitratorId: '2',
-      arbitratorName: 'Петров Петр Петрович',
-      arbitratorInn: '123456789013',
-      type: 'reprimand',
-      status: 'appealed',
-      date: '2024-01-15T00:00:00Z',
-      reason: 'Несоблюдение профессиональных стандартов',
-      description: 'Выговор за несоблюдение профессиональных стандартов при проведении процедуры банкротства',
-      duration: '6 месяцев',
-      appealDate: '2024-01-20T00:00:00Z',
-      appealResult: 'pending',
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-20T14:00:00Z'
-    },
-    {
-      id: '3',
-      arbitratorId: '3',
-      arbitratorName: 'Сидоров Сидор Сидорович',
-      arbitratorInn: '123456789014',
-      type: 'suspension',
-      status: 'active',
-      date: '2024-01-20T00:00:00Z',
-      reason: 'Грубое нарушение требований законодательства',
-      description: 'Приостановление членства в СРО на 3 месяца за грубое нарушение требований законодательства о несостоятельности',
-      duration: '3 месяца',
-      createdAt: '2024-01-20T11:00:00Z',
-      updatedAt: '2024-01-20T11:00:00Z'
-    },
-    {
-      id: '4',
-      arbitratorId: '4',
-      arbitratorName: 'Козлов Козел Козлович',
-      arbitratorInn: '123456789015',
-      type: 'exclusion',
-      status: 'cancelled',
-      date: '2023-12-01T00:00:00Z',
-      reason: 'Систематические нарушения',
-      description: 'Исключение из СРО за систематические нарушения требований законодательства',
-      duration: 'Постоянно',
-      appealDate: '2023-12-05T00:00:00Z',
-      appealResult: 'approved',
-      createdAt: '2023-12-01T09:00:00Z',
-      updatedAt: '2023-12-10T15:00:00Z'
-    }
-  ];
-
   const fetchMeasures = async () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // В реальном приложении здесь будет запрос к API
-      // const response = await api.get('/disciplinary-measures');
-      // setMeasures(response.data);
-      
-      // Пока используем моковые данные
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Имитация загрузки
-      setMeasures(mockMeasures);
+
+      const result = await disciplinaryMeasuresService.list();
+      const mapped = result.data.map(item => ({
+        id: item.id,
+        arbitratorId: '',
+        arbitratorName: item.arbitratorName,
+        arbitratorInn: item.arbitratorInn,
+        type: item.type,
+        status: (item.status as any),
+        date: item.date,
+        reason: item.reason,
+        description: '',
+        duration: undefined,
+        appealDate: item.appealDate,
+        appealResult: item.appealStatus,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt
+      }));
+      setMeasures(mapped);
     } catch (err) {
       setError('Ошибка загрузки дисциплинарных мер');
       console.error('Error fetching disciplinary measures:', err);
@@ -127,20 +75,38 @@ export function useDisciplinaryMeasures() {
 
   const createMeasure = async (data: CreateDisciplinaryMeasureData): Promise<DisciplinaryMeasure> => {
     try {
-      // В реальном приложении здесь будет запрос к API
-      // const response = await api.post('/disciplinary-measures', data);
-      // return response.data;
-      
-      // Пока используем моковые данные
-      const newMeasure: DisciplinaryMeasure = {
-        id: Date.now().toString(),
-        ...data,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+      const created = await disciplinaryMeasuresService.create({
+        managerId: data.managerId,
+        type: data.type,
+        reason: data.reason,
+        date: data.date,
+        decisionNumber: data.decisionNumber,
+        status: data.status,
+        documents: data.documents,
+        appealDeadline: data.appealDeadline,
+        appealStatus: data.appealStatus,
+        appealNotes: data.appealNotes,
+        appealDate: data.appealDate,
+        appealDecision: data.appealDecision,
+      });
+      const mapped: DisciplinaryMeasure = {
+        id: created.id,
+        arbitratorId: data.managerId,
+        arbitratorName: created.arbitratorName,
+        arbitratorInn: created.arbitratorInn,
+        type: created.type,
+        status: (created.status as any),
+        date: created.date,
+        reason: created.reason,
+        description: '',
+        duration: undefined,
+        appealDate: created.appealDate,
+        appealResult: created.appealStatus,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt
       };
-      
-      setMeasures(prev => [newMeasure, ...prev]);
-      return newMeasure;
+      setMeasures(prev => [mapped, ...prev]);
+      return mapped;
     } catch (err) {
       console.error('Error creating disciplinary measure:', err);
       throw new Error('Ошибка создания дисциплинарной меры');
@@ -149,27 +115,38 @@ export function useDisciplinaryMeasures() {
 
   const updateMeasure = async (id: string, data: Partial<CreateDisciplinaryMeasureData>): Promise<DisciplinaryMeasure> => {
     try {
-      // В реальном приложении здесь будет запрос к API
-      // const response = await api.put(`/disciplinary-measures/${id}`, data);
-      // return response.data;
-      
-      // Пока используем моковые данные
-      const updatedMeasure = measures.find(measure => measure.id === id);
-      if (!updatedMeasure) {
-        throw new Error('Дисциплинарная мера не найдена');
-      }
-      
-      const updated = {
-        ...updatedMeasure,
-        ...data,
-        updatedAt: new Date().toISOString()
+      const updated = await disciplinaryMeasuresService.update(id, {
+        managerId: data.managerId,
+        type: data.type,
+        reason: data.reason,
+        date: data.date,
+        decisionNumber: data.decisionNumber,
+        status: data.status,
+        documents: data.documents,
+        appealDeadline: data.appealDeadline,
+        appealStatus: data.appealStatus,
+        appealNotes: data.appealNotes,
+        appealDate: data.appealDate,
+        appealDecision: data.appealDecision,
+      });
+      const mapped: DisciplinaryMeasure = {
+        id: updated.id,
+        arbitratorId: data.managerId || '',
+        arbitratorName: updated.arbitratorName,
+        arbitratorInn: updated.arbitratorInn,
+        type: updated.type,
+        status: (updated.status as any),
+        date: updated.date,
+        reason: updated.reason,
+        description: '',
+        duration: undefined,
+        appealDate: updated.appealDate,
+        appealResult: updated.appealStatus,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt
       };
-      
-      setMeasures(prev => prev.map(measure => 
-        measure.id === id ? updated : measure
-      ));
-      
-      return updated;
+      setMeasures(prev => prev.map(measure => measure.id === id ? mapped : measure));
+      return mapped;
     } catch (err) {
       console.error('Error updating disciplinary measure:', err);
       throw new Error('Ошибка обновления дисциплинарной меры');
@@ -178,10 +155,7 @@ export function useDisciplinaryMeasures() {
 
   const deleteMeasure = async (id: string): Promise<void> => {
     try {
-      // В реальном приложении здесь будет запрос к API
-      // await api.delete(`/disciplinary-measures/${id}`);
-      
-      // Пока используем моковые данные
+      await disciplinaryMeasuresService.remove(id);
       setMeasures(prev => prev.filter(measure => measure.id !== id));
     } catch (err) {
       console.error('Error deleting disciplinary measure:', err);
@@ -191,10 +165,8 @@ export function useDisciplinaryMeasures() {
 
   const deleteMeasures = async (ids: string[]): Promise<void> => {
     try {
-      // В реальном приложении здесь будет запрос к API
-      // await api.delete('/disciplinary-measures/bulk', { data: { ids } });
-      
-      // Пока используем моковые данные
+      // Backend не имеет batch удаления — удаляем по одному
+      await Promise.all(ids.map(id => disciplinaryMeasuresService.remove(id)));
       setMeasures(prev => prev.filter(measure => !ids.includes(measure.id)));
     } catch (err) {
       console.error('Error deleting disciplinary measures:', err);

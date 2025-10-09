@@ -5,6 +5,7 @@ import { Button } from '@/components/admin/ui/Button';
 import { Input } from '@/components/admin/ui/Input';
 import { Select } from '@/components/admin/ui/Select';
 import { Textarea } from '@/components/admin/ui/Textarea';
+import { arbitratorsService } from '@/services/admin/arbitrators';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
 interface InspectionFormProps {
@@ -29,6 +30,9 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [arbitratorOptions, setArbitratorOptions] = useState<{ value: string; label: string }[]>([
+    { value: '', label: 'Выберите арбитражного управляющего' }
+  ]);
 
   useEffect(() => {
     if (inspection) {
@@ -48,6 +52,21 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
     }
   }, [inspection]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const resp = await arbitratorsService.getArbitrators({ limit: 50 });
+        const opts = resp.data.map((a: any) => ({
+          value: a.id,
+          label: `${a.fullName} (ИНН: ${a.inn || '—'})`
+        }));
+        setArbitratorOptions([{ value: '', label: 'Выберите арбитражного управляющего' }, ...opts]);
+      } catch (e) {
+        // ignore, keep default placeholder
+      }
+    })();
+  }, []);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -65,15 +84,8 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.arbitratorName.trim()) {
-      newErrors.arbitratorName = 'ФИО арбитражного управляющего обязательно';
-    }
-
-    if (!formData.arbitratorInn.trim()) {
-      newErrors.arbitratorInn = 'ИНН обязателен';
-    } else if (!/^\d{12}$/.test(formData.arbitratorInn)) {
-      newErrors.arbitratorInn = 'ИНН должен содержать 12 цифр';
+    if (!formData.arbitratorId) {
+      newErrors.arbitratorId = 'Выберите арбитражного управляющего';
     }
 
     if (!formData.inspectorName.trim()) {
@@ -108,18 +120,13 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
     onSave(submitData);
   };
 
-  const arbitratorOptions = [
-    { value: '', label: 'Выберите арбитражного управляющего' },
-    { value: '1', label: 'Иванов Иван Иванович (ИНН: 123456789012)' },
-    { value: '2', label: 'Петров Петр Петрович (ИНН: 123456789013)' },
-    { value: '3', label: 'Сидоров Сидор Сидорович (ИНН: 123456789014)' }
-  ];
+  // options are loaded into state via arbitratorsService
 
-  const inspectorOptions = [
-    { value: '', label: 'Выберите инспектора' },
-    { value: 'Иванов И.И.', label: 'Иванов И.И.' },
-    { value: 'Петров П.П.', label: 'Петров П.П.' },
-    { value: 'Сидоров С.С.', label: 'Сидоров С.С.' }
+  const resultOptions = [
+    { value: '', label: '—' },
+    { value: 'passed', label: 'Пройдено' },
+    { value: 'failed', label: 'Не пройдено' },
+    { value: 'needs_improvement', label: 'Нуждается в улучшении' }
   ];
 
   const typeOptions = [
@@ -163,7 +170,7 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
                 <Select
                   value={formData.arbitratorId}
                   onChange={(e) => {
-                    const selectedArbitrator = arbitratorOptions.find(opt => opt.value === e.target.value);
+                  const selectedArbitrator = arbitratorOptions.find(opt => opt.value === e.target.value);
                     if (selectedArbitrator) {
                       const nameMatch = selectedArbitrator.label.match(/^(.+?)\s+\(ИНН:\s+(\d+)\)$/);
                       if (nameMatch) {
@@ -173,8 +180,8 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
                       }
                     }
                   }}
-                  options={arbitratorOptions}
-                  error={errors.arbitratorName || errors.arbitratorInn}
+                options={arbitratorOptions}
+                error={errors.arbitratorId}
                 />
               </div>
 
@@ -183,12 +190,11 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Инспектор *
                 </label>
-                <Select
-                  value={formData.inspectorName}
-                  onChange={(e) => handleInputChange('inspectorName', e.target.value)}
-                  options={inspectorOptions}
-                  error={errors.inspectorName}
-                />
+              <Input
+                type="text"
+                value={formData.inspectorName}
+                onChange={(e) => handleInputChange('inspectorName', e.target.value)}
+              />
               </div>
 
               {/* Тип проверки */}
@@ -260,11 +266,10 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Результат проверки
               </label>
-              <Textarea
+              <Select
                 value={formData.result}
                 onChange={(e) => handleInputChange('result', e.target.value)}
-                placeholder="Опишите результаты проверки..."
-                rows={3}
+                options={resultOptions}
               />
             </div>
 

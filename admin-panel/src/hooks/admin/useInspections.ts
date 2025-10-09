@@ -36,8 +36,9 @@ export function useInspections() {
       setInspections(prev => [created, ...prev]);
       return created;
     } catch (err) {
+      const message = (err as any)?.response?.data?.message || (err as any)?.message || 'Ошибка создания проверки';
       console.error('Error creating inspection:', err);
-      throw new Error('Ошибка создания проверки');
+      throw new Error(Array.isArray(message) ? message.join(', ') : message);
     }
   };
 

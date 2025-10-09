@@ -18,6 +18,8 @@ interface DisciplinaryMeasuresFiltersProps {
     arbitrator: string;
     dateFrom: string;
     dateTo: string;
+    appealStatus?: string;
+    managerId?: string;
   };
   onFiltersChange: (filters: any) => void;
   onClearFilters: () => void;
@@ -41,9 +43,17 @@ export function DisciplinaryMeasuresFilters({
   const statusOptions = [
     { value: '', label: 'Все статусы' },
     { value: 'active', label: 'Действует' },
-    { value: 'appealed', label: 'Обжалуется' },
     { value: 'cancelled', label: 'Отменена' },
     { value: 'expired', label: 'Истекла' }
+  ];
+
+  const appealStatusOptions = [
+    { value: '', label: 'Статус апелляции' },
+    { value: 'none', label: 'Нет' },
+    { value: 'submitted', label: 'Подана' },
+    { value: 'reviewed', label: 'Рассмотрена' },
+    { value: 'approved', label: 'Удовлетворена' },
+    { value: 'rejected', label: 'Отклонена' }
   ];
 
   const arbitratorOptions = [
@@ -143,6 +153,18 @@ export function DisciplinaryMeasuresFilters({
             options={arbitratorOptions}
           />
         </div>
+
+        {/* Статус апелляции */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Апелляция
+          </label>
+          <Select
+            value={filters.appealStatus || ''}
+            onChange={(e) => handleFilterChange('appealStatus', e.target.value)}
+            options={appealStatusOptions}
+          />
+        </div>
       </div>
 
       {/* Расширенные фильтры */}
@@ -207,6 +229,17 @@ export function DisciplinaryMeasuresFilters({
                 <button
                   onClick={() => handleFilterChange('status', '')}
                   className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-green-400 hover:bg-green-200 hover:text-green-500"
+                >
+                  <XMarkIcon className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            {filters.appealStatus && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Апелляция: {appealStatusOptions.find(opt => opt.value === filters.appealStatus)?.label}
+                <button
+                  onClick={() => handleFilterChange('appealStatus', '')}
+                  className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full text-yellow-400 hover:bg-yellow-200 hover:text-yellow-500"
                 >
                   <XMarkIcon className="h-3 w-3" />
                 </button>
