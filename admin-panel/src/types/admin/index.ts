@@ -808,7 +808,7 @@ export interface CompensationFund {
 
 export interface CompensationFundHistory {
   date: string;
-  operation: string;
+  operation: 'increase' | 'decrease' | 'transfer';
   amount: number;
   description: string;
   documentUrl?: string;
@@ -841,7 +841,8 @@ export interface CompensationFundFormData {
 }
 
 export interface CompensationFundHistoryFormData {
-  operation: string;
+  date: string;
+  operation: 'increase' | 'decrease' | 'transfer';
   amount: number;
   description: string;
   documentUrl?: string;

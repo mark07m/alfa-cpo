@@ -85,7 +85,7 @@ export default function CompensationFundPage() {
 
   if (error) {
     return (
-      <Alert type="error" title="Ошибка загрузки" message={error} />
+      <Alert variant="error" title="Ошибка загрузки">{error}</Alert>
     );
   }
 
@@ -179,18 +179,34 @@ export default function CompensationFundPage() {
                     Банковские реквизиты
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-3">
                   <div>
                     <span className="text-sm font-medium text-gray-500">Банк:</span>
                     <p className="text-sm">{fundInfo.bankDetails.bankName}</p>
                   </div>
-                  <div>
-                    <span className="text-sm font-medium text-gray-500">Счет:</span>
-                    <p className="text-sm font-mono">{fundInfo.bankDetails.accountNumber}</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Расчетный счет:</span>
+                      <p className="text-sm font-mono">{fundInfo.bankDetails.accountNumber}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">БИК:</span>
+                      <p className="text-sm font-mono">{fundInfo.bankDetails.bik}</p>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-sm font-medium text-gray-500">БИК:</span>
-                    <p className="text-sm font-mono">{fundInfo.bankDetails.bik}</p>
+                    <span className="text-sm font-medium text-gray-500">Корреспондентский счет:</span>
+                    <p className="text-sm font-mono">{fundInfo.bankDetails.correspondentAccount}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">ИНН:</span>
+                      <p className="text-sm font-mono">{fundInfo.bankDetails.inn}</p>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">КПП:</span>
+                      <p className="text-sm font-mono">{fundInfo.bankDetails.kpp}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -202,9 +218,9 @@ export default function CompensationFundPage() {
                 <CardTitle>Последние операции</CardTitle>
               </CardHeader>
               <CardContent>
-                {history.length > 0 ? (
+                {Array.isArray(history) && history.length > 0 ? (
                   <div className="space-y-3">
-                    {history.slice(0, 5).map((entry, index) => (
+                    {(Array.isArray(history) ? history.slice(0, 5) : []).map((entry, index) => (
                       <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                         <div>
                           <p className="text-sm font-medium">{entry.operation}</p>
@@ -231,7 +247,7 @@ export default function CompensationFundPage() {
 
         {activeTab === 'history' && (
           <CompensationFundHistory
-            history={history}
+            history={Array.isArray(history) ? history : []}
             loading={loading}
             pagination={pagination}
             onAddEntry={addHistoryEntry}

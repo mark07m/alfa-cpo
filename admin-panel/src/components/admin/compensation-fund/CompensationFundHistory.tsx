@@ -22,7 +22,8 @@ import { CompensationFundHistory as HistoryType, CompensationFundHistoryFormData
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 const historyEntrySchema = z.object({
-  operation: z.string().min(1, 'Операция обязательна'),
+  date: z.string().min(1, 'Дата обязательна'),
+  operation: z.enum(['increase', 'decrease', 'transfer'], { error: 'Выберите тип операции' }),
   amount: z.number().min(0.01, 'Сумма должна быть больше 0'),
   description: z.string().min(1, 'Описание обязательно'),
   documentUrl: z.string().optional()
@@ -67,7 +68,8 @@ export function CompensationFundHistory({
     reset,
     setValue
   } = useForm<CompensationFundHistoryFormData>({
-    resolver: zodResolver(historyEntrySchema)
+    resolver: zodResolver(historyEntrySchema),
+    defaultValues: { date: new Date().toISOString().slice(0,16) }
   });
 
   const handleAddEntry = async (data: CompensationFundHistoryFormData) => {
@@ -113,6 +115,7 @@ export function CompensationFundHistory({
 
   const openEditModal = (entry: HistoryType) => {
     setEditingEntry(entry);
+    setValue('date', new Date(entry.date).toISOString().slice(0,16));
     setValue('operation', entry.operation);
     setValue('amount', entry.amount);
     setValue('description', entry.description);
@@ -135,7 +138,12 @@ export function CompensationFundHistory({
     return matchesSearch && matchesOperation;
   });
 
-  const operationTypes = [...new Set(history.map(entry => entry.operation))];
+  const operationTypes: Array<'increase' | 'decrease' | 'transfer'> = ['increase', 'decrease', 'transfer'];
+  const operationLabels: Record<'increase' | 'decrease' | 'transfer', string> = {
+    increase: 'Поступление',
+    decrease: 'Расход',
+    transfer: 'Перевод'
+  };
 
   return (
     <div className="space-y-6">
@@ -175,7 +183,7 @@ export function CompensationFundHistory({
               >
                 <option value="">Все операции</option>
                 {operationTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                  <option key={type} value={type}>{operationLabels[type]}</option>
                 ))}
               </select>
             </div>
@@ -197,9 +205,13 @@ export function CompensationFundHistory({
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3">
-                        <h3 className="text-sm font-medium text-gray-900">{entry.operation}</h3>
-                        <Badge color={entry.amount > 0 ? 'green' : 'red'}>
-                          {entry.amount > 0 ? 'Поступление' : 'Расход'}
+                        <h3 className="text-sm font-medium text-gray-900">{operationLabels[entry.operation]}</h3>
+                        <Badge color={
+                          entry.operation === 'increase' ? 'green' : 
+                          entry.operation === 'decrease' ? 'red' : 
+                          'blue'
+                        }>
+                          {operationLabels[entry.operation]}
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">{entry.description}</p>
@@ -292,17 +304,35 @@ export function CompensationFundHistory({
         >
           <form onSubmit={handleSubmit(handleAddEntry)} className="space-y-4">
             {error && (
-              <Alert type="error" title="Ошибка" message={error} />
+              <Alert variant="error" title="Ошибка">{error}</Alert>
             )}
 
             <div>
-              <Label htmlFor="operation">Операция *</Label>
+              <Label htmlFor="date">Дата *</Label>
               <Input
+                id="date"
+                type="datetime-local"
+                {...register('date')}
+              />
+              {errors.date && (
+                <p className="text-sm text-red-600 mt-1">{errors.date.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="operation">Тип операции *</Label>
+              <select
                 id="operation"
                 {...register('operation')}
-                className={errors.operation ? 'border-red-500' : ''}
-                placeholder="Например: Взнос в компенсационный фонд"
-              />
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.operation ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Выберите тип операции</option>
+                {operationTypes.map(type => (
+                  <option key={type} value={type}>{operationLabels[type]}</option>
+                ))}
+              </select>
               {errors.operation && (
                 <p className="text-sm text-red-600 mt-1">{errors.operation.message}</p>
               )}
@@ -370,16 +400,35 @@ export function CompensationFundHistory({
         >
           <form onSubmit={handleSubmit(handleEditEntry)} className="space-y-4">
             {error && (
-              <Alert type="error" title="Ошибка" message={error} />
+              <Alert variant="error" title="Ошибка">{error}</Alert>
             )}
 
             <div>
-              <Label htmlFor="edit-operation">Операция *</Label>
+              <Label htmlFor="edit-date">Дата *</Label>
               <Input
+                id="edit-date"
+                type="datetime-local"
+                {...register('date')}
+              />
+              {errors.date && (
+                <p className="text-sm text-red-600 mt-1">{errors.date.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="edit-operation">Тип операции *</Label>
+              <select
                 id="edit-operation"
                 {...register('operation')}
-                className={errors.operation ? 'border-red-500' : ''}
-              />
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  errors.operation ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Выберите тип операции</option>
+                {operationTypes.map(type => (
+                  <option key={type} value={type}>{operationLabels[type]}</option>
+                ))}
+              </select>
               {errors.operation && (
                 <p className="text-sm text-red-600 mt-1">{errors.operation.message}</p>
               )}

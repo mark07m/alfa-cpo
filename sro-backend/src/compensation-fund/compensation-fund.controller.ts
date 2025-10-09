@@ -51,7 +51,7 @@ export class CompensationFundController {
 
   @Put()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.SETTINGS_UPDATE)
   async updateFundInfo(@Body() updateCompensationFundDto: UpdateCompensationFundDto, @Request() req) {
     const fundInfo = await this.compensationFundService.updateFundInfo(updateCompensationFundDto, req.user.id);
@@ -60,7 +60,7 @@ export class CompensationFundController {
 
   @Post('history')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.MODERATOR)
   @RequirePermissions(Permission.SETTINGS_UPDATE)
   @HttpCode(HttpStatus.CREATED)
   async addHistoryEntry(@Body() addHistoryEntryDto: AddHistoryEntryDto, @Request() req) {

@@ -1,31 +1,60 @@
 import { apiService } from './api';
-import { 
-  CompensationFund, 
-  CompensationFundStatistics, 
-  CompensationFundFormData, 
+import {
+  CompensationFund,
+  CompensationFundStatistics,
+  CompensationFundFormData,
   CompensationFundHistoryFormData,
-  ApiResponse 
+  PaginatedResponse,
 } from '@/types/admin';
+
+// Backend statistics shape
+interface BackendCompensationFundStatistics {
+  currentAmount: number;
+  currency: string;
+  lastUpdated: string | Date;
+  totalIncrease: number;
+  totalDecrease: number;
+  totalTransfers: number;
+  lastMonthIncrease: number;
+  lastMonthDecrease: number;
+  totalOperations: number;
+  lastMonthOperations: number;
+}
 
 export class CompensationFundService {
   private baseUrl = '/compensation-fund';
 
   // Получить информацию о компенсационном фонде
   async getFundInfo(): Promise<CompensationFund> {
-    const response = await apiService.get<ApiResponse<CompensationFund>>(this.baseUrl);
-    return response.data.data;
+    const response = await apiService.get<CompensationFund>(this.baseUrl);
+    return response.data;
   }
 
-  // Получить статистику компенсационного фонда
+  // Получить статистику компенсационного фонда (маппинг с backend-структуры)
   async getFundStatistics(): Promise<CompensationFundStatistics> {
-    const response = await apiService.get<ApiResponse<CompensationFundStatistics>>(`${this.baseUrl}/statistics`);
-    return response.data.data;
+    const response = await apiService.get<BackendCompensationFundStatistics>(`${this.baseUrl}/statistics`);
+    const s = response.data;
+
+    // Маппинг в формат UI
+    const mapped: CompensationFundStatistics = {
+      totalAmount: s.currentAmount,
+      currency: s.currency,
+      monthlyContributions: s.lastMonthIncrease,
+      monthlyExpenses: s.lastMonthDecrease,
+      netChange: s.lastMonthIncrease - s.lastMonthDecrease,
+      contributionCount: s.lastMonthOperations, // недоступно разбиение по типам, показываем операции за месяц
+      expenseCount: 0, // подробной разбивки по типам нет в API
+      lastOperationDate: typeof s.lastUpdated === 'string' ? s.lastUpdated : new Date(s.lastUpdated).toISOString(),
+      averageMonthlyContribution: s.lastMonthIncrease, // приблизительное значение
+      averageMonthlyExpense: s.lastMonthDecrease, // приблизительное значение
+    };
+    return mapped;
   }
 
   // Обновить информацию о компенсационном фонде
   async updateFundInfo(data: CompensationFundFormData): Promise<CompensationFund> {
-    const response = await apiService.put<ApiResponse<CompensationFund>>(this.baseUrl, data);
-    return response.data.data;
+    const response = await apiService.put<CompensationFund>(this.baseUrl, data);
+    return response.data;
   }
 
   // Получить историю операций
@@ -33,65 +62,59 @@ export class CompensationFundService {
     page?: number;
     limit?: number;
     operation?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<{
-    data: CompensationFund['history'];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
+    dateFrom?: string; // UI-параметр → startDate в backend
+    dateTo?: string;   // UI-параметр → endDate в backend
+  }): Promise<PaginatedResponse<CompensationFund['history'][0]>> {
+    const mappedParams: Record<string, any> = {};
+    if (params?.page) mappedParams.page = params.page;
+    if (params?.limit) mappedParams.limit = params.limit;
+    if (params?.operation) mappedParams.operation = params.operation;
+    if (params?.dateFrom) mappedParams.startDate = params.dateFrom;
+    if (params?.dateTo) mappedParams.endDate = params.dateTo;
+
+    const response = await apiService.get<CompensationFund['history'][0][]>(
+      `${this.baseUrl}/history`,
+      { params: mappedParams }
+    );
+
+    const data = Array.isArray(response.data) ? response.data : [];
+    const pagination = response.pagination || {
+      page: mappedParams.page || 1,
+      limit: mappedParams.limit || 10,
+      total: data.length,
+      totalPages: Math.max(1, Math.ceil(data.length / (mappedParams.limit || 10)))
     };
-  }> {
-    const response = await apiService.get<ApiResponse<{
-      data: CompensationFund['history'];
-      pagination: {
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
-      };
-    }>>(`${this.baseUrl}/history`, { params });
-    return response.data.data;
+
+    return { data, pagination };
   }
 
-  // Добавить запись в историю
-  async addHistoryEntry(data: CompensationFundHistoryFormData): Promise<CompensationFund['history'][0]> {
-    const response = await apiService.post<ApiResponse<CompensationFund['history'][0]>>(`${this.baseUrl}/history`, data);
-    return response.data.data;
+  // Добавить запись в историю (backend возвращает обновленный фонд, нам достаточно факта успеха)
+  async addHistoryEntry(data: CompensationFundHistoryFormData): Promise<void> {
+    // Backend требует обязательное поле date (ISO string)
+    if (!data.date) {
+      data.date = new Date().toISOString();
+    }
+    await apiService.post(`${this.baseUrl}/history`, data);
   }
 
-  // Обновить запись в истории
-  async updateHistoryEntry(id: string, data: CompensationFundHistoryFormData): Promise<CompensationFund['history'][0]> {
-    const response = await apiService.put<ApiResponse<CompensationFund['history'][0]>>(`${this.baseUrl}/history/${id}`, data);
-    return response.data.data;
+  // Обновление записи истории не поддерживается backend
+  async updateHistoryEntry(_id: string, _data: CompensationFundHistoryFormData): Promise<never> {
+    throw new Error('Обновление записей истории не поддерживается сервером');
   }
 
-  // Удалить запись из истории
-  async deleteHistoryEntry(id: string): Promise<void> {
-    await apiService.delete(`${this.baseUrl}/history/${id}`);
+  // Удаление записи истории не поддерживается backend
+  async deleteHistoryEntry(_id: string): Promise<never> {
+    throw new Error('Удаление записей истории не поддерживается сервером');
   }
 
-  // Экспорт истории в Excel
-  async exportHistory(params?: {
-    operation?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }): Promise<Blob> {
-    const response = await apiService.get(`${this.baseUrl}/history/export`, {
-      params,
-      responseType: 'blob'
-    });
-    return response.data;
+  // Экспорт истории не поддерживается backend
+  async exportHistory(): Promise<never> {
+    throw new Error('Экспорт истории не поддерживается сервером');
   }
 
-  // Экспорт статистики в PDF
-  async exportStatistics(): Promise<Blob> {
-    const response = await apiService.get(`${this.baseUrl}/statistics/export`, {
-      responseType: 'blob'
-    });
-    return response.data;
+  // Экспорт статистики не поддерживается backend
+  async exportStatistics(): Promise<never> {
+    throw new Error('Экспорт статистики не поддерживается сервером');
   }
 }
 

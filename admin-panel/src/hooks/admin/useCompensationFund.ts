@@ -60,7 +60,12 @@ export function useCompensationFund(): UseCompensationFundReturn {
       const data = await compensationFundService.getFundInfo();
       setFundInfo(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки информации о фонде');
+      const message = (err as any)?.response?.status === 401
+        ? 'Не авторизовано. Войдите в систему.'
+        : (err as any)?.response?.status === 403
+          ? 'Недостаточно прав для просмотра информации о фонде.'
+          : (err instanceof Error ? err.message : 'Ошибка загрузки информации о фонде');
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -73,7 +78,12 @@ export function useCompensationFund(): UseCompensationFundReturn {
       const data = await compensationFundService.getFundStatistics();
       setStatistics(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки статистики');
+      const message = (err as any)?.response?.status === 401
+        ? 'Не авторизовано. Войдите в систему.'
+        : (err as any)?.response?.status === 403
+          ? 'Недостаточно прав для просмотра статистики.'
+          : (err instanceof Error ? err.message : 'Ошибка загрузки статистики');
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -93,7 +103,12 @@ export function useCompensationFund(): UseCompensationFundReturn {
       setHistory(data.data);
       setPagination(data.pagination);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки истории');
+      const message = (err as any)?.response?.status === 401
+        ? 'Не авторизовано. Войдите в систему.'
+        : (err as any)?.response?.status === 403
+          ? 'Недостаточно прав для просмотра истории.'
+          : (err instanceof Error ? err.message : 'Ошибка загрузки истории');
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -108,7 +123,12 @@ export function useCompensationFund(): UseCompensationFundReturn {
       // Обновляем статистику после изменения фонда
       await fetchStatistics();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка обновления информации о фонде');
+      const message = (err as any)?.response?.status === 401
+        ? 'Не авторизовано. Войдите в систему.'
+        : (err as any)?.response?.status === 403
+          ? 'Недостаточно прав. Нужны права settings:update.'
+          : (err instanceof Error ? err.message : 'Ошибка обновления информации о фонде');
+      setError(message);
       throw err;
     } finally {
       setLoading(false);
@@ -123,7 +143,12 @@ export function useCompensationFund(): UseCompensationFundReturn {
       // Обновляем историю и статистику
       await Promise.all([fetchHistory(), fetchStatistics()]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка добавления записи в историю');
+      const message = (err as any)?.response?.status === 401
+        ? 'Не авторизовано. Войдите в систему.'
+        : (err as any)?.response?.status === 403
+          ? 'Недостаточно прав. Нужны права settings:update.'
+          : (err instanceof Error ? err.message : 'Ошибка добавления записи в историю');
+      setError(message);
       throw err;
     } finally {
       setLoading(false);
