@@ -31,6 +31,7 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [opError, setOpError] = useState<string | null>(null);
 
   const {
     users,
@@ -62,10 +63,12 @@ export default function UsersPage() {
 
   const handleCreateUser = async (userData: Partial<User>) => {
     try {
-      await createUser(userData);
+      setOpError(null);
+      await createUser(userData as any);
       setIsCreateModalOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка создания пользователя:', error);
+      setOpError(error?.message || 'Не удалось создать пользователя');
     }
   };
 
@@ -73,11 +76,13 @@ export default function UsersPage() {
     if (!selectedUser) return;
     
     try {
+      setOpError(null);
       await updateUser(selectedUser.id, userData);
       setIsEditModalOpen(false);
       setSelectedUser(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ошибка обновления пользователя:', error);
+      setOpError(error?.message || 'Не удалось обновить пользователя');
     }
   };
 
@@ -104,15 +109,15 @@ export default function UsersPage() {
   const columns = [
     {
       key: 'email',
-      label: 'Email',
-      render: (user: User) => (
+      title: 'Email',
+      render: (_: any, user: User) => (
         <div className="font-medium text-gray-900">{user?.email || 'Не указан'}</div>
       ),
     },
     {
       key: 'name',
-      label: 'Имя',
-      render: (user: User) => (
+      title: 'Имя',
+      render: (_: any, user: User) => (
         <div className="text-gray-900">
           {user?.firstName || ''} {user?.lastName || ''}
         </div>
@@ -120,8 +125,8 @@ export default function UsersPage() {
     },
     {
       key: 'role',
-      label: 'Роль',
-      render: (user: User) => (
+      title: 'Роль',
+      render: (_: any, user: User) => (
         <Badge
           variant={user?.role === 'admin' ? 'success' : user?.role === 'moderator' ? 'warning' : 'default'}
         >
@@ -133,8 +138,8 @@ export default function UsersPage() {
     },
     {
       key: 'status',
-      label: 'Статус',
-      render: (user: User) => (
+      title: 'Статус',
+      render: (_: any, user: User) => (
         <Badge variant={user?.isActive ? 'success' : 'danger'}>
           {user?.isActive ? 'Активен' : 'Неактивен'}
         </Badge>
@@ -142,8 +147,8 @@ export default function UsersPage() {
     },
     {
       key: 'lastLogin',
-      label: 'Последний вход',
-      render: (user: User) => (
+      title: 'Последний вход',
+      render: (_: any, user: User) => (
         <div className="text-gray-500">
           {user?.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('ru-RU') : 'Никогда'}
         </div>
@@ -151,8 +156,8 @@ export default function UsersPage() {
     },
     {
       key: 'actions',
-      label: 'Действия',
-      render: (user: User) => (
+      title: 'Действия',
+      render: (_: any, user: User) => (
         <div className="flex space-x-2">
           <Button
             size="sm"
@@ -167,7 +172,7 @@ export default function UsersPage() {
           <Button
             size="sm"
             variant={user?.isActive ? 'danger' : 'success'}
-            onClick={() => handleToggleStatus(user?.id || '')}
+            onClick={() => user?.id && handleToggleStatus(user.id)}
           >
             {user?.isActive ? 'Деактивировать' : 'Активировать'}
           </Button>
@@ -215,6 +220,12 @@ export default function UsersPage() {
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-md p-4">
           <p className="text-red-800">Ошибка загрузки пользователей: {error}</p>
+        </div>
+      )}
+
+      {opError && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
+          {opError}
         </div>
       )}
 
@@ -322,11 +333,25 @@ function CreateUserModal({ isOpen, onClose, onSubmit }: {
     password: '',
     confirmPassword: '',
   });
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      setFormError('Укажите корректный email');
+      return;
+    }
+    if (!formData.firstName || !formData.lastName) {
+      setFormError('Имя и фамилия обязательны');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setFormError('Пароль должен быть не менее 6 символов');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
-      alert('Пароли не совпадают');
+      setFormError('Пароли не совпадают');
       return;
     }
     onSubmit(formData);
@@ -412,6 +437,11 @@ function CreateUserModal({ isOpen, onClose, onSubmit }: {
             />
           </div>
         </div>
+        {formError && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
+            {formError}
+          </div>
+        )}
         <div className="flex justify-end space-x-3">
           <Button type="button" variant="outline" onClick={onClose}>
             Отмена
@@ -438,9 +468,15 @@ function EditUserModal({ isOpen, onClose, user, onSubmit }: {
     lastName: user.lastName,
     role: user.role,
   });
+  const [formError, setFormError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
+      setFormError('Укажите корректный email');
+      return;
+    }
     onSubmit(formData);
   };
 
@@ -494,6 +530,11 @@ function EditUserModal({ isOpen, onClose, user, onSubmit }: {
             />
           </div>
         </div>
+        {formError && (
+          <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
+            {formError}
+          </div>
+        )}
         <div className="flex justify-end space-x-3">
           <Button type="button" variant="outline" onClick={onClose}>
             Отмена

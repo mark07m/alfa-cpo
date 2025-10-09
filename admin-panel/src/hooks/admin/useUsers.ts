@@ -6,7 +6,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'moderator' | 'editor' | 'user';
+  role: 'admin' | 'moderator' | 'editor' | 'user' | string;
   isActive: boolean;
   lastLoginAt: string | null;
   createdAt: string;
@@ -26,12 +26,56 @@ export interface UpdateUserData {
   firstName?: string;
   lastName?: string;
   role?: string;
+  isActive?: boolean;
 }
 
 export interface ChangePasswordData {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+function toUiRole(backendRole?: string): 'admin' | 'moderator' | 'editor' | 'user' {
+  switch ((backendRole || '').toUpperCase()) {
+    case 'SUPER_ADMIN':
+    case 'ADMIN':
+      return 'admin'
+    case 'MODERATOR':
+      return 'moderator'
+    case 'EDITOR':
+      return 'editor'
+    default:
+      return 'user'
+  }
+}
+
+function toBackendRole(uiRole?: string): 'ADMIN' | 'MODERATOR' | 'EDITOR' | undefined {
+  switch ((uiRole || '').toLowerCase()) {
+    case 'admin':
+      return 'ADMIN'
+    case 'moderator':
+      return 'MODERATOR'
+    case 'editor':
+      return 'EDITOR'
+    default:
+      return undefined
+  }
+}
+
+function mapUser(raw: any): User {
+  const fullName: string = raw.name || '';
+  const [first, ...rest] = fullName.split(' ').filter(Boolean);
+  return {
+    id: raw.id || raw._id || '',
+    email: raw.email || '',
+    firstName: raw.firstName || first || '',
+    lastName: raw.lastName || rest.join(' ') || '',
+    role: toUiRole(raw.role),
+    isActive: Boolean(raw.isActive),
+    lastLoginAt: raw.lastLoginAt || null,
+    createdAt: raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updatedAt || new Date().toISOString(),
+  };
 }
 
 export function useUsers() {
@@ -44,9 +88,10 @@ export function useUsers() {
     try {
       setIsLoading(true);
       setError(null);
-      
       const response = await apiService.get('/users');
-      setUsers(response.data);
+      const raw = (response as any)?.data || [];
+      const mapped = Array.isArray(raw) ? raw.map(mapUser) : [];
+      setUsers(mapped);
     } catch (err) {
       console.error('Ошибка загрузки пользователей:', err);
       setError('Не удалось загрузить список пользователей');
@@ -59,10 +104,14 @@ export function useUsers() {
   const createUser = async (userData: CreateUserData) => {
     try {
       setError(null);
-      
-      const response = await apiService.post('/users', userData);
-      const newUser = response.data;
-      
+      const payload = {
+        email: userData.email,
+        password: (userData as any).password,
+        name: `${userData.firstName || ''} ${userData.lastName || ''}`.trim(),
+        role: toBackendRole(userData.role),
+      };
+      const response = await apiService.post('/users', payload);
+      const newUser = mapUser((response as any).data);
       setUsers(prev => [...prev, newUser]);
       return newUser;
     } catch (err) {
@@ -76,13 +125,21 @@ export function useUsers() {
   const updateUser = async (userId: string, userData: UpdateUserData) => {
     try {
       setError(null);
-      
-      const response = await apiService.put(`/users/${userId}`, userData);
-      const updatedUser = response.data;
-      
-      setUsers(prev => 
-        prev.map(user => user.id === userId ? updatedUser : user)
-      );
+      const payload: any = { ...userData };
+      if (userData.firstName || userData.lastName) {
+        const current = users.find(u => u.id === userId);
+        const first = userData.firstName ?? current?.firstName ?? '';
+        const last = userData.lastName ?? current?.lastName ?? '';
+        payload.name = `${first} ${last}`.trim();
+        delete payload.firstName;
+        delete payload.lastName;
+      }
+      if (userData.role) {
+        payload.role = toBackendRole(userData.role);
+      }
+      const response = await apiService.patch(`/users/${userId}`, payload);
+      const updatedUser = mapUser((response as any).data);
+      setUsers(prev => prev.map(user => user.id === userId ? updatedUser : user));
       return updatedUser;
     } catch (err) {
       console.error('Ошибка обновления пользователя:', err);
@@ -95,9 +152,7 @@ export function useUsers() {
   const deleteUser = async (userId: string) => {
     try {
       setError(null);
-      
       await apiService.delete(`/users/${userId}`);
-      
       setUsers(prev => prev.filter(user => user.id !== userId));
     } catch (err) {
       console.error('Ошибка удаления пользователя:', err);
@@ -106,11 +161,10 @@ export function useUsers() {
     }
   };
 
-  // Изменение пароля пользователя
+  // Изменение пароля пользователя (если backend поддержит)
   const changePassword = async (userId: string, passwordData: ChangePasswordData) => {
     try {
       setError(null);
-      
       await apiService.put(`/users/${userId}/password`, passwordData);
     } catch (err) {
       console.error('Ошибка изменения пароля:', err);
@@ -123,13 +177,12 @@ export function useUsers() {
   const toggleUserStatus = async (userId: string) => {
     try {
       setError(null);
-      
-      const response = await apiService.put(`/users/${userId}/toggle-status`);
-      const updatedUser = response.data;
-      
-      setUsers(prev => 
-        prev.map(user => user.id === userId ? updatedUser : user)
-      );
+      if (!userId) throw new Error('ID пользователя не указан');
+      const current = users.find(u => u.id === userId);
+      const nextStatus = current ? !current.isActive : true;
+      const response = await apiService.patch(`/users/${userId}`, { isActive: nextStatus });
+      const updatedUser = mapUser((response as any).data);
+      setUsers(prev => prev.map(user => user.id === userId ? updatedUser : user));
       return updatedUser;
     } catch (err) {
       console.error('Ошибка изменения статуса пользователя:', err);
@@ -142,9 +195,8 @@ export function useUsers() {
   const getUserById = async (userId: string) => {
     try {
       setError(null);
-      
       const response = await apiService.get(`/users/${userId}`);
-      return response.data;
+      return mapUser((response as any).data);
     } catch (err) {
       console.error('Ошибка загрузки пользователя:', err);
       setError('Не удалось загрузить пользователя');
@@ -152,13 +204,12 @@ export function useUsers() {
     }
   };
 
-  // Получение статистики пользователей
+  // Получение статистики пользователей (если реализовано)
   const getUsersStats = async () => {
     try {
       setError(null);
-      
       const response = await apiService.get('/users/stats');
-      return response.data;
+      return (response as any).data;
     } catch (err) {
       console.error('Ошибка загрузки статистики пользователей:', err);
       setError('Не удалось загрузить статистику пользователей');
@@ -170,13 +221,8 @@ export function useUsers() {
   const exportUsers = async (format: 'csv' | 'excel' = 'excel') => {
     try {
       setError(null);
-      
-      const response = await apiService.get(`/users/export?format=${format}`, {
-        responseType: 'blob'
-      });
-      
-      // Создаем ссылку для скачивания
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const response = await apiService.get(`/users/export?format=${format}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([((response as any).data)]));
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `users.${format === 'excel' ? 'xlsx' : 'csv'}`);
@@ -195,20 +241,13 @@ export function useUsers() {
   const importUsers = async (file: File) => {
     try {
       setError(null);
-      
       const formData = new FormData();
       formData.append('file', file);
-      
       const response = await apiService.post('/users/import', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
-      // Перезагружаем список пользователей
       await loadUsers();
-      
-      return response.data;
+      return (response as any).data;
     } catch (err) {
       console.error('Ошибка импорта пользователей:', err);
       setError('Не удалось импортировать пользователей');
@@ -220,11 +259,8 @@ export function useUsers() {
   const getUserLogs = async (userId: string, page = 1, limit = 20) => {
     try {
       setError(null);
-      
-      const response = await apiService.get(`/users/${userId}/logs`, {
-        params: { page, limit }
-      });
-      return response.data;
+      const response = await apiService.get(`/users/${userId}/logs`, { params: { page, limit } });
+      return (response as any).data;
     } catch (err) {
       console.error('Ошибка загрузки логов пользователя:', err);
       setError('Не удалось загрузить логи пользователя');
@@ -234,6 +270,7 @@ export function useUsers() {
 
   useEffect(() => {
     loadUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

@@ -1,164 +1,88 @@
-import { useState, useEffect } from 'react';
-import { apiService } from '@/services/admin/api';
-
-export interface SiteSettings {
-  // Общие настройки
-  siteName: string;
-  siteDescription: string;
-  logo: string;
-  favicon: string;
-  maintenanceMode: boolean;
-  allowRegistration: boolean;
-
-  // Контакты
-  organizationName: string;
-  ogrn: string;
-  inn: string;
-  kpp: string;
-  legalAddress: string;
-  phone: string;
-  email: string;
-  workingHours: string;
-  website: string;
-
-  // SEO настройки
-  seoTitle: string;
-  seoDescription: string;
-  seoKeywords: string;
-  ogTitle: string;
-  ogDescription: string;
-  ogImage: string;
-  googleAnalyticsId: string;
-  yandexMetrikaId: string;
-
-  // Тема и дизайн
-  primaryColor: string;
-  secondaryColor: string;
-  primaryFont: string;
-  fontSize: string;
-
-  // Социальные сети
-  socialVk: string;
-  socialTelegram: string;
-  socialYoutube: string;
-  socialOdnoklassniki: string;
-}
+import { useState, useCallback } from 'react';
+import { siteSettingsService } from '@/services/admin/siteSettings';
+import { SiteSettings } from '@/types/admin';
 
 const defaultSettings: SiteSettings = {
-  siteName: 'СРО арбитражных управляющих',
-  siteDescription: 'Саморегулируемая организация арбитражных управляющих',
-  logo: '',
-  favicon: '',
-  maintenanceMode: false,
-  allowRegistration: false,
-  organizationName: '',
-  ogrn: '',
-  inn: '',
-  kpp: '',
-  legalAddress: '',
-  phone: '',
-  email: '',
-  workingHours: '',
-  website: '',
-  seoTitle: 'СРО арбитражных управляющих',
-  seoDescription: 'Официальный сайт саморегулируемой организации арбитражных управляющих',
-  seoKeywords: 'СРО, арбитражные управляющие, банкротство, несостоятельность',
-  ogTitle: 'СРО арбитражных управляющих',
-  ogDescription: 'Официальный сайт саморегулируемой организации арбитражных управляющих',
-  ogImage: '',
-  googleAnalyticsId: '',
-  yandexMetrikaId: '',
-  primaryColor: '#D4C4A8',
-  secondaryColor: '#8B7355',
-  primaryFont: 'Inter',
-  fontSize: '16px',
-  socialVk: '',
-  socialTelegram: '',
-  socialYoutube: '',
-  socialOdnoklassniki: '',
+  id: '1',
+  siteName: '',
+  siteDescription: '',
+  contactEmail: '',
+  contactPhone: '',
+  address: '',
+  logoUrl: '',
+  faviconUrl: '',
+  seoTitle: '',
+  seoDescription: '',
+  seoKeywords: '',
+  theme: {
+    primaryColor: '#D4B89A',
+    secondaryColor: '#F5F5DC',
+    accentColor: '#8B4513',
+  },
+  socialMedia: {
+    facebook: '',
+    twitter: '',
+    linkedin: '',
+    instagram: '',
+  },
+  footerText: '',
+  copyrightText: '',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 export function useSiteSettings() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Загрузка настроек
-  const loadSettings = async () => {
+  const fetchSettings = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setLoading(true);
       setError(null);
-      
-      const response = await apiService.get('/settings/site');
-      const data = response.data;
-      
-      // Объединяем с настройками по умолчанию
-      setSettings({ ...defaultSettings, ...(data || {}) });
-    } catch (err) {
-      console.error('Ошибка загрузки настроек:', err);
-      setError('Не удалось загрузить настройки');
-      // Используем настройки по умолчанию
-      setSettings(defaultSettings);
+      const data = await siteSettingsService.getSettings();
+      setSettings(data);
+    } catch (e: any) {
+      console.error('Ошибка загрузки настроек:', e);
+      setError(e?.message || 'Не удалось загрузить настройки');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }, []);
 
-  // Обновление настроек
-  const updateSettings = async (section: string, newSettings: Partial<SiteSettings>) => {
+  const updateSettings = useCallback(async (data: Partial<SiteSettings>) => {
     try {
       setError(null);
-      
-      // Обновляем локальное состояние
-      setSettings(prev => ({ ...prev, ...newSettings }));
-      
-      // Отправляем на сервер
-      await apiService.put('/settings/site', {
-        section,
-        settings: newSettings
-      });
-      
+      const updated = await siteSettingsService.updateSettings(data);
+      setSettings(updated);
       return true;
-    } catch (err) {
-      console.error('Ошибка сохранения настроек:', err);
-      setError('Не удалось сохранить настройки');
+    } catch (e: any) {
+      console.error('Ошибка сохранения настроек:', e);
+      setError(e?.message || 'Не удалось сохранить настройки');
       return false;
     }
-  };
+  }, []);
 
-  // Сброс к настройкам по умолчанию
-  const resetToDefault = async () => {
+  const resetToDefault = useCallback(async () => {
     try {
       setError(null);
-      
-      await apiService.post('/settings/site/reset');
-      setSettings(defaultSettings);
-      
+      const reset = await siteSettingsService.resetSettings();
+      setSettings(reset);
       return true;
-    } catch (err) {
-      console.error('Ошибка сброса настроек:', err);
-      setError('Не удалось сбросить настройки');
+    } catch (e: any) {
+      console.error('Ошибка сброса настроек:', e);
+      setError(e?.message || 'Не удалось сбросить настройки');
       return false;
     }
-  };
-
-  // Предварительный просмотр настроек
-  const previewSettings = (previewSettings: Partial<SiteSettings>) => {
-    // Применяем настройки для предварительного просмотра
-    setSettings(prev => ({ ...prev, ...previewSettings }));
-  };
-
-  useEffect(() => {
-    loadSettings();
   }, []);
 
   return {
     settings,
     updateSettings,
     resetToDefault,
-    previewSettings,
-    loadSettings,
-    isLoading,
+    // Backward-compatible names used by pages
+    fetchSettings,
+    loading,
     error,
   };
 }
