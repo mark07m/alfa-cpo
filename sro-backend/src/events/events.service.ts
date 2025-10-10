@@ -17,7 +17,6 @@ export class EventsService {
   ) {}
 
   async create(createEventDto: CreateEventDto, userId: string): Promise<Event> {
-    // Проверяем существование типа мероприятия, если указан
     if (createEventDto.type) {
       const eventType = await this.eventTypeModel.findById(createEventDto.type);
       if (!eventType) {
@@ -56,7 +55,6 @@ export class EventsService {
 
     const filter: any = {};
 
-    // Поиск по тексту
     if (search) {
       filter.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -67,37 +65,30 @@ export class EventsService {
       ];
     }
 
-    // Фильтр по типу
     if (type) {
       filter.type = new Types.ObjectId(type);
     }
 
-    // Фильтр по статусу
     if (status) {
       filter.status = status;
     }
 
-    // Фильтр по тегу
     if (tag) {
       filter.tags = { $in: [tag] };
     }
 
-    // Фильтр по местоположению
     if (location) {
       filter.location = { $regex: location, $options: 'i' };
     }
 
-    // Фильтр по featured
     if (featured !== undefined) {
       filter.featured = featured;
     }
 
-    // Фильтр по необходимости регистрации
     if (registrationRequired !== undefined) {
       filter.registrationRequired = registrationRequired;
     }
 
-    // Фильтр по дате начала
     if (startDateFrom || startDateTo) {
       filter.startDate = {};
       if (startDateFrom) {
@@ -108,11 +99,9 @@ export class EventsService {
       }
     }
 
-    // Сортировка
     const sort: any = {};
     sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
 
-    // Пагинация
     const skip = (page - 1) * limit;
 
     const [events, total] = await Promise.all([
@@ -165,7 +154,6 @@ export class EventsService {
       throw new BadRequestException('Неверный ID мероприятия');
     }
 
-    // Проверяем существование типа мероприятия, если указан
     if (updateEventDto.type) {
       const eventType = await this.eventTypeModel.findById(updateEventDto.type);
       if (!eventType) {
@@ -176,17 +164,16 @@ export class EventsService {
     const updateData = {
       ...updateEventDto,
       updatedBy: new Types.ObjectId(userId),
-    };
+    } as any;
 
-    // Обрабатываем даты
     if (updateEventDto.startDate) {
-      (updateData as any).startDate = new Date(updateEventDto.startDate);
+      updateData.startDate = new Date(updateEventDto.startDate);
     }
     if (updateEventDto.endDate) {
-      (updateData as any).endDate = new Date(updateEventDto.endDate);
+      updateData.endDate = new Date(updateEventDto.endDate);
     }
     if (updateEventDto.registrationDeadline) {
-      (updateData as any).registrationDeadline = new Date(updateEventDto.registrationDeadline);
+      updateData.registrationDeadline = new Date(updateEventDto.registrationDeadline);
     }
 
     const event = await this.eventModel
@@ -241,11 +228,7 @@ export class EventsService {
       throw new BadRequestException('Достигнуто максимальное количество участников');
     }
 
-    // Увеличиваем счетчик участников
     await this.eventModel.findByIdAndUpdate(eventId, { $inc: { currentParticipants: 1 } }).exec();
-
-    // Здесь можно добавить логику сохранения данных регистрации в отдельную коллекцию
-    // или отправки уведомлений
 
     return {
       success: true,
@@ -263,12 +246,10 @@ export class EventsService {
 
     const filter: any = { status };
 
-    // Фильтр по типу
     if (type) {
       filter.type = new Types.ObjectId(type);
     }
 
-    // Фильтр по дате
     if (startDate || endDate) {
       filter.startDate = {};
       if (startDate) {
@@ -323,5 +304,88 @@ export class EventsService {
       .find({ isActive: true })
       .sort({ order: 1, name: 1 })
       .exec();
+  }
+
+  // Participants subdocument operations
+  async listParticipants(eventId: string) {
+    if (!Types.ObjectId.isValid(eventId)) throw new BadRequestException('Неверный ID мероприятия');
+    const event = await this.eventModel.findById(eventId).lean().exec();
+    if (!event) throw new NotFoundException('Мероприятие не найдено');
+    return (event as any).participants || [];
+  }
+
+  async addParticipant(eventId: string, dto: any, userId: string) {
+    if (!Types.ObjectId.isValid(eventId)) throw new BadRequestException('Неверный ID мероприятия');
+    const event = await this.eventModel.findById(eventId).exec();
+    if (!event) throw new NotFoundException('Мероприятие не найдено');
+
+    const participant = {
+      _id: new Types.ObjectId(),
+      fullName: dto.fullName,
+      email: dto.email,
+      phone: dto.phone,
+      registeredAt: new Date(),
+      status: dto.status || 'pending',
+      organization: dto.organization,
+      position: dto.position,
+      createdBy: new Types.ObjectId(userId),
+    } as any;
+
+    (event as any).participants = (event as any).participants || [];
+    (event as any).participants.push(participant);
+    await event.save();
+    return participant;
+  }
+
+  async updateParticipant(eventId: string, participantId: string, dto: any, userId: string) {
+    if (!Types.ObjectId.isValid(eventId) || !Types.ObjectId.isValid(participantId)) {
+      throw new BadRequestException('Неверные ID');
+    }
+    const event = await this.eventModel.findById(eventId).exec();
+    if (!event) throw new NotFoundException('Мероприятие не найдено');
+    const participants = (event as any).participants || [];
+    const idx = participants.findIndex((p: any) => String(p._id) === String(participantId));
+    if (idx === -1) throw new NotFoundException('Участник не найден');
+    const updated = { ...participants[idx], ...dto };
+    participants[idx] = updated;
+    await event.save();
+    return updated;
+  }
+
+  async deleteParticipant(eventId: string, participantId: string) {
+    if (!Types.ObjectId.isValid(eventId) || !Types.ObjectId.isValid(participantId)) {
+      throw new BadRequestException('Неверные ID');
+    }
+    const event = await this.eventModel.findById(eventId).exec();
+    if (!event) throw new NotFoundException('Мероприятие не найдено');
+    const before = ((event as any).participants || []).length;
+    (event as any).participants = ((event as any).participants || []).filter((p: any) => String(p._id) !== String(participantId));
+    if (((event as any).participants || []).length === before) {
+      throw new NotFoundException('Участник не найден');
+    }
+    await event.save();
+  }
+
+  async exportParticipantsCsv(eventId: string): Promise<string> {
+    if (!Types.ObjectId.isValid(eventId)) throw new BadRequestException('Неверный ID мероприятия');
+    const event = await this.eventModel.findById(eventId).lean().exec();
+    if (!event) throw new NotFoundException('Мероприятие не найдено');
+    const participants = ((event as any).participants || []) as any[];
+    const header = ['ФИО','Email','Телефон','Организация','Должность','Статус','Дата регистрации'];
+    const rows = participants.map(p => [p.fullName||'', p.email||'', p.phone||'', p.organization||'', p.position||'', p.status||'', p.registeredAt ? new Date(p.registeredAt).toISOString() : '']);
+    return [header, ...rows].map(r => r.join(',')).join('\n');
+  }
+
+  async updateStatus(id: string, status: 'draft'|'published'|'cancelled'|'completed', userId: string) {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Неверный ID мероприятия');
+    const updated = await this.eventModel.findByIdAndUpdate(id, { status, updatedBy: new Types.ObjectId(userId) }, { new: true }).exec();
+    if (!updated) throw new NotFoundException('Мероприятие не найдено');
+    return updated;
+  }
+
+  async bulkDelete(ids: string[]) {
+    const validIds = (ids || []).filter(id => Types.ObjectId.isValid(id));
+    if (!validIds.length) throw new BadRequestException('Неверные ID мероприятий');
+    await this.eventModel.deleteMany({ _id: { $in: validIds } }).exec();
   }
 }

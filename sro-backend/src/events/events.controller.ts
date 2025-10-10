@@ -11,6 +11,8 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  Res,
+  Header
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -24,6 +26,7 @@ import { Roles } from '@/auth/decorators/roles.decorator';
 import { RequirePermissions } from '@/auth/decorators/permissions.decorator';
 import { UserRole, Permission } from '@/common/types';
 import { ResponseUtil } from '@/common/utils/response.util';
+import type { Response } from 'express';
 
 @Controller('events')
 export class EventsController {
@@ -96,6 +99,15 @@ export class EventsController {
     return ResponseUtil.updated(event, 'Мероприятие успешно обновлено');
   }
 
+  @Patch(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  async updateStatus(@Param('id') id: string, @Body() body: { status: 'draft'|'published'|'cancelled'|'completed' }, @Request() req) {
+    const updated = await (this.eventsService as any).updateStatus(id, body.status, req.user.id);
+    return ResponseUtil.updated(updated, 'Статус мероприятия обновлен');
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.MODERATOR)
@@ -104,5 +116,62 @@ export class EventsController {
   async remove(@Param('id') id: string) {
     await this.eventsService.remove(id);
     return ResponseUtil.deleted('Мероприятие успешно удалено');
+  }
+
+  @Delete('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @RequirePermissions(Permission.EVENTS_DELETE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async bulkDelete(@Body() body: { ids: string[] }) {
+    await (this.eventsService as any).bulkDelete(body.ids || []);
+    return ResponseUtil.deleted('Мероприятия успешно удалены');
+  }
+
+  // Participants endpoints
+  @Get(':eventId/participants')
+  async listParticipants(@Param('eventId') eventId: string) {
+    const participants = await (this.eventsService as any).listParticipants(eventId);
+    return ResponseUtil.success(participants, 'Участники получены');
+  }
+
+  @Post(':eventId/participants')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  async addParticipant(@Param('eventId') eventId: string, @Body() body: any, @Request() req) {
+    const participant = await (this.eventsService as any).addParticipant(eventId, body, req.user.id);
+    return ResponseUtil.created(participant, 'Участник добавлен');
+  }
+
+  @Patch(':eventId/participants/:participantId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  async updateParticipant(@Param('eventId') eventId: string, @Param('participantId') participantId: string, @Body() body: any, @Request() req) {
+    const participant = await (this.eventsService as any).updateParticipant(eventId, participantId, body, req.user.id);
+    return ResponseUtil.updated(participant, 'Участник обновлен');
+  }
+
+  @Delete(':eventId/participants/:participantId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteParticipant(@Param('eventId') eventId: string, @Param('participantId') participantId: string) {
+    await (this.eventsService as any).deleteParticipant(eventId, participantId);
+    return ResponseUtil.deleted('Участник удален');
+  }
+
+  @Get(':eventId/participants/export')
+  @Header('Content-Type', 'text/csv')
+  @Header('Content-Disposition', 'attachment; filename="participants.csv"')
+  async exportParticipants(@Param('eventId') eventId: string, @Res() res: Response) {
+    try {
+      const csv = await (this.eventsService as any).exportParticipantsCsv(eventId);
+      res.send(csv);
+    } catch (e) {
+      res.status(500).json({ message: 'Ошибка экспорта участников' });
+    }
   }
 }

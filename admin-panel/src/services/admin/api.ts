@@ -71,7 +71,6 @@ class ApiService {
             error.code === 'ECONNREFUSED' ||
             error.code === 'ERR_NETWORK' ||
             error.code === 'EADDRINUSE' ||
-            error.response?.status === 400 ||
             error.response?.status === 503 ||
             !error.response) {
           console.info('API server not available, services will use mock data')

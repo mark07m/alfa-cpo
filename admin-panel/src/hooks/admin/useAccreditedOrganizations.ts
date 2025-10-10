@@ -20,6 +20,8 @@ export function useAccreditedOrganizations() {
     pages: 0
   });
 
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
   const fetchOrganizations = useCallback(async (
     filters: AccreditedOrganizationFilters = {},
     paginationParams: PaginationParams = {}
@@ -28,13 +30,11 @@ export function useAccreditedOrganizations() {
     setError(null);
     
     try {
-      // В режиме разработки используем моковые данные
-      if (process.env.NODE_ENV === 'development') {
-        await new Promise(resolve => setTimeout(resolve, 500)); // Имитация задержки API
+      if (useMock) {
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         let filteredOrganizations = [...mockAccreditedOrganizations];
         
-        // Применяем фильтры
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
           filteredOrganizations = filteredOrganizations.filter(org => 
@@ -66,7 +66,6 @@ export function useAccreditedOrganizations() {
           );
         }
         
-        // Применяем пагинацию
         const page = paginationParams.page || 1;
         const limit = paginationParams.limit || 10;
         const startIndex = (page - 1) * limit;
@@ -92,14 +91,14 @@ export function useAccreditedOrganizations() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [useMock]);
 
   const createOrganization = useCallback(async (data: AccreditedOrganizationFormData) => {
     setLoading(true);
     setError(null);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (useMock) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         const newOrganization: AccreditedOrganization = {
@@ -115,9 +114,9 @@ export function useAccreditedOrganizations() {
         setOrganizations(prev => [newOrganization, ...prev]);
         return newOrganization;
       } else {
-        const newOrganization = await accreditedOrganizationsService.createOrganization(data);
-        setOrganizations(prev => [newOrganization, ...prev]);
-        return newOrganization;
+        const created = await accreditedOrganizationsService.createOrganization(data);
+        setOrganizations(prev => [created, ...prev]);
+        return created;
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка создания организации');
@@ -125,14 +124,14 @@ export function useAccreditedOrganizations() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [useMock]);
 
   const updateOrganization = useCallback(async (id: string, data: Partial<AccreditedOrganizationFormData>) => {
     setLoading(true);
     setError(null);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (useMock) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         setOrganizations(prev => prev.map(org => 
@@ -143,11 +142,11 @@ export function useAccreditedOrganizations() {
         
         return organizations.find(org => org.id === id)!;
       } else {
-        const updatedOrganization = await accreditedOrganizationsService.updateOrganization(id, data);
+        const updated = await accreditedOrganizationsService.updateOrganization(id, data);
         setOrganizations(prev => prev.map(org => 
-          org.id === id ? updatedOrganization : org
+          org.id === id ? updated : org
         ));
-        return updatedOrganization;
+        return updated;
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ошибка обновления организации');
@@ -155,14 +154,14 @@ export function useAccreditedOrganizations() {
     } finally {
       setLoading(false);
     }
-  }, [organizations]);
+  }, [organizations, useMock]);
 
   const deleteOrganization = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (useMock) {
         await new Promise(resolve => setTimeout(resolve, 500));
         setOrganizations(prev => prev.filter(org => org.id !== id));
       } else {
@@ -175,14 +174,14 @@ export function useAccreditedOrganizations() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [useMock]);
 
   const deleteOrganizations = useCallback(async (ids: string[]) => {
     setLoading(true);
     setError(null);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (useMock) {
         await new Promise(resolve => setTimeout(resolve, 1000));
         setOrganizations(prev => prev.filter(org => !ids.includes(org.id)));
       } else {
@@ -195,7 +194,7 @@ export function useAccreditedOrganizations() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [useMock]);
 
   return {
     organizations,
@@ -215,12 +214,14 @@ export function useAccreditedOrganizationStats() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
   const fetchStats = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (useMock) {
         await new Promise(resolve => setTimeout(resolve, 500));
         setStats(mockAccreditedOrganizationStats);
       } else {
@@ -233,7 +234,7 @@ export function useAccreditedOrganizationStats() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [useMock]);
 
   useEffect(() => {
     fetchStats();
@@ -247,6 +248,8 @@ export function useAccreditedOrganization(id: string) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const useMock = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
   const fetchOrganization = useCallback(async () => {
     if (!id) return;
     
@@ -254,7 +257,7 @@ export function useAccreditedOrganization(id: string) {
     setError(null);
     
     try {
-      if (process.env.NODE_ENV === 'development') {
+      if (useMock) {
         await new Promise(resolve => setTimeout(resolve, 500));
         const foundOrganization = mockAccreditedOrganizations.find(org => org.id === id);
         if (foundOrganization) {
@@ -272,7 +275,7 @@ export function useAccreditedOrganization(id: string) {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, useMock]);
 
   useEffect(() => {
     fetchOrganization();

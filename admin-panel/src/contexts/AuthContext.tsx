@@ -56,6 +56,9 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const useMockData = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true'
+  const autoLoginEnabled = process.env.NEXT_PUBLIC_AUTO_LOGIN === 'true'
+  const autoLoginEmail = process.env.NEXT_PUBLIC_AUTO_LOGIN_EMAIL || ''
+  const autoLoginPassword = process.env.NEXT_PUBLIC_AUTO_LOGIN_PASSWORD || ''
   
   const [authState, setAuthState] = useState<AuthState>(() => {
     // Инициализируем состояние сразу как не загружающееся
@@ -224,23 +227,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  // Принудительно логинимся для получения реального токена
+  // (Опционально) автологин только при явном включении через env
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('admin_token')
-      console.log('🔍 AuthContext useEffect - token:', token ? token.substring(0, 20) + '...' : 'NOT FOUND')
-      if (!token) {
-        console.log('🔍 No token found, attempting login')
-        // Автоматически логинимся
-        login({
-          email: 'aaadmin@sro-au.ru',
-          password: 'Admin123!'
-        }).catch(error => {
-          console.error('Auto-login failed:', error)
-        })
-      } else {
-        console.log('🔍 Token found, user should be authenticated')
-      }
+    if (typeof window === 'undefined') return
+    const token = localStorage.getItem('admin_token')
+    console.log('🔍 AuthContext useEffect - token:', token ? token.substring(0, 20) + '...' : 'NOT FOUND')
+    if (!token && autoLoginEnabled && autoLoginEmail && autoLoginPassword) {
+      console.log('🔍 Auto-login enabled via env, attempting login for', autoLoginEmail)
+      login({ email: autoLoginEmail, password: autoLoginPassword }).catch(err => {
+        console.error('Auto-login failed:', err)
+      })
     }
   }, [])
 

@@ -8,6 +8,56 @@ import {
   PaginationParams 
 } from '@/types/admin';
 
+function mapOrganization(raw: any): AccreditedOrganization {
+  return {
+    id: raw.id || raw._id || raw.accreditationNumber || String(Date.now()),
+    name: raw.name,
+    shortName: raw.shortName,
+    inn: raw.inn,
+    kpp: raw.kpp,
+    ogrn: raw.ogrn,
+    legalAddress: raw.legalAddress,
+    actualAddress: raw.actualAddress,
+    phone: raw.phone,
+    email: raw.email,
+    website: raw.website,
+    directorName: raw.directorName,
+    directorPosition: raw.directorPosition,
+    accreditationNumber: raw.accreditationNumber,
+    accreditationDate: typeof raw.accreditationDate === 'string' ? raw.accreditationDate : new Date(raw.accreditationDate).toISOString(),
+    accreditationExpiryDate: typeof raw.accreditationExpiryDate === 'string' ? raw.accreditationExpiryDate : new Date(raw.accreditationExpiryDate).toISOString(),
+    status: raw.status,
+    accreditationType: raw.accreditationType,
+    description: raw.description,
+    services: Array.isArray(raw.services) ? raw.services : [],
+    documents: Array.isArray(raw.documents) ? raw.documents : [],
+    contacts: Array.isArray(raw.contacts) ? raw.contacts : [],
+    createdBy: raw.createdBy || '',
+    updatedBy: raw.updatedBy || '',
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : (raw.createdAt ? new Date(raw.createdAt).toISOString() : new Date().toISOString()),
+    updatedAt: typeof raw.updatedAt === 'string' ? raw.updatedAt : (raw.updatedAt ? new Date(raw.updatedAt).toISOString() : new Date().toISOString())
+  };
+}
+
+function sanitizePayload<T extends Record<string, any>>(data: T): Partial<T> {
+  const result: Record<string, any> = {}
+  Object.entries(data || {}).forEach(([key, value]) => {
+    if (value === '' || value === null || value === undefined) {
+      return
+    }
+    // Удаляем пустые строки внутри массивов
+    if (Array.isArray(value)) {
+      const filtered = value.filter(v => v !== '' && v !== null && v !== undefined)
+      if (filtered.length > 0) {
+        result[key] = filtered
+      }
+      return
+    }
+    result[key] = value
+  })
+  return result as Partial<T>
+}
+
 export const accreditedOrganizationsService = {
   // Получить список аккредитованных организаций
   async getOrganizations(
@@ -28,25 +78,28 @@ export const accreditedOrganizationsService = {
     if (pagination.sortBy) params.append('sortBy', pagination.sortBy);
     if (pagination.sortOrder) params.append('sortOrder', pagination.sortOrder);
 
-    return apiService.get(`/accredited-organizations?${params.toString()}`);
+    const resp = await apiService.get(`/accredited-organizations?${params.toString()}`);
+    const raw = Array.isArray(resp.data) ? resp.data : [];
+    const mapped = raw.map(mapOrganization);
+    return { success: true, data: mapped, message: resp.message, pagination: resp.pagination } as ApiResponse<AccreditedOrganization[]>;
   },
 
   // Получить аккредитованную организацию по ID
   async getOrganization(id: string): Promise<AccreditedOrganization> {
-    const response = await apiService.get<AccreditedOrganization>(`/accredited-organizations/${id}`);
-    return response.data;
+    const response = await apiService.get<any>(`/accredited-organizations/${id}`);
+    return mapOrganization(response.data);
   },
 
   // Создать аккредитованную организацию
   async createOrganization(data: AccreditedOrganizationFormData): Promise<AccreditedOrganization> {
-    const response = await apiService.post<AccreditedOrganization>('/accredited-organizations', data);
-    return response.data;
+    const response = await apiService.post<any>('/accredited-organizations', sanitizePayload(data));
+    return mapOrganization(response.data);
   },
 
   // Обновить аккредитованную организацию
   async updateOrganization(id: string, data: Partial<AccreditedOrganizationFormData>): Promise<AccreditedOrganization> {
-    const response = await apiService.put<AccreditedOrganization>(`/accredited-organizations/${id}`, data);
-    return response.data;
+    const response = await apiService.put<any>(`/accredited-organizations/${id}`, sanitizePayload(data));
+    return mapOrganization(response.data);
   },
 
   // Удалить аккредитованную организацию
@@ -110,13 +163,14 @@ export const accreditedOrganizationsService = {
       responseType: 'blob'
     });
     
-    return response.data;
+    return response.data as unknown as Blob;
   },
 
   // Получить организации, у которых скоро истекает аккредитация
   async getExpiringSoon(days: number = 30): Promise<AccreditedOrganization[]> {
-    const response = await apiService.get<AccreditedOrganization[]>(`/accredited-organizations/expiring-soon?days=${days}`);
-    return response.data;
+    const response = await apiService.get<any[]>(`/accredited-organizations/expiring-soon?days=${days}`);
+    const raw = Array.isArray(response.data) ? response.data : [];
+    return raw.map(mapOrganization);
   }
 };
 

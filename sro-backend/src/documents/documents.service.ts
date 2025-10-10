@@ -6,6 +6,7 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
 import { DocumentQueryDto } from './dto/document-query.dto';
 import { UploadDocumentDto } from './dto/upload-document.dto';
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
@@ -75,6 +76,79 @@ export class DocumentsService {
       console.error('Error uploading document:', error);
       throw new BadRequestException('Ошибка при загрузке документа');
     }
+  }
+
+  async getVersions(documentId: string) {
+    if (!Types.ObjectId.isValid(documentId)) {
+      throw new BadRequestException('Неверный ID документа');
+    }
+    const doc = await this.documentModel.findById(documentId).lean().exec();
+    if (!doc) throw new NotFoundException('Документ не найден');
+    return doc.versions || [];
+  }
+
+  async addVersion(
+    documentId: string,
+    file: Express.Multer.File,
+    changeLog: string | undefined,
+    userId: string,
+  ) {
+    if (!Types.ObjectId.isValid(documentId)) {
+      throw new BadRequestException('Неверный ID документа');
+    }
+    if (!file) throw new BadRequestException('Файл не предоставлен');
+
+    const fileExtension = path.extname(file.originalname);
+    const fileName = `${randomUUID()}${fileExtension}`;
+    const uploadDir = path.join(process.cwd(), 'uploads', 'documents');
+    await fs.promises.mkdir(uploadDir, { recursive: true });
+    const filePath = path.join(uploadDir, fileName);
+    const fileUrl = `/uploads/documents/${fileName}`;
+    await fs.promises.writeFile(filePath, file.buffer);
+
+    const fileType = fileExtension.substring(1).toLowerCase();
+
+    const doc = await this.documentModel.findById(documentId);
+    if (!doc) throw new NotFoundException('Документ не найден');
+
+    // Автоинкремент текстовой версии на основе последней версии
+    let nextVersion = '1.0';
+    if (doc.versions && doc.versions.length > 0) {
+      const last = doc.versions[doc.versions.length - 1];
+      const [major, minor] = (last.version || '1.0').split('.').map(n => parseInt(n || '0', 10));
+      nextVersion = `${major}.${(minor || 0) + 1}`;
+    }
+
+    doc.versions = doc.versions || [];
+    doc.versions.push({
+      version: nextVersion,
+      fileUrl,
+      fileName,
+      mimeType: file.mimetype,
+      fileSize: file.size,
+      changeLog,
+      createdAt: new Date(),
+      createdBy: new Types.ObjectId(userId),
+    } as any);
+
+    await doc.save();
+    const saved = doc.versions[doc.versions.length - 1];
+    return saved;
+  }
+
+  async deleteVersion(documentId: string, versionId: string): Promise<void> {
+    if (!Types.ObjectId.isValid(documentId) || !Types.ObjectId.isValid(versionId)) {
+      throw new BadRequestException('Неверные ID');
+    }
+    const doc = await this.documentModel.findById(documentId);
+    if (!doc) throw new NotFoundException('Документ не найден');
+
+    const initialLength = (doc.versions || []).length;
+    doc.versions = (doc.versions || []).filter((v: any) => String(v._id) !== String(versionId));
+    if (doc.versions.length === initialLength) {
+      throw new NotFoundException('Версия не найдена');
+    }
+    await doc.save();
   }
 
   async findAll(query: DocumentQueryDto) {

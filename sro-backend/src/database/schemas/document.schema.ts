@@ -71,6 +71,34 @@ export class DocumentModel {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   updatedBy: Types.ObjectId;
+
+  @Prop({
+    type: [
+      {
+        _id: { type: Types.ObjectId, auto: true },
+        version: String,
+        fileUrl: String,
+        fileName: String,
+        mimeType: String,
+        fileSize: Number,
+        changeLog: String,
+        createdAt: { type: Date, default: Date.now },
+        createdBy: { type: Types.ObjectId, ref: 'User' },
+      },
+    ],
+    default: [],
+  })
+  versions?: Array<{
+    _id: Types.ObjectId;
+    version: string;
+    fileUrl: string;
+    fileName: string;
+    mimeType: string;
+    fileSize: number;
+    changeLog?: string;
+    createdAt: Date;
+    createdBy: Types.ObjectId;
+  }>;
 }
 
 export const DocumentSchema = SchemaFactory.createForClass(DocumentModel);

@@ -29,6 +29,11 @@ export class RolesGuard implements CanActivate {
       throw new ForbiddenException('Пользователь не авторизован');
     }
 
+    // SUPER_ADMIN имеет доступ ко всем маршрутам
+    if (user.role === UserRole.SUPER_ADMIN) {
+      return true;
+    }
+
     // Проверяем роли
     if (requiredRoles && !requiredRoles.includes(user.role)) {
       throw new ForbiddenException('Недостаточно прав доступа');

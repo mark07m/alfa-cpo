@@ -142,6 +142,39 @@ export class DocumentsController {
     return ResponseUtil.success(document, 'Документ получен');
   }
 
+  // Версионирование документов
+  @Get(':id/versions')
+  async getVersions(@Param('id') id: string) {
+    const versions = await this.documentsService.getVersions(id);
+    return ResponseUtil.success(versions, 'Версии документа получены');
+  }
+
+  @Post(':id/versions')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @RequirePermissions(Permission.DOCUMENTS_UPDATE)
+  @UseInterceptors(FileInterceptor('file', multerConfig))
+  @HttpCode(HttpStatus.CREATED)
+  async uploadVersion(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('changeLog') changeLog: string,
+    @Request() req: any,
+  ) {
+    const version = await this.documentsService.addVersion(id, file, changeLog, req.user.id);
+    return ResponseUtil.created(version, 'Версия документа добавлена');
+  }
+
+  @Delete(':id/versions/:versionId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @RequirePermissions(Permission.DOCUMENTS_UPDATE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteVersion(@Param('id') id: string, @Param('versionId') versionId: string) {
+    await this.documentsService.deleteVersion(id, versionId);
+    return ResponseUtil.deleted('Версия документа удалена');
+  }
+
   @Get(':id/download')
   async downloadDocument(@Param('id') id: string, @Res() res: Response) {
     const document = await this.documentsService.findOne(id);

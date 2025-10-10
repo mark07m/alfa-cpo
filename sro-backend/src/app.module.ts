@@ -15,6 +15,7 @@ import { DisciplinaryMeasuresModule } from '@/disciplinary-measures/disciplinary
 import { PagesModule } from '@/pages/pages.module';
 import { SettingsModule } from '@/settings/settings.module';
 import { FilesModule } from '@/files/files.module';
+import { AccreditedOrganizationsModule } from '@/accredited-organizations/accredited-organizations.module';
 import appConfig from '@/config/app.config';
 
 @Module({
@@ -36,6 +37,7 @@ import appConfig from '@/config/app.config';
     PagesModule,
     SettingsModule,
     FilesModule,
+    AccreditedOrganizationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

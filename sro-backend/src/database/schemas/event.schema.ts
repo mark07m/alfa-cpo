@@ -105,6 +105,34 @@ export class Event {
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   updatedBy: Types.ObjectId;
+
+  @Prop({
+    type: [
+      {
+        _id: { type: Types.ObjectId, auto: true },
+        fullName: String,
+        email: String,
+        phone: String,
+        organization: String,
+        position: String,
+        registeredAt: { type: Date, default: Date.now },
+        status: { type: String, enum: ['pending','confirmed','cancelled'], default: 'pending' },
+        createdBy: { type: Types.ObjectId, ref: 'User' },
+      },
+    ],
+    default: [],
+  })
+  participants?: Array<{
+    _id: Types.ObjectId;
+    fullName: string;
+    email: string;
+    phone?: string;
+    organization?: string;
+    position?: string;
+    registeredAt: Date;
+    status: 'pending' | 'confirmed' | 'cancelled';
+    createdBy: Types.ObjectId;
+  }>;
 }
 
 export interface EventAgendaItem {
