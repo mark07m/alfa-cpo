@@ -23,17 +23,20 @@ export function useDashboard(): UseDashboardReturn {
 
       return {
         stats: statsData,
-        activities: activitiesData || []
+        activities: Array.isArray(activitiesData) ? activitiesData : []
       }
     } catch (err) {
+      const allowFallback = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS_FALLBACK === 'true'
       // Check if it's API unavailable error (expected when server is down)
       if (err instanceof Error && (err.name === 'API_UNAVAILABLE' || err.message === 'API unavailable')) {
-        console.info('API server not available, using mock data')
+        if (allowFallback) {
+          console.info('API server not available, using mock data')
+        }
       } else {
-        console.warn('Dashboard data fetch error, using mock data:', err)
+        console.warn('Dashboard data fetch error', err)
       }
-      
-      // Return mock data when API is unavailable
+      if (!allowFallback) throw err
+      // Return mock data when fallback enabled
       return {
         stats: {
           newsCount: 24,
@@ -104,14 +107,17 @@ export function useActivityData(days: number = 30) {
     try {
       return await dashboardService.getActivityChart(days)
     } catch (error) {
+      const allowFallback = process.env.NEXT_PUBLIC_ENABLE_ANALYTICS_FALLBACK === 'true'
       // Check if it's API unavailable error (expected when server is down)
       if (error instanceof Error && (error.name === 'API_UNAVAILABLE' || error.message === 'API unavailable')) {
-        console.info('API server not available, using mock data for activity chart')
+        if (allowFallback) {
+          console.info('API server not available, using mock data for activity chart')
+        }
       } else {
-        console.warn('Activity data fetch error, using mock data:', error)
+        console.warn('Activity data fetch error:', error)
       }
-      
-      // Return mock data when API is unavailable
+      if (!allowFallback) throw error
+      // Return mock data when fallback enabled
       const mockData = []
       const today = new Date()
       

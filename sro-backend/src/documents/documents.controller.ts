@@ -115,6 +115,16 @@ export class DocumentsController {
     return ResponseUtil.paginated(result.data, result.pagination, 'Документы успешно получены');
   }
 
+  @Get('search')
+  async search(@Query('q') q?: string, @Query('limit') limit?: number, @Query('page') page?: number) {
+    const result = await this.documentsService.findAll({
+      search: q,
+      limit: limit ? Number(limit) : 10,
+      page: page ? Number(page) : 1,
+    } as any);
+    return ResponseUtil.success(result.data, 'Результаты поиска документов получены');
+  }
+
   @Get('public')
   async getPublicDocuments(@Query() query: DocumentQueryDto) {
     const result = await this.documentsService.getPublicDocuments(query);

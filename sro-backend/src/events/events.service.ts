@@ -3,6 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Event, EventDocument } from '@/database/schemas/event.schema';
 import { EventType, EventTypeDocument } from '@/database/schemas/event-type.schema';
+import { CreateEventTypeDto } from './dto/create-event-type.dto';
+import { UpdateEventTypeDto } from './dto/update-event-type.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -304,6 +306,38 @@ export class EventsService {
       .find({ isActive: true })
       .sort({ order: 1, name: 1 })
       .exec();
+  }
+
+  async createEventType(dto: CreateEventTypeDto): Promise<EventType> {
+    const created = new this.eventTypeModel({
+      ...dto,
+      name: dto.name.trim(),
+      slug: dto.slug.trim(),
+    });
+    return created.save();
+  }
+
+  async updateEventType(id: string, dto: UpdateEventTypeDto): Promise<EventType> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new (await import('@nestjs/common')).BadRequestException('Неверный ID типа мероприятия');
+    }
+    const updated = await this.eventTypeModel
+      .findByIdAndUpdate(id, dto, { new: true })
+      .exec();
+    if (!updated) {
+      throw new (await import('@nestjs/common')).NotFoundException('Тип мероприятия не найден');
+    }
+    return updated as any;
+  }
+
+  async deleteEventType(id: string): Promise<void> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new (await import('@nestjs/common')).BadRequestException('Неверный ID типа мероприятия');
+    }
+    const res = await this.eventTypeModel.findByIdAndDelete(id).exec();
+    if (!res) {
+      throw new (await import('@nestjs/common')).NotFoundException('Тип мероприятия не найден');
+    }
   }
 
   // Participants subdocument operations

@@ -330,15 +330,27 @@ export const arbitratorsService = {
   // Импорт из Excel/CSV
   async importArbitrators(file: File): Promise<{ success: number; errors: string[] }> {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // 1) Upload file to files service
+      const uploadForm = new FormData();
+      uploadForm.append('file', file);
+      uploadForm.append('description', 'Импорт реестра АУ');
+      uploadForm.append('isPublic', 'false');
 
-      const response = await apiService.post<{ success: number; errors: string[] }>('/registry/import', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const uploadResp = await apiService.post<any>('/files/upload', uploadForm, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return response.data as unknown as { success: number; errors: string[] };
+      const uploaded = (uploadResp as any).data?.data || uploadResp.data;
+      const fileUrl = uploaded?.fileUrl || uploaded?.url || uploaded?.path;
+      const fileName = uploaded?.originalName || uploaded?.fileName || file.name;
+
+      // 2) Call registry import with fileUrl
+      const importResp = await apiService.post<{ success: number; errors: string[] }>('/registry/import', {
+        fileUrl,
+        fileName,
+        format: file.type.includes('csv') ? 'csv' : 'excel',
+      });
+
+      return importResp.data as unknown as { success: number; errors: string[] };
     } catch (error: any) {
       console.error('Error importing arbitrators:', error);
       throw error;

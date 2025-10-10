@@ -29,7 +29,7 @@ interface ActivityChartProps {
 }
 
 export function ActivityChart({ data, title = 'Активность за 30 дней', className }: ActivityChartProps) {
-  const chartData = data || []
+  const chartData = Array.isArray(data) ? data : []
   
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number; color: string }>; label?: string }) => {
     if (active && payload && payload.length) {
@@ -124,7 +124,7 @@ export function ActivityChart({ data, title = 'Активность за 30 дн
 
 // Компонент для простого линейного графика
 export function SimpleLineChart({ data, title, className }: ActivityChartProps) {
-  const chartData = data || []
+  const chartData = Array.isArray(data) ? data : []
   
   return (
     <Card className={className}>

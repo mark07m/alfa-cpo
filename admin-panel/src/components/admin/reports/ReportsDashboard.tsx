@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { analyticsService } from '@/services/admin/analytics';
 import { 
   BarChart, 
   Bar, 
@@ -39,6 +40,8 @@ interface ReportsDashboardProps {
 
 export function ReportsDashboard({ period, reportType, onExport }: ReportsDashboardProps) {
   const [activeSection, setActiveSection] = useState('summary');
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any | null>(null);
 
   // Моковые данные для общего дашборда
   const summaryData = {
@@ -66,6 +69,27 @@ export function ReportsDashboard({ period, reportType, onExport }: ReportsDashbo
       netIncome: 560000
     }
   };
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const dashboard = await analyticsService.getDashboard({ from: period.from, to: period.to, type: reportType });
+        if (!cancelled && dashboard) {
+          setData(dashboard);
+        }
+      } catch (e) {
+        // keep fallback data
+        console.warn('Analytics dashboard unavailable, using fallback');
+        if (!cancelled) setData(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true };
+  }, [period.from, period.to, reportType]);
+
 
   const monthlyTrends = [
     { month: 'Янв', inspections: 8, measures: 3, arbitrators: 2 },

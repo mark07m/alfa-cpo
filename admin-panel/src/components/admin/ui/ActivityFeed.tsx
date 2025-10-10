@@ -103,7 +103,8 @@ export function ActivityFeed({
   maxItems = 10,
   className 
 }: ActivityFeedProps) {
-  const displayActivities = activities?.slice(0, maxItems) || []
+  const safeActivities = Array.isArray(activities) ? activities : []
+  const displayActivities = safeActivities.slice(0, maxItems)
 
   return (
     <Card className={className}>

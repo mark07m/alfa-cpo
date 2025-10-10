@@ -15,6 +15,8 @@ import {
   Header
 } from '@nestjs/common';
 import { EventsService } from './events.service';
+import { CreateEventTypeDto } from './dto/create-event-type.dto';
+import { UpdateEventTypeDto } from './dto/update-event-type.dto';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { EventQueryDto } from './dto/event-query.dto';
@@ -75,6 +77,35 @@ export class EventsController {
   async getEventTypes() {
     const types = await this.eventsService.getEventTypes();
     return ResponseUtil.success(types, 'Типы мероприятий получены');
+  }
+
+  @Post('types')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  @HttpCode(HttpStatus.CREATED)
+  async createEventType(@Body() dto: CreateEventTypeDto) {
+    const created = await this.eventsService.createEventType(dto);
+    return ResponseUtil.created(created, 'Тип мероприятия создан');
+  }
+
+  @Patch('types/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR, UserRole.EDITOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  async updateEventType(@Param('id') id: string, @Body() dto: UpdateEventTypeDto) {
+    const updated = await this.eventsService.updateEventType(id, dto);
+    return ResponseUtil.updated(updated, 'Тип мероприятия обновлен');
+  }
+
+  @Delete('types/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MODERATOR)
+  @RequirePermissions(Permission.EVENTS_UPDATE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteEventType(@Param('id') id: string) {
+    await this.eventsService.deleteEventType(id);
+    return ResponseUtil.deleted('Тип мероприятия удален');
   }
 
   @Get(':id')
