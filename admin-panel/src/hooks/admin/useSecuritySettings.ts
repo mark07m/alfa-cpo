@@ -90,7 +90,7 @@ export function useSecuritySettings() {
       setIsLoading(true);
       setError(null);
       
-      const response = await apiService.get('/settings/security');
+      const response = await apiService.get('/settings');
       const data = response.data;
       
       // Объединяем с настройками по умолчанию
@@ -114,7 +114,7 @@ export function useSecuritySettings() {
       setSettings(prev => ({ ...prev, ...newSettings }));
       
       // Отправляем на сервер
-      await apiService.put('/settings/security', {
+      await apiService.put('/settings', {
         section,
         settings: newSettings
       });

@@ -10,7 +10,7 @@ export interface SelectOption {
 }
 
 export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
-  options: SelectOption[];
+  options?: SelectOption[];
   placeholder?: string;
   error?: boolean;
   variant?: 'default' | 'filled' | 'outlined';
@@ -19,13 +19,14 @@ export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectE
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ 
-    options, 
+    options = [], 
     placeholder, 
     error, 
     variant = 'outlined',
     size = 'md',
     className, 
     disabled,
+    children,
     ...props 
   }, ref) => {
     const baseClasses = 'block w-full rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-no-repeat bg-right pr-10';
@@ -71,7 +72,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
+          {children}
+          {options && options.length > 0 && options.map((option) => (
             <option 
               key={option.value} 
               value={option.value}
