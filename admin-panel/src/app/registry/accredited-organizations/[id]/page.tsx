@@ -2,10 +2,9 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useAccreditedOrganization } from '@/hooks/admin/useAccreditedOrganizations';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { Button } from '@/components/admin/ui/Button';
 import { 
-  ArrowLeftIcon,
-  PencilIcon,
   BuildingOfficeIcon,
   PhoneIcon,
   EnvelopeIcon,
@@ -68,7 +67,7 @@ export default function AccreditedOrganizationPage() {
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         <p className="mt-2 text-sm text-gray-500">Загрузка организации...</p>
       </div>
     );
@@ -92,44 +91,28 @@ export default function AccreditedOrganizationPage() {
   return (
     <div className="space-y-6">
       {/* Заголовок страницы */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{organization.name}</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Аккредитованная организация • {organization.accreditationNumber}
-        </p>
-      </div>
-
-      {/* Действия */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/registry/accredited-organizations')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Назад</span>
-          </Button>
-        </div>
-        <Button
-          onClick={() => router.push(`/registry/accredited-organizations/${organization.id}/edit`)}
-          className="flex items-center space-x-2"
-        >
-          <PencilIcon className="h-4 w-4" />
-          <span>Редактировать</span>
-        </Button>
-      </div>
-
-        {/* Статус и предупреждения */}
-        <div className="flex items-center space-x-4">
-          {getStatusBadge(organization.status)}
-          {isExpiringSoon(organization.accreditationExpiryDate) && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
-              <ClockIcon className="h-4 w-4 mr-1" />
-              Аккредитация истекает скоро
-            </span>
-          )}
-        </div>
+      <PageHeader
+        title={organization.name}
+        subtitle={`Аккредитованная организация • ${organization.accreditationNumber}`}
+        backUrl="/registry/accredited-organizations"
+        backLabel="К организациям"
+        badge={
+          <div className="flex items-center gap-2">
+            {getStatusBadge(organization.status)}
+            {isExpiringSoon(organization.accreditationExpiryDate) && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                <ClockIcon className="h-4 w-4 mr-1" />
+                Аккредитация истекает скоро
+              </span>
+            )}
+          </div>
+        }
+        primaryAction={{
+          label: 'Редактировать',
+          onClick: () => router.push(`/registry/accredited-organizations/${organization.id}/edit`),
+          variant: 'primary'
+        }}
+      />
 
         {/* Основная информация */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -287,7 +270,7 @@ export default function AccreditedOrganizationPage() {
               <ul className="space-y-2">
                 {organization.services.map((service, index) => (
                   <li key={index} className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-600 rounded-full mr-3"></div>
+                    <div className="w-2 h-2 bg-primary-600 rounded-full mr-3"></div>
                     <span className="text-sm text-gray-900">{service}</span>
                   </li>
                 ))}

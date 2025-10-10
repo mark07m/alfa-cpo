@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Table } from '@/components/admin/ui/Table';
+import { Checkbox } from '@/components/admin/ui/Checkbox';
 import { Button } from '@/components/admin/ui/Button';
 import { Badge } from '@/components/admin/ui/Badge';
 import { 
@@ -172,19 +173,19 @@ export function DisciplinaryMeasuresList({
     {
       key: 'select',
       title: (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedMeasures.length === measures.length && measures.length > 0}
-          onChange={(e) => handleSelectAll(e.target.checked)}
-          className="w-3.5 h-3.5 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
+          onChange={(e) => handleSelectAll((e.target as HTMLInputElement).checked)}
+          size="sm"
+          className="cursor-pointer"
         />
       ),
       render: (value: any, measure: DisciplinaryMeasure) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedMeasures.includes(measure.id)}
-          onChange={(e) => handleSelectMeasure(measure.id, e.target.checked)}
-          className="w-3.5 h-3.5 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
+          onChange={(e) => handleSelectMeasure(measure.id, (e.target as HTMLInputElement).checked)}
+          size="sm"
+          className="cursor-pointer"
         />
       ),
       width: 'w-10'
@@ -239,27 +240,15 @@ export function DisciplinaryMeasuresList({
       title: 'Действия',
       render: (value: any, measure: DisciplinaryMeasure) => (
         <div className="flex items-center space-x-1">
-          <button
-            onClick={() => router.push(`/disciplinary-measures/${measure.id}`)}
-            className="p-1.5 rounded-md border border-gray-300 bg-white hover:bg-blue-50 hover:border-blue-400 text-gray-600 hover:text-blue-700 transition-all duration-150"
-            title="Просмотр"
-          >
+          <Button variant="outline" size="sm" onClick={() => router.push(`/disciplinary-measures/${measure.id}`)} title="Просмотр">
             <EyeIcon className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => router.push(`/disciplinary-measures/${measure.id}/edit`)}
-            className="p-1.5 rounded-md border border-gray-300 bg-white hover:bg-amber-50 hover:border-amber-400 text-gray-600 hover:text-amber-700 transition-all duration-150"
-            title="Редактировать"
-          >
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.push(`/disciplinary-measures/${measure.id}/edit`)} title="Редактировать">
             <PencilIcon className="h-3.5 w-3.5" />
-          </button>
-          <button
-            onClick={() => onDelete(measure.id)}
-            className="p-1.5 rounded-md border border-gray-300 bg-white hover:bg-red-50 hover:border-red-400 text-red-600 hover:text-red-700 transition-all duration-150"
-            title="Удалить"
-          >
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onDelete(measure.id)} title="Удалить" className="text-red-600 hover:text-red-700">
             <TrashIcon className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
       ),
       width: 'w-28'

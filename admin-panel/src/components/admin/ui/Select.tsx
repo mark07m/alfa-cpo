@@ -1,98 +1,86 @@
-import { forwardRef, useId } from 'react';
+'use client';
+
+import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
+export interface SelectOption {
+  value: string;
+  label: string;
+  disabled?: boolean;
+}
+
+export interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
+  options: SelectOption[];
   placeholder?: string;
-  error?: string;
-  helperText?: string;
-  size?: 'sm' | 'md' | 'lg';
+  error?: boolean;
   variant?: 'default' | 'filled' | 'outlined';
-  options?: Array<{ value: string | number; label: string; disabled?: boolean }>;
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ 
-    className, 
-    label,
+    options, 
     placeholder, 
     error, 
-    helperText,
+    variant = 'outlined',
     size = 'md',
-    variant = 'default',
-    id,
-    children, 
-    options,
+    className, 
+    disabled,
     ...props 
   }, ref) => {
-    const generatedId = useId();
-    const selectId = id || generatedId;
-    
-    const sizeClasses = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-3 text-sm',
-      lg: 'h-12 px-4 text-base'
-    };
+    const baseClasses = 'block w-full rounded-lg transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed appearance-none bg-no-repeat bg-right pr-10';
     
     const variantClasses = {
-      default: 'border-gray-300 bg-white focus:border-amber-500 focus:ring-amber-500',
-      filled: 'border-transparent bg-gray-100 focus:bg-white focus:border-amber-500 focus:ring-amber-500',
-      outlined: 'border-2 border-gray-300 bg-transparent focus:border-amber-500 focus:ring-amber-500'
+      default: 'bg-white border border-gray-200 hover:border-gray-300 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:outline-none',
+      filled: 'bg-gray-50 border border-transparent hover:border-gray-200 focus:bg-white focus:border-primary-400 focus:ring-2 focus:ring-primary-100 focus:outline-none',
+      outlined: 'bg-transparent border border-gray-200 hover:border-gray-300 focus:border-primary-400 focus:ring-0 focus:outline-none'
     };
-
+    
+    const sizeClasses = {
+      sm: 'px-2.5 py-1.5 text-xs',
+      md: 'px-3 py-2 text-sm',
+      lg: 'px-3.5 py-2.5 text-base'
+    };
+    
+    const errorClasses = error 
+      ? 'border-red-300 focus:border-red-400 focus:ring-red-100' 
+      : '';
+    
     return (
-      <div className="w-full">
-        {label && (
-          <label 
-            htmlFor={selectId}
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
-          </label>
-        )}
-        
-        <div className="relative">
-          <select
-            id={selectId}
-            className={cn(
-              'block w-full rounded-md text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none bg-no-repeat bg-right',
-              sizeClasses[size],
-              variantClasses[variant],
-              error && 'border-red-500 focus:border-red-500 focus:ring-red-500',
-              'bg-[url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3e%3c/svg%3e")] bg-[length:1.5em_1.5em] bg-[right_0.75rem_center] pr-10',
-              className
-            )}
-            ref={ref}
-            {...props}
-          >
-            {placeholder && (
-              <option value="" disabled>
-                {placeholder}
-              </option>
-            )}
-            {options && options.length
-              ? options.map((opt, idx) => (
-                  <option key={`${opt.value}-${idx}`} value={opt.value} disabled={opt.disabled}>
-                    {opt.label}
-                  </option>
-                ))
-              : children}
-          </select>
-        </div>
-        
-        {error && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            {error}
-          </p>
-        )}
-        
-        {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
-        )}
+      <div className="relative">
+        <select
+          ref={ref}
+          disabled={disabled}
+          className={cn(
+            baseClasses,
+            variantClasses[variant],
+            sizeClasses[size],
+            errorClasses,
+            'text-gray-700',
+            className
+          )}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+            backgroundPosition: 'right 0.5rem center',
+            backgroundSize: '1.5em 1.5em'
+          }}
+          {...props}
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {options.map((option) => (
+            <option 
+              key={option.value} 
+              value={option.value}
+              disabled={option.disabled}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
       </div>
     );
   }

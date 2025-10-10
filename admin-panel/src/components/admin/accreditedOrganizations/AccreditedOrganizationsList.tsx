@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { AccreditedOrganization } from '@/types/admin';
 import { Button } from '@/components/admin/ui/Button';
+import { Checkbox } from '@/components/admin/ui/Checkbox';
 import { 
   PencilIcon, 
   TrashIcon, 
@@ -101,11 +102,11 @@ export function AccreditedOrganizationsList({
           <li key={organization.id}>
             <div className="px-4 py-4 flex items-center justify-between">
               <div className="flex items-center">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedIds.includes(organization.id)}
-                  onChange={(e) => onSelectOne(organization.id, e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-4"
+                  onChange={(e) => onSelectOne(organization.id, (e.target as HTMLInputElement).checked)}
+                  size="sm"
+                  className="mr-4"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">

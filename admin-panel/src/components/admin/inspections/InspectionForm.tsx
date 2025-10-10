@@ -297,7 +297,7 @@ export function InspectionForm({ inspection, onSave, onCancel }: InspectionFormP
               </Button>
               <Button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary-600 hover:bg-primary-700"
               >
                 {inspection ? 'Сохранить изменения' : 'Создать проверку'}
               </Button>

@@ -14,7 +14,7 @@ export default function RegistryLayout({
   const getBreadcrumbs = () => {
     if (pathname === '/registry/statistics') {
       return [
-        { label: 'Дашборд', href: '/' },
+        { label: 'Дашборд', href: '/dashboard' },
         { label: 'Реестр', href: '/registry' },
         { label: 'Статистика' }
       ];
@@ -22,7 +22,7 @@ export default function RegistryLayout({
     
     if (pathname === '/registry/compensation-fund') {
       return [
-        { label: 'Дашборд', href: '/' },
+        { label: 'Дашборд', href: '/dashboard' },
         { label: 'Реестр', href: '/registry' },
         { label: 'Компенсационный фонд' }
       ];
@@ -30,7 +30,7 @@ export default function RegistryLayout({
     
     if (pathname === '/registry/accredited-organizations') {
       return [
-        { label: 'Дашборд', href: '/' },
+        { label: 'Дашборд', href: '/dashboard' },
         { label: 'Реестр', href: '/registry' },
         { label: 'Аккредитованные организации' }
       ];
@@ -38,7 +38,7 @@ export default function RegistryLayout({
     
     if (pathname === '/registry/arbitrators') {
       return [
-        { label: 'Дашборд', href: '/' },
+        { label: 'Дашборд', href: '/dashboard' },
         { label: 'Реестр', href: '/registry' },
         { label: 'Арбитражные управляющие' }
       ];
@@ -46,7 +46,7 @@ export default function RegistryLayout({
     
     // По умолчанию
     return [
-      { label: 'Дашборд', href: '/' },
+      { label: 'Дашборд', href: '/dashboard' },
       { label: 'Реестр' }
     ];
   };

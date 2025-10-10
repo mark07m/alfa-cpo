@@ -21,7 +21,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     icon,
     iconPosition = 'left',
     size = 'md',
-    variant = 'default',
+    variant = 'outlined',
     id,
     ...props 
   }, ref) => {
@@ -35,9 +35,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     }
     
     const variantClasses = {
-      default: 'border-gray-300 bg-white focus:border-amber-500 focus:ring-amber-500',
-      filled: 'border-transparent bg-gray-100 focus:bg-white focus:border-amber-500 focus:ring-amber-500',
-      outlined: 'border-2 border-gray-300 bg-transparent focus:border-amber-500 focus:ring-amber-500'
+      default: 'border-gray-300 bg-white focus:border-primary-500 focus:ring-primary-500',
+      filled: 'border-transparent bg-gray-100 focus:bg-white focus:border-primary-500 focus:ring-primary-500',
+      outlined: 'border-2 border-gray-300 bg-transparent focus:border-primary-500 focus:ring-primary-500'
     }
     
     const baseClasses = cn(

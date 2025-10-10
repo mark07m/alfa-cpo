@@ -30,17 +30,17 @@ export function InspectionsActions({
   };
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div className="bg-primary-50/30 border border-primary-200/50 rounded-lg p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <span className="text-sm font-medium text-blue-900">
+          <span className="text-sm font-medium text-primary-900">
             Выбрано проверок: {selectedCount}
           </span>
           <Button
             variant="outline"
             size="sm"
             onClick={onClearSelection}
-            className="text-blue-600 hover:text-blue-700"
+            className="text-primary-600 hover:text-primary-700"
           >
             Очистить выбор
           </Button>

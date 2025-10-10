@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { PageHeader } from '@/components/admin/ui/PageHeader'
+import { ActionButtons } from '@/components/admin/ui/ActionButtons'
+import { ConfirmDialog } from '@/components/admin/ui/ConfirmDialog'
+import { Badge } from '@/components/admin/ui/Badge'
 import { useEvents } from '@/hooks/admin/useEvents'
 import { 
   CalendarIcon, 
   MapPinIcon, 
   UsersIcon, 
   ClockIcon,
-  PencilIcon,
-  TrashIcon,
-  ArrowLeftIcon,
   EyeIcon,
   EyeSlashIcon,
 } from '@heroicons/react/24/outline'
@@ -34,6 +34,7 @@ export default function EventViewPage() {
   
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     const loadEvent = async () => {
@@ -53,18 +54,17 @@ export default function EventViewPage() {
   }, [eventId, fetchEvent])
 
   const handleDelete = async () => {
-    if (window.confirm('Вы уверены, что хотите удалить это мероприятие?')) {
-      setIsDeleting(true)
-      try {
-        const result = await deleteEvent(eventId)
-        if (result.success) {
-          router.push('/events')
-        }
-      } catch (error) {
-        console.error('Error deleting event:', error)
-      } finally {
-        setIsDeleting(false)
+    setIsDeleting(true)
+    try {
+      const result = await deleteEvent(eventId)
+      if (result.success) {
+        router.push('/events')
       }
+    } catch (error) {
+      console.error('Error deleting event:', error)
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -140,7 +140,7 @@ export default function EventViewPage() {
             </p>
             <Link
               href="/events"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-all duration-150"
             >
               Вернуться к списку
             </Link>
@@ -154,64 +154,45 @@ export default function EventViewPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Заголовок страницы */}
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center mb-4">
-              <Link
-                href="/events"
-                className="mr-4 text-gray-400 hover:text-gray-600"
-              >
-                <ArrowLeftIcon className="h-5 w-5" />
-              </Link>
-              <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                {selectedEvent.title}
-              </h2>
-            </div>
-            <div className="flex items-center space-x-4">
+        <PageHeader
+          title={selectedEvent.title}
+          subtitle={formatDateRange(selectedEvent.startDate, selectedEvent.endDate)}
+          backUrl="/events"
+          backLabel="К мероприятиям"
+          badge={
+            <div className="flex items-center gap-2">
               {getStatusBadge(selectedEvent.status)}
               {selectedEvent.featured && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                  Рекомендуемое
-                </span>
+                <Badge color="yellow" size="sm">Рекомендуемое</Badge>
               )}
             </div>
-          </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
-            <Link
-              href={`/events/${selectedEvent.id}/edit`}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Редактировать
-            </Link>
-            
-            {selectedEvent.status === 'published' ? (
-              <button
-                onClick={() => handleStatusChange('draft')}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                <EyeSlashIcon className="h-4 w-4 mr-2" />
-                Снять с публикации
-              </button>
-            ) : (
-              <button
-                onClick={() => handleStatusChange('published')}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
-              >
-                <EyeIcon className="h-4 w-4 mr-2" />
-                Опубликовать
-              </button>
-            )}
-
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
-            >
-              <TrashIcon className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Удаление...' : 'Удалить'}
-            </button>
-          </div>
+          }
+          secondaryActions={[
+            {
+              label: selectedEvent.status === 'published' ? 'Снять с публикации' : 'Опубликовать',
+              onClick: () => handleStatusChange(selectedEvent.status === 'published' ? 'draft' : 'published'),
+              icon: selectedEvent.status === 'published' ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />,
+              variant: selectedEvent.status === 'published' ? 'outline' : 'success'
+            }
+          ]}
+          primaryAction={{
+            label: 'Редактировать',
+            onClick: () => router.push(`/events/${selectedEvent.id}/edit`),
+            variant: 'primary'
+          }}
+        />
+        
+        {/* Delete Button */}
+        <div className="flex justify-end">
+          <ActionButtons
+            actions={[
+              {
+                type: 'delete',
+                onClick: () => setShowDeleteDialog(true),
+                disabled: isDeleting
+              }
+            ]}
+          />
         </div>
 
         {/* Основная информация */}
@@ -319,7 +300,7 @@ export default function EventViewPage() {
                       <dd className="mt-1 text-sm text-gray-900">
                         <a 
                           href={`mailto:${selectedEvent.contactEmail}`}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-primary-600 hover:text-primary-800"
                         >
                           {selectedEvent.contactEmail}
                         </a>
@@ -333,7 +314,7 @@ export default function EventViewPage() {
                       <dd className="mt-1 text-sm text-gray-900">
                         <a 
                           href={`tel:${selectedEvent.contactPhone}`}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-primary-600 hover:text-primary-800"
                         >
                           {selectedEvent.contactPhone}
                         </a>
@@ -378,7 +359,7 @@ export default function EventViewPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-4 mb-2">
-                            <span className="text-sm font-medium text-blue-600">
+                            <span className="text-sm font-medium text-primary-600">
                               {item.time}
                             </span>
                             {item.duration && (
@@ -438,6 +419,19 @@ export default function EventViewPage() {
             )}
           </div>
         </div>
+        
+        {/* Confirm Delete Dialog */}
+        <ConfirmDialog
+          isOpen={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+          title="Удалить мероприятие?"
+          message={`Вы уверены, что хотите удалить мероприятие "${selectedEvent.title}"? Это действие нельзя отменить.`}
+          confirmLabel="Удалить"
+          cancelLabel="Отмена"
+          type="danger"
+          loading={isDeleting}
+        />
       </div>
     </AdminLayout>
   )

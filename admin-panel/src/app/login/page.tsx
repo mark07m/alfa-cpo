@@ -222,7 +222,7 @@ export default function LoginPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="aaadmin@sro-au.ru"
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-colors ${
                       errors.email 
                         ? 'border-red-300 bg-red-50' 
                         : 'border-gray-300 hover:border-gray-400'
@@ -255,7 +255,7 @@ export default function LoginPage() {
                       value={formData.password}
                       onChange={handleInputChange}
                       placeholder="Введите пароль"
-                      className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                      className={`w-full px-4 py-3 pr-12 border rounded-xl focus:ring-2 focus:ring-primary-100 focus:border-primary-400 transition-colors ${
                         errors.password 
                           ? 'border-red-300 bg-red-50' 
                           : 'border-gray-300 hover:border-gray-400'
@@ -292,7 +292,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed"
+                  className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white font-medium py-3 px-4 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-primary-100 focus:ring-offset-2 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">

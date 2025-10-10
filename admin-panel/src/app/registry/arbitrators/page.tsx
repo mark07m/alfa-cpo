@@ -7,6 +7,7 @@ import { ArbitratorFilters, Arbitrator } from '@/types/admin';
 import { PageWithTable } from '@/components/admin/layout/PageWithTable';
 import { Button } from '@/components/admin/ui/Button';
 import { Badge } from '@/components/admin/ui/Badge';
+import { Checkbox } from '@/components/admin/ui/Checkbox';
 import { ArbitratorsImportExport } from '@/components/admin/arbitrators/ArbitratorsImportExport';
 import { 
   PlusIcon, 
@@ -135,33 +136,31 @@ export default function ArbitratorsPage() {
     {
       key: 'select' as const,
       title: (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedIds.length === arbitrators.length && arbitrators.length > 0}
           onChange={(e) => {
-            if (e.target.checked) {
+            if ((e.target as HTMLInputElement).checked) {
               setSelectedIds(arbitrators.map(a => a.id));
             } else {
               setSelectedIds([]);
             }
           }}
-          className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+          size="sm"
         />
       ),
       width: 'w-12',
       className: 'text-center',
       render: (_value: unknown, row: Arbitrator) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedIds.includes(row.id)}
           onChange={(e) => {
-            if (e.target.checked) {
+            if ((e.target as HTMLInputElement).checked) {
               setSelectedIds(prev => Array.from(new Set([...(prev || []), row.id])));
             } else {
               setSelectedIds(prev => (prev || []).filter(id => id !== row.id));
             }
           }}
-          className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+          size="sm"
         />
       )
     },
@@ -171,8 +170,8 @@ export default function ArbitratorsPage() {
       sortable: true,
       render: (value: unknown, row: Arbitrator) => (
         <div className="flex items-center">
-          <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center mr-3">
-            <UserIcon className="h-5 w-5 text-amber-600" />
+          <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center mr-3">
+            <UserIcon className="h-5 w-5 text-primary-600" />
           </div>
           <div>
             <div className="font-medium text-gray-900">{row.fullName}</div>
@@ -288,7 +287,7 @@ export default function ArbitratorsPage() {
         <select
           value={filters.status || ''}
           onChange={(e) => updateFilters({ status: e.target.value || undefined, page: 1 })}
-          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+          className="rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
         >
           <option value="">Все статусы</option>
           <option value="active">Активен</option>
@@ -300,7 +299,7 @@ export default function ArbitratorsPage() {
         <select
           value={filters.specialization || ''}
           onChange={(e) => updateFilters({ specialization: e.target.value || undefined, page: 1 })}
-          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+          className="rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
         >
           <option value="">Все специализации</option>
           <option value="bankruptcy">Банкротство</option>
@@ -313,7 +312,7 @@ export default function ArbitratorsPage() {
           placeholder="Дата с"
           value={filters.dateFrom || ''}
           onChange={(e) => updateFilters({ dateFrom: e.target.value || undefined, page: 1 })}
-          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+          className="rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
         />
         
         <input
@@ -321,7 +320,7 @@ export default function ArbitratorsPage() {
           placeholder="Дата по"
           value={filters.dateTo || ''}
           onChange={(e) => updateFilters({ dateTo: e.target.value || undefined, page: 1 })}
-          className="rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500"
+          className="rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
         />
       </div>
       

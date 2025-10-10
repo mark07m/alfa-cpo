@@ -32,11 +32,11 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   }
 
   return (
-    <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+    <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8 backdrop-blur-sm bg-white/95">
       {/* Mobile menu button */}
       <button
         type="button"
-        className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+        className="-m-2.5 p-2.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
         onClick={onMenuClick}
       >
         <span className="sr-only">Открыть меню</span>
@@ -61,22 +61,22 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
 
           {/* Profile dropdown */}
           <Menu as="div" className="relative">
-            <Menu.Button className="-m-1.5 flex items-center p-1.5">
+            <Menu.Button className="-m-1.5 flex items-center p-1.5 rounded-lg hover:bg-gray-50/80 transition-all duration-150">
               <span className="sr-only">Открыть меню пользователя</span>
-              <div className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center ring-1 ring-primary-200/50">
                 {user?.firstName && user?.lastName ? (
-                  <span className="text-sm font-medium text-amber-600">
+                  <span className="text-xs font-semibold text-primary-700">
                     {getInitials(user.firstName, user.lastName)}
                   </span>
                 ) : (
-                  <UserCircleIcon className="h-6 w-6 text-amber-600" />
+                  <UserCircleIcon className="h-4 w-4 text-primary-600" />
                 )}
               </div>
               <span className="hidden lg:flex lg:items-center">
-                <span className="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">
+                <span className="ml-3 text-sm font-medium leading-6 text-gray-700" aria-hidden="true">
                   {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'Администратор Системы'}
                 </span>
-                <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" aria-hidden="true" />
+                <ChevronDownIcon className="ml-2 h-4 w-4 text-gray-400" aria-hidden="true" />
               </span>
             </Menu.Button>
             
@@ -89,13 +89,13 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 z-10 mt-2.5 w-56 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-                <div className="px-4 py-3 border-b border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">
+              <Menu.Items className="absolute right-0 z-10 mt-2 w-52 origin-top-right rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
+                <div className="px-3 py-2.5 border-b border-gray-100">
+                  <p className="text-sm font-medium text-gray-900 truncate">
                     {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'Администратор Системы'}
                   </p>
-                  <p className="text-sm text-gray-500">{user?.email || 'admin@sro-au.ru'}</p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 truncate">{user?.email || 'admin@sro-au.ru'}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">
                     {getRoleDisplayName(user?.role || '')}
                   </p>
                 </div>
@@ -104,11 +104,11 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                   {({ active }) => (
                     <button
                       className={cn(
-                        'w-full flex items-center px-4 py-2 text-sm text-gray-700',
+                        'w-full flex items-center px-3 py-2 text-sm text-gray-700 transition-colors',
                         active && 'bg-gray-50'
                       )}
                     >
-                      <UserCircleIcon className="mr-3 h-5 w-5 text-gray-400" />
+                      <UserCircleIcon className="mr-2.5 h-4 w-4 text-gray-400" />
                       Профиль
                     </button>
                   )}
@@ -118,28 +118,28 @@ export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
                   {({ active }) => (
                     <button
                       className={cn(
-                        'w-full flex items-center px-4 py-2 text-sm text-gray-700',
+                        'w-full flex items-center px-3 py-2 text-sm text-gray-700 transition-colors',
                         active && 'bg-gray-50'
                       )}
                     >
-                      <BellIcon className="mr-3 h-5 w-5 text-gray-400" />
+                      <BellIcon className="mr-2.5 h-4 w-4 text-gray-400" />
                       Настройки
                     </button>
                   )}
                 </Menu.Item>
                 
-                <div className="border-t border-gray-200 my-1"></div>
+                <div className="border-t border-gray-100 my-1"></div>
                 
                 <Menu.Item>
                   {({ active }) => (
                     <button
                       onClick={handleLogout}
                       className={cn(
-                        'w-full flex items-center px-4 py-2 text-sm text-red-700',
+                        'w-full flex items-center px-3 py-2 text-sm text-red-600 transition-colors',
                         active && 'bg-red-50'
                       )}
                     >
-                      <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5 text-red-400" />
+                      <ArrowRightOnRectangleIcon className="mr-2.5 h-4 w-4" />
                       Выйти
                     </button>
                   )}

@@ -3,14 +3,18 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { PageHeader } from '@/components/admin/ui/PageHeader'
+import { FormField } from '@/components/admin/ui/FormField'
+import { Input } from '@/components/admin/ui/Input'
+import { Select } from '@/components/admin/ui/Select'
+import { Textarea } from '@/components/admin/ui/Textarea'
+import { Checkbox } from '@/components/admin/ui/Checkbox'
+import { Button } from '@/components/admin/ui/Button'
 import { useDocuments } from '@/hooks/admin/useDocuments'
 import { Document, DocumentCategory } from '@/types/admin'
 import { 
-  ArrowLeftIcon,
   DocumentIcon,
-  CloudArrowUpIcon,
   XMarkIcon,
-  CheckIcon,
   ExclamationTriangleIcon,
   PhotoIcon,
   DocumentTextIcon,
@@ -230,22 +234,21 @@ export default function DocumentEditPage() {
     return (
       <AdminLayout>
         <div className="space-y-6">
-          <div className="text-center py-12">
-            <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Документ не найден</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Запрашиваемый документ не существует или был удален
-            </p>
-            <div className="mt-6">
-              <button
-                onClick={() => router.push('/documents')}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-              >
-                <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                Вернуться к документам
-              </button>
+            <div className="text-center py-12">
+              <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">Документ не найден</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Запрашиваемый документ не существует или был удален
+              </p>
+              <div className="mt-6">
+                <Button
+                  variant="primary"
+                  onClick={() => router.push('/documents')}
+                >
+                  Вернуться к документам
+                </Button>
+              </div>
             </div>
-          </div>
         </div>
       </AdminLayout>
     )
@@ -254,42 +257,25 @@ export default function DocumentEditPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Заголовок страницы */}
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.push('/documents')}
-                className="mr-4 text-gray-400 hover:text-gray-600"
-              >
-                <ArrowLeftIcon className="h-6 w-6" />
-              </button>
-              <div>
-                <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                  Редактирование документа
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Изменение информации о документе
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
-            <button
-              onClick={handleCancel}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Отмена
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving || !formData.title.trim() || !formData.category}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSaving ? 'Сохранение...' : 'Сохранить изменения'}
-            </button>
-          </div>
-        </div>
+        <PageHeader
+          title="Редактирование документа"
+          subtitle={selectedDocument.title}
+          backUrl="/documents"
+          backLabel="К документам"
+          secondaryActions={[
+            {
+              label: 'Отмена',
+              onClick: handleCancel,
+              variant: 'outline'
+            }
+          ]}
+          primaryAction={{
+            label: isSaving ? 'Сохранение...' : 'Сохранить изменения',
+            onClick: handleSave,
+            variant: 'primary',
+            disabled: isSaving || !formData.title.trim() || !formData.category
+          }}
+        />
 
         {/* Ошибки */}
         <ApiErrorBanner 
@@ -389,51 +375,49 @@ export default function DocumentEditPage() {
               
               <div className="px-6 py-4 space-y-6">
                 {/* Название */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Название документа *
-                  </label>
-                  <input
-                    type="text"
+                <FormField
+                  label="Название документа"
+                  htmlFor="title"
+                  required
+                >
+                  <Input
+                    id="title"
                     value={formData.title}
                     onChange={(e) => handleInputChange('title', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Введите название документа"
                   />
-                </div>
+                </FormField>
 
                 {/* Описание */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Описание
-                  </label>
-                  <textarea
+                <FormField
+                  label="Описание"
+                  htmlFor="description"
+                >
+                  <Textarea
+                    id="description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description', e.target.value)}
                     rows={3}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Краткое описание документа"
                   />
-                </div>
+                </FormField>
 
                 {/* Категория */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Категория *
-                  </label>
-                  <select
+                <FormField
+                  label="Категория"
+                  htmlFor="category"
+                  required
+                >
+                  <Select
+                    id="category"
                     value={formData.category}
                     onChange={(e) => handleInputChange('category', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Выберите категорию</option>
-                    {documentCategories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    options={[
+                      { value: '', label: 'Выберите категорию' },
+                      ...documentCategories.map(cat => ({ value: cat.id, label: cat.name }))
+                    ]}
+                  />
+                </FormField>
 
                 {/* Теги */}
                 <div>
@@ -444,14 +428,14 @@ export default function DocumentEditPage() {
                     {formData.tags.map((tag, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
                       >
                         <TagIcon className="h-3 w-3 mr-1" />
                         {tag}
                         <button
                           type="button"
                           onClick={() => removeTag(tag)}
-                          className="ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500"
+                          className="ml-1 h-4 w-4 rounded-full inline-flex items-center justify-center text-primary-400 hover:bg-primary-200 hover:text-primary-500"
                         >
                           <XMarkIcon className="h-3 w-3" />
                         </button>
@@ -459,50 +443,42 @@ export default function DocumentEditPage() {
                     ))}
                   </div>
                   <div className="flex space-x-2">
-                    <input
-                      type="text"
+                    <Input
                       value={newTag}
                       onChange={(e) => setNewTag(e.target.value)}
                       onKeyPress={handleTagKeyPress}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="Введите тег и нажмите Enter"
+                      className="flex-1"
                     />
-                    <button
+                    <Button
                       type="button"
                       onClick={addTag}
-                      className="px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                      variant="outline"
                     >
                       Добавить
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
                 {/* Версия */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Версия
-                  </label>
-                  <input
-                    type="text"
+                <FormField
+                  label="Версия"
+                  htmlFor="version"
+                >
+                  <Input
+                    id="version"
                     value={formData.version}
                     onChange={(e) => handleInputChange('version', e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Например: 1.0, 2.1, 2024.1"
                   />
-                </div>
+                </FormField>
 
                 {/* Публичность */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.isPublic}
-                    onChange={(e) => handleInputChange('isPublic', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 block text-sm text-gray-900">
-                    Публичный документ (доступен для всех пользователей)
-                  </label>
-                </div>
+                <Checkbox
+                  checked={formData.isPublic}
+                  onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+                  label="Публичный документ (доступен для всех пользователей)"
+                />
               </div>
 
               {/* Метаданные */}
@@ -510,60 +486,59 @@ export default function DocumentEditPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Дополнительные метаданные</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Автор
-                    </label>
-                    <input
-                      type="text"
+                  <FormField
+                    label="Автор"
+                    htmlFor="author"
+                  >
+                    <Input
+                      id="author"
                       value={formData.metadata.author}
                       onChange={(e) => handleMetadataChange('author', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="Автор документа"
                     />
-                  </div>
+                  </FormField>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Издатель
-                    </label>
-                    <input
-                      type="text"
+                  <FormField
+                    label="Издатель"
+                    htmlFor="publisher"
+                  >
+                    <Input
+                      id="publisher"
                       value={formData.metadata.publisher}
                       onChange={(e) => handleMetadataChange('publisher', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="Издатель"
                     />
-                  </div>
+                  </FormField>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Язык
-                    </label>
-                    <select
+                  <FormField
+                    label="Язык"
+                    htmlFor="language"
+                  >
+                    <Select
+                      id="language"
                       value={formData.metadata.language}
                       onChange={(e) => handleMetadataChange('language', e.target.value)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    >
-                      <option value="ru">Русский</option>
-                      <option value="en">English</option>
-                      <option value="de">Deutsch</option>
-                      <option value="fr">Français</option>
-                    </select>
-                  </div>
+                      options={[
+                        { value: 'ru', label: 'Русский' },
+                        { value: 'en', label: 'English' },
+                        { value: 'de', label: 'Deutsch' },
+                        { value: 'fr', label: 'Français' }
+                      ]}
+                    />
+                  </FormField>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Количество страниц
-                    </label>
-                    <input
+                  <FormField
+                    label="Количество страниц"
+                    htmlFor="pages"
+                  >
+                    <Input
+                      id="pages"
                       type="number"
                       value={formData.metadata.pages || ''}
                       onChange={(e) => handleMetadataChange('pages', e.target.value ? parseInt(e.target.value) : undefined)}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       placeholder="Количество страниц"
                     />
-                  </div>
+                  </FormField>
                 </div>
               </div>
             </div>

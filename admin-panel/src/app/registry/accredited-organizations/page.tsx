@@ -140,7 +140,7 @@ export default function AccreditedOrganizationsPage() {
           <span>Всего: {pagination.total}</span>
         </div>
         {selectedIds.length > 0 && (
-          <div className="flex items-center text-blue-600">
+          <div className="flex items-center text-primary-600">
             <span>Выбрано: {selectedIds.length}</span>
           </div>
         )}

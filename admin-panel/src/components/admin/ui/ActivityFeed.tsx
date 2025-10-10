@@ -50,7 +50,7 @@ const getActivityIcon = (type: string, action: string) => {
     case 'created':
       return <PlusIcon className="h-4 w-4 text-green-600" />
     case 'updated':
-      return <PencilIcon className="h-4 w-4 text-blue-600" />
+      return <PencilIcon className="h-4 w-4 text-primary-600" />
     case 'deleted':
       return <TrashIcon className="h-4 w-4 text-red-600" />
     case 'published':
@@ -64,7 +64,7 @@ const getActivityIcon = (type: string, action: string) => {
 
 const getActivityColor = (type: string) => {
   const colorMap: Record<string, string> = {
-    news: 'bg-blue-100 text-blue-600',
+    news: 'bg-primary-100 text-primary-600',
     event: 'bg-green-100 text-green-600',
     document: 'bg-purple-100 text-purple-600',
     arbitrator: 'bg-amber-100 text-amber-600',

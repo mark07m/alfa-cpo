@@ -2,15 +2,14 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { PageHeader } from '@/components/admin/ui/PageHeader'
+import { ActionButtons } from '@/components/admin/ui/ActionButtons'
+import { ConfirmDialog } from '@/components/admin/ui/ConfirmDialog'
 import { useDocuments } from '@/hooks/admin/useDocuments'
 import { 
-  ArrowLeftIcon,
-  DocumentIcon,
-  PencilIcon,
-  TrashIcon,
   ArrowDownTrayIcon,
+  DocumentIcon,
   DocumentTextIcon,
   PhotoIcon,
   VideoCameraIcon,
@@ -44,6 +43,7 @@ export default function DocumentViewPage() {
   } = useDocuments()
 
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
     if (documentId) {
@@ -103,18 +103,17 @@ export default function DocumentViewPage() {
   const handleDelete = async () => {
     if (!selectedDocument) return
 
-    if (window.confirm('Вы уверены, что хотите удалить этот документ?')) {
-      setIsDeleting(true)
-      try {
-        const result = await deleteDocument(selectedDocument.id)
-        if (result.success) {
-          router.push('/documents')
-        }
-      } catch (error) {
-        console.error('Error deleting document:', error)
-      } finally {
-        setIsDeleting(false)
+    setIsDeleting(true)
+    try {
+      const result = await deleteDocument(selectedDocument.id)
+      if (result.success) {
+        router.push('/documents')
       }
+    } catch (error) {
+      console.error('Error deleting document:', error)
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -154,7 +153,7 @@ export default function DocumentViewPage() {
             <div className="mt-6">
               <button
                 onClick={() => router.push('/documents')}
-                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-all duration-150"
               >
                 <ArrowLeftIcon className="h-4 w-4 mr-2" />
                 Вернуться к документам
@@ -170,49 +169,37 @@ export default function DocumentViewPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Заголовок страницы */}
-        <div className="md:flex md:items-center md:justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center">
-              <button
-                onClick={() => router.push('/documents')}
-                className="mr-4 text-gray-400 hover:text-gray-600"
-              >
-                <ArrowLeftIcon className="h-6 w-6" />
-              </button>
-              <div>
-                <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-                  {selectedDocument.title}
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Просмотр документа
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
-            <button
-              onClick={handleDownload}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
-              Скачать
-            </button>
-            <Link
-              href={`/documents/${selectedDocument.id}/edit`}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-            >
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Редактировать
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
-            >
-              <TrashIcon className="h-4 w-4 mr-2" />
-              {isDeleting ? 'Удаление...' : 'Удалить'}
-            </button>
-          </div>
+        <PageHeader
+          title={selectedDocument.title}
+          subtitle="Просмотр документа"
+          backUrl="/documents"
+          backLabel="К документам"
+          secondaryActions={[
+            {
+              label: 'Скачать',
+              onClick: handleDownload,
+              icon: <ArrowDownTrayIcon className="h-4 w-4" />,
+              variant: 'outline'
+            }
+          ]}
+          primaryAction={{
+            label: 'Редактировать',
+            onClick: () => router.push(`/documents/${selectedDocument.id}/edit`),
+            variant: 'primary'
+          }}
+        />
+        
+        {/* Delete Button */}
+        <div className="flex justify-end">
+          <ActionButtons
+            actions={[
+              {
+                type: 'delete',
+                onClick: () => setShowDeleteDialog(true),
+                disabled: isDeleting
+              }
+            ]}
+          />
         </div>
 
         {/* Ошибки */}
@@ -308,7 +295,7 @@ export default function DocumentViewPage() {
                   {selectedDocument.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
                     >
                       <TagIcon className="h-3 w-3 mr-1" />
                       {tag}
@@ -396,6 +383,19 @@ export default function DocumentViewPage() {
             </div>
           </div>
         </div>
+        
+        {/* Confirm Delete Dialog */}
+        <ConfirmDialog
+          isOpen={showDeleteDialog}
+          onClose={() => setShowDeleteDialog(false)}
+          onConfirm={handleDelete}
+          title="Удалить документ?"
+          message={`Вы уверены, что хотите удалить документ "${selectedDocument.title}"? Это действие нельзя отменить.`}
+          confirmLabel="Удалить"
+          cancelLabel="Отмена"
+          type="danger"
+          loading={isDeleting}
+        />
       </div>
     </AdminLayout>
   )

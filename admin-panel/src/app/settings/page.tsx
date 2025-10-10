@@ -446,7 +446,7 @@ export default function SettingsPage() {
                     <select
                       value={settings?.primaryFont || 'Inter'}
                       onChange={(e) => updateSettings('theme', { ...settings, primaryFont: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     >
                       <option value="Inter">Inter</option>
                       <option value="Roboto">Roboto</option>
@@ -462,7 +462,7 @@ export default function SettingsPage() {
                     <select
                       value={settings?.fontSize || '16px'}
                       onChange={(e) => updateSettings('theme', { ...settings, fontSize: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     >
                       <option value="14px">14px</option>
                       <option value="16px">16px</option>

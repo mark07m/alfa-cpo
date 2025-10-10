@@ -1,6 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Button } from '@/components/admin/ui/Button'
+import { Input } from '@/components/admin/ui/Input'
+import { Select } from '@/components/admin/ui/Select'
 import { DocumentCategory, DocumentFilters } from '@/types/admin'
 import { 
   MagnifyingGlassIcon, 
@@ -111,47 +114,24 @@ export function DocumentsFilters({
           <h3 className="text-lg font-medium text-gray-900">Фильтры и поиск</h3>
           <div className="flex items-center space-x-2">
             {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
                 Очистить фильтры
-              </button>
+              </Button>
             )}
-            <button
-              onClick={onToggle}
-              className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                isOpen ? 'bg-gray-50' : ''
-              }`}
-            >
-              <FunnelIcon className="h-4 w-4 mr-2" />
+            <Button variant="outline" size="sm" onClick={onToggle} className={isOpen ? 'bg-gray-50' : ''} icon={<FunnelIcon className="h-4 w-4" />}>
               Фильтры
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Поиск */}
         <div className="mb-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Поиск по названию, описанию, тегам..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => handleSearchChange('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              </button>
-            )}
-          </div>
+          <Input
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Поиск по названию, описанию, тегам..."
+            icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+          />
         </div>
 
         {/* Расширенные фильтры */}
@@ -163,18 +143,11 @@ export function DocumentsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Категория
                 </label>
-                <select
+                <Select
                   value={localFilters.category || ''}
-                  onChange={(e) => handleFilterChange('category', e.target.value || undefined)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">Все категории</option>
-                  {documentCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => handleFilterChange('category', (e.target as HTMLSelectElement).value || undefined)}
+                  options={[{ value: '', label: 'Все категории' }, ...documentCategories.map(c => ({ value: c.id, label: c.name }))]}
+                />
               </div>
 
               {/* Тип файла */}
@@ -182,17 +155,11 @@ export function DocumentsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Тип файла
                 </label>
-                <select
+                <Select
                   value={localFilters.fileType || ''}
-                  onChange={(e) => handleFilterChange('fileType', e.target.value || undefined)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  {fileTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => handleFilterChange('fileType', (e.target as HTMLSelectElement).value || undefined)}
+                  options={fileTypeOptions}
+                />
               </div>
 
               {/* Размер файла */}
@@ -200,21 +167,15 @@ export function DocumentsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Размер файла
                 </label>
-                <select
+                <Select
                   value={
                     localFilters.minSize === 0 && localFilters.maxSize === 1024 * 1024 ? 'small' :
                     localFilters.minSize === 1024 * 1024 && localFilters.maxSize === 10 * 1024 * 1024 ? 'medium' :
                     localFilters.minSize === 10 * 1024 * 1024 ? 'large' : ''
                   }
-                  onChange={(e) => handleSizeChange(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  {sizeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => handleSizeChange((e.target as HTMLSelectElement).value)}
+                  options={sizeOptions}
+                />
               </div>
 
               {/* Публичность */}
@@ -222,15 +183,15 @@ export function DocumentsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Видимость
                 </label>
-                <select
-                  value={localFilters.isPublic !== undefined ? localFilters.isPublic.toString() : ''}
-                  onChange={(e) => handleFilterChange('isPublic', e.target.value === '' ? undefined : e.target.value === 'true')}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">Все документы</option>
-                  <option value="true">Публичные</option>
-                  <option value="false">Приватные</option>
-                </select>
+                <Select
+                  value={localFilters.isPublic !== undefined ? String(localFilters.isPublic) : ''}
+                  onChange={(e) => handleFilterChange('isPublic', (e.target as HTMLSelectElement).value === '' ? undefined : (e.target as HTMLSelectElement).value === 'true')}
+                  options={[
+                    { value: '', label: 'Все документы' },
+                    { value: 'true', label: 'Публичные' },
+                    { value: 'false', label: 'Приватные' }
+                  ]}
+                />
               </div>
 
               {/* Автор */}
@@ -238,12 +199,10 @@ export function DocumentsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Автор
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={localFilters.author || ''}
                   onChange={(e) => handleFilterChange('author', e.target.value || undefined)}
                   placeholder="Введите имя автора"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
 
@@ -252,12 +211,10 @@ export function DocumentsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Теги
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={localFilters.tags?.join(', ') || ''}
                   onChange={(e) => handleFilterChange('tags', e.target.value ? e.target.value.split(',').map(tag => tag.trim()) : [])}
                   placeholder="Введите теги через запятую"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -269,14 +226,11 @@ export function DocumentsFilters({
                   Дата загрузки (от)
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
+                  <Input
                     type="date"
                     value={localFilters.dateFrom || ''}
                     onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    icon={<CalendarIcon className="h-5 w-5" />}
                   />
                 </div>
               </div>
@@ -286,14 +240,11 @@ export function DocumentsFilters({
                   Дата загрузки (до)
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
+                  <Input
                     type="date"
                     value={localFilters.dateTo || ''}
                     onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    icon={<CalendarIcon className="h-5 w-5" />}
                   />
                 </div>
               </div>

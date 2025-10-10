@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+// Simple in-memory cache shared across hook instances
+const globalCache = new Map<string, { data: any; lastFetch: number }>();
+
 interface UseOptimizedDataOptions<T> {
   fetchFn: () => Promise<T>;
   dependencies?: any[];
   enabled?: boolean;
   refetchOnMount?: boolean;
   staleTime?: number; // в миллисекундах
+  cacheKey?: string; // unique key to enable cross-mount caching
+  requestTimeoutMs?: number; // hard timeout fence for fetchFn
 }
 
 interface UseOptimizedDataReturn<T> {
@@ -21,7 +26,9 @@ export function useOptimizedData<T>({
   dependencies = [],
   enabled = true,
   refetchOnMount = true,
-  staleTime = 5 * 60 * 1000 // 5 минут по умолчанию
+  staleTime = 5 * 60 * 1000, // 5 минут по умолчанию
+  cacheKey,
+  requestTimeoutMs
 }: UseOptimizedDataOptions<T>): UseOptimizedDataReturn<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,30 +38,55 @@ export function useOptimizedData<T>({
   
   const mountedRef = useRef(true);
   const fetchTimeoutRef = useRef<NodeJS.Timeout>();
+  const inFlightRef = useRef<Promise<T> | null>(null);
+  const lastErrorAtRef = useRef<number>(0);
 
   const fetchData = useCallback(async () => {
     if (!enabled) return;
-    
+    // Dedupe concurrent requests
+    if (inFlightRef.current) {
+      try {
+        await inFlightRef.current;
+      } catch (_) {
+        // ignore, state was set by the original call
+      }
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
     try {
-      const result = await fetchFn();
+      // Apply hard timeout if requested
+      const runFetch = async () => await fetchFn();
+      const p = (requestTimeoutMs
+        ? Promise.race<never | T>([
+            runFetch(),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Request timeout')), requestTimeoutMs))
+          ])
+        : runFetch());
+      inFlightRef.current = p as Promise<T>;
+      const result = await p;
       if (mountedRef.current) {
         setData(result);
         setLastFetch(Date.now());
         setIsStale(false);
+        if (cacheKey) {
+          globalCache.set(cacheKey, { data: result, lastFetch: Date.now() });
+        }
       }
     } catch (err) {
       if (mountedRef.current) {
         setError(err instanceof Error ? err.message : 'Произошла ошибка');
+        lastErrorAtRef.current = Date.now();
       }
     } finally {
       if (mountedRef.current) {
         setLoading(false);
       }
+      inFlightRef.current = null;
     }
-  }, [fetchFn, enabled]);
+  }, [fetchFn, enabled, requestTimeoutMs, cacheKey]);
 
   const refetch = useCallback(async () => {
     await fetchData();
@@ -78,7 +110,7 @@ export function useOptimizedData<T>({
     return () => clearInterval(interval);
   }, [lastFetch, staleTime]);
 
-  // Автоматическая перезагрузка при изменении зависимостей
+  // Автоматическая перезагрузка при изменении зависимостей (только если данные устарели)
   useEffect(() => {
     if (!enabled) return;
     
@@ -89,9 +121,10 @@ export function useOptimizedData<T>({
     
     // Дебаунс для избежания частых запросов
     fetchTimeoutRef.current = setTimeout(() => {
-      if (mountedRef.current) {
-        fetchData();
-      }
+      if (!mountedRef.current) return;
+      const now = Date.now();
+      const shouldRefetch = lastFetch === 0 || now - lastFetch > staleTime;
+      if (shouldRefetch) fetchData();
     }, 300);
 
     return () => {
@@ -99,14 +132,28 @@ export function useOptimizedData<T>({
         clearTimeout(fetchTimeoutRef.current);
       }
     };
-  }, [...dependencies, enabled, fetchData]);
+  }, [...dependencies, enabled, fetchData, lastFetch, staleTime]);
 
-  // Первоначальная загрузка
+  // Первоначальная загрузка + чтение из кэша
   useEffect(() => {
-    if (enabled && refetchOnMount && !data) {
-      fetchData();
+    if (!enabled) return;
+
+    // If cache is enabled and present, hydrate from it immediately
+    if (cacheKey && globalCache.has(cacheKey)) {
+      const cached = globalCache.get(cacheKey)!;
+      setData(cached.data as T);
+      setLastFetch(cached.lastFetch);
+      setIsStale(Date.now() - cached.lastFetch > staleTime);
     }
-  }, [enabled, refetchOnMount, data, fetchData]);
+
+    if (refetchOnMount) {
+      const now = Date.now();
+      const needFetch = !cacheKey || !globalCache.has(cacheKey) || now - (globalCache.get(cacheKey)!.lastFetch) > staleTime;
+      if (needFetch && !loading) {
+        fetchData();
+      }
+    }
+  }, [enabled, refetchOnMount, cacheKey, staleTime, fetchData]);
 
   // Очистка при размонтировании
   useEffect(() => {

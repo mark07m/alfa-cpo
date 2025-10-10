@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader } from '@/components/admin/ui/Card'
 import { Button } from '@/components/admin/ui/Button'
 import { cn } from '@/lib/utils'
@@ -40,8 +41,8 @@ const defaultActions: QuickAction[] = [
     description: 'Создать статью',
     href: '/news/create',
     icon: NewspaperIcon,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-50',
+    color: 'text-primary-600',
+    bgColor: 'bg-primary-50',
     category: 'Контент'
   },
   {
@@ -122,9 +123,6 @@ export function QuickActions({
   variant = 'compact',
   className 
 }: QuickActionsProps) {
-  const handleActionClick = (href: string) => {
-    window.location.href = href
-  }
 
   if (variant === 'compact') {
     return (
@@ -132,10 +130,10 @@ export function QuickActions({
         <h3 className="text-lg font-medium text-gray-900">{title}</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {actions.slice(0, 8).map((action) => (
-            <button
+            <Link
               key={action.id}
+              href={action.href}
               className="group relative p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-150 text-center"
-              onClick={() => handleActionClick(action.href)}
             >
               <div className="flex flex-col items-center space-y-2">
                 <div className={cn(
@@ -148,7 +146,7 @@ export function QuickActions({
                   {action.title}
                 </div>
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
@@ -161,10 +159,10 @@ export function QuickActions({
         <h3 className="text-lg font-medium text-gray-900">{title}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {actions.map((action) => (
-            <button
+            <Link
               key={action.id}
+              href={action.href}
               className="group relative p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-150 text-left"
-              onClick={() => handleActionClick(action.href)}
             >
               <div className="flex items-center space-x-3">
                 <div className={cn(
@@ -183,7 +181,7 @@ export function QuickActions({
                 </div>
                 <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
@@ -212,10 +210,10 @@ export function QuickActions({
               </h4>
               <div className="grid grid-cols-1 gap-2">
                 {categoryActions.map((action) => (
-                  <button
+                  <Link
                     key={action.id}
+                    href={action.href}
                     className="group relative p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-150 text-left"
-                    onClick={() => handleActionClick(action.href)}
                   >
                     <div className="flex items-center space-x-3">
                       <div className={cn(
@@ -234,7 +232,7 @@ export function QuickActions({
                       </div>
                       <ArrowRightIcon className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
                     </div>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>

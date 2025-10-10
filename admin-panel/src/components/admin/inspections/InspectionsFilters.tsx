@@ -209,12 +209,12 @@ export function InspectionsFilters({
               <span>Активные фильтры:</span>
             </span>
             {filters.search && (
-              <span className="inline-flex items-center px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200 shadow-sm hover:shadow-md transition-all duration-200">
+              <span className="inline-flex items-center px-3.5 py-1.5 rounded-lg text-sm font-medium bg-primary-50 text-primary-800 border border-primary-200 shadow-sm hover:shadow-md transition-all duration-200">
                 <MagnifyingGlassIcon className="h-3.5 w-3.5 mr-1.5" />
                 Поиск: <span className="font-semibold ml-1">{filters.search.substring(0, 20)}{filters.search.length > 20 ? '...' : ''}</span>
                 <button
                   onClick={() => handleFilterChange('search', '')}
-                  className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-md text-blue-600 hover:bg-blue-200 hover:text-blue-800 transition-all duration-150"
+                  className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-md text-primary-600 hover:bg-primary-200 hover:text-primary-800 transition-all duration-150"
                 >
                   <XMarkIcon className="h-3.5 w-3.5" />
                 </button>

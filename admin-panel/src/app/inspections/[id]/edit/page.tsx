@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
+import { FormField } from '@/components/admin/ui/FormField';
 import { Button } from '@/components/admin/ui/Button';
 import { Input } from '@/components/admin/ui/Input';
 import { Select } from '@/components/admin/ui/Select';
-import { ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import { inspectionsService } from '@/services/admin/inspections';
 import { arbitratorsService } from '@/services/admin/arbitrators';
 
@@ -113,7 +115,7 @@ export default function InspectionEditPage() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       </AdminLayout>
     );
@@ -140,37 +142,22 @@ export default function InspectionEditPage() {
 
   return (
     <AdminLayout>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Навигация */}
-        <div className="flex items-center justify-between">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.push(`/inspections/${params.id}`)}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Отмена</span>
-          </Button>
-          <Button
-            type="submit"
-            disabled={saving}
-            className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700"
-          >
-            <CheckIcon className="h-4 w-4" />
-            <span>{saving ? 'Сохранение...' : 'Сохранить'}</span>
-          </Button>
-        </div>
+      <div className="space-y-6">
+        <PageHeader
+          title={`Редактирование проверки #${params.id}`}
+          subtitle={formData.arbitratorName}
+          backUrl={`/inspections/${params.id}`}
+          backLabel="К проверке"
+          primaryAction={{
+            label: saving ? 'Сохранение...' : 'Сохранить',
+            onClick: handleSubmit,
+            icon: <CheckIcon className="h-4 w-4" />,
+            variant: 'primary',
+            disabled: saving
+          }}
+        />
 
-        {/* Заголовок */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-6 border border-amber-100">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Редактирование проверки #{params.id}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Заполните все необходимые поля и нажмите "Сохранить"
-          </p>
-        </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* Основная форма */}
         <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
@@ -314,12 +301,13 @@ export default function InspectionEditPage() {
           <Button
             type="submit"
             disabled={saving}
-            className="bg-amber-600 hover:bg-amber-700"
+            variant="primary"
           >
             {saving ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>
         </div>
       </form>
+      </div>
     </AdminLayout>
   );
 }

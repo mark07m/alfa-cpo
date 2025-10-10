@@ -156,12 +156,12 @@ export default function DocumentsPage() {
               </p>
             </div>
             <div className="mt-4 flex md:mt-0 md:ml-4">
-              <button
-                onClick={() => setShowUpload(false)}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Отмена
-              </button>
+            <button
+              onClick={() => setShowUpload(false)}
+              className="inline-flex items-center px-4 py-2 border border-gray-200 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-150"
+            >
+              Отмена
+            </button>
             </div>
           </div>
 
@@ -193,7 +193,7 @@ export default function DocumentsPage() {
           <div className="mt-4 flex md:mt-0 md:ml-4 space-x-2">
             <button
               onClick={() => setShowUpload(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
             >
               <CloudArrowUpIcon className="h-4 w-4 mr-2" />
               Загрузить документы
@@ -249,8 +249,8 @@ export default function DocumentsPage() {
             <div className="p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center">
-                    <div className="h-2 w-2 bg-blue-600 rounded-full"></div>
+                  <div className="h-6 w-6 bg-primary-100 rounded-full flex items-center justify-center">
+                    <div className="h-2 w-2 bg-primary-600 rounded-full"></div>
                   </div>
                 </div>
                 <div className="ml-5 w-0 flex-1">
@@ -325,13 +325,13 @@ export default function DocumentsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <button
-              className="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md border-blue-500 text-blue-700 bg-blue-50"
+              className="inline-flex items-center px-3 py-2 border-2 text-sm font-medium rounded-lg border-primary-500 text-primary-700 bg-primary-50 shadow-sm"
             >
               <DocumentIcon className="h-4 w-4 mr-2" />
               Список
             </button>
             <button
-              className="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-lg border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-150"
             >
               <FolderIcon className="h-4 w-4 mr-2" />
               Папки
@@ -341,10 +341,10 @@ export default function DocumentsPage() {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md ${
+              className={`inline-flex items-center px-3 py-2 border-2 text-sm font-medium rounded-lg transition-all duration-150 ${
                 showFilters
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                  ? 'border-primary-500 text-primary-700 bg-primary-50 shadow-sm'
+                  : 'border-gray-200 text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300'
               }`}
             >
               <FunnelIcon className="h-4 w-4 mr-2" />
@@ -372,15 +372,15 @@ export default function DocumentsPage() {
 
         {/* Массовые действия */}
         {selectedDocuments.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <span className="text-sm font-medium text-blue-900">
+                <span className="text-sm font-medium text-primary-900">
                   Выбрано документов: {selectedDocuments.length}
                 </span>
                 <button
                   onClick={() => setSelectedDocuments([])}
-                  className="ml-2 text-sm text-blue-600 hover:text-blue-800"
+                  className="ml-2 text-sm text-primary-600 hover:text-primary-800 transition-colors"
                 >
                   Очистить выбор
                 </button>
@@ -389,14 +389,14 @@ export default function DocumentsPage() {
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleBulkAction('download', selectedDocuments.map(d => d.id))}
-                  className="inline-flex items-center px-3 py-2 border border-blue-300 shadow-sm text-sm leading-4 font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50"
+                  className="inline-flex items-center px-3 py-2 border border-primary-300 shadow-sm text-sm leading-4 font-medium rounded-lg text-primary-700 bg-white hover:bg-primary-50 transition-colors"
                 >
                   <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                   Скачать
                 </button>
                 <button
                   onClick={() => handleBulkAction('delete', selectedDocuments.map(d => d.id))}
-                  className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                  className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 active:bg-red-800 transition-all"
                 >
                   Удалить
                 </button>

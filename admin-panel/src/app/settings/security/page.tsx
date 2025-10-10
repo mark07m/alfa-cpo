@@ -182,7 +182,7 @@ export default function SecurityPage() {
         </Card>
         <Card className="p-4">
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-primary-600">
               {settings?.securityAlerts || 0}
             </div>
             <div className="text-sm text-gray-500">Активных предупреждений</div>
@@ -366,7 +366,7 @@ export default function SecurityPage() {
                 Разрешенные IP-адреса
               </label>
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 rows={4}
                 value={settings?.allowedIPs || ''}
                 onChange={(e) => updateSettings('ip', { ...settings, allowedIPs: e.target.value })}
@@ -381,7 +381,7 @@ export default function SecurityPage() {
                 Заблокированные IP-адреса
               </label>
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 rows={4}
                 value={settings?.blockedIPs || ''}
                 onChange={(e) => updateSettings('ip', { ...settings, blockedIPs: e.target.value })}

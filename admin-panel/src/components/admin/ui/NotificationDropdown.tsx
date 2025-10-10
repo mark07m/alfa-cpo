@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import { Card, CardContent, CardHeader } from '@/components/admin/ui/Card'
@@ -77,19 +78,20 @@ export function NotificationDropdown({
 }: NotificationDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [localNotifications, setLocalNotifications] = useState(notifications)
+  const router = useRouter()
 
   const unreadCount = localNotifications.filter(n => !n.isRead).length
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'success':
-        return <CheckCircleIcon className="h-5 w-5 text-green-500" />
+        return <CheckCircleIcon className="h-4 w-4 text-green-500" />
       case 'warning':
-        return <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+        return <ExclamationTriangleIcon className="h-4 w-4 text-yellow-500" />
       case 'error':
-        return <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
+        return <ExclamationTriangleIcon className="h-4 w-4 text-red-500" />
       default:
-        return <InformationCircleIcon className="h-5 w-5 text-blue-500" />
+        return <InformationCircleIcon className="h-4 w-4 text-blue-500" />
     }
   }
 
@@ -125,17 +127,17 @@ export function NotificationDropdown({
       handleMarkAsRead(notification.id)
     }
     if (notification.actionUrl) {
-      window.location.href = notification.actionUrl
+      router.push(notification.actionUrl)
     }
   }
 
   return (
     <Menu as="div" className="relative">
-      <Menu.Button className="relative -m-2.5 p-2.5 text-gray-400 hover:text-gray-500">
+      <Menu.Button className="relative -m-2 p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50/80 transition-all duration-150">
         <span className="sr-only">Просмотр уведомлений</span>
-        <BellIcon className="h-6 w-6" aria-hidden="true" />
+        <BellIcon className="h-5 w-5" aria-hidden="true" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-medium shadow-sm">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -150,8 +152,8 @@ export function NotificationDropdown({
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-          <div className="px-4 py-3 border-b border-gray-200">
+        <Menu.Items className="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-lg bg-white py-1 shadow-lg ring-1 ring-black/5 focus:outline-none">
+          <div className="px-3 py-2.5 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-gray-900">Уведомления</h3>
               {unreadCount > 0 && (
@@ -159,9 +161,9 @@ export function NotificationDropdown({
                   variant="ghost"
                   size="sm"
                   onClick={handleMarkAllAsRead}
-                  className="text-xs"
+                  className="text-xs h-7"
                 >
-                  <CheckIcon className="h-4 w-4 mr-1" />
+                  <CheckIcon className="h-3.5 w-3.5 mr-1" />
                   Прочитать все
                 </Button>
               )}
@@ -172,7 +174,7 @@ export function NotificationDropdown({
             {localNotifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500">
                 <BellIcon className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                <p>Нет уведомлений</p>
+                <p className="text-sm">Нет уведомлений</p>
               </div>
             ) : (
               localNotifications.map((notification) => (
@@ -180,19 +182,19 @@ export function NotificationDropdown({
                   {({ active }) => (
                     <div
                       className={cn(
-                        'px-4 py-3 border-l-4 cursor-pointer transition-colors',
+                        'px-3 py-2.5 border-l-2 cursor-pointer transition-colors',
                         getNotificationColor(notification.type),
-                        !notification.isRead ? 'bg-amber-50' : 'bg-white',
+                        !notification.isRead ? 'bg-primary-50/30' : 'bg-white',
                         active && 'bg-gray-50'
                       )}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                      <div className="flex items-start">
-                        <div className="flex-shrink-0 mr-3">
+                      <div className="flex items-start gap-2.5">
+                        <div className="flex-shrink-0">
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-between gap-2">
                             <p className={cn(
                               'text-sm font-medium',
                               !notification.isRead ? 'text-gray-900' : 'text-gray-700'
@@ -200,10 +202,10 @@ export function NotificationDropdown({
                               {notification.title}
                             </p>
                             {!notification.isRead && (
-                              <div className="h-2 w-2 bg-amber-500 rounded-full flex-shrink-0"></div>
+                              <div className="h-1.5 w-1.5 bg-primary-500 rounded-full flex-shrink-0"></div>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 mt-1 truncate">
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                             {notification.message}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
@@ -219,12 +221,12 @@ export function NotificationDropdown({
           </div>
 
           {localNotifications.length > 0 && (
-            <div className="px-4 py-3 border-t border-gray-200">
+            <div className="px-3 py-2.5 border-t border-gray-100">
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full text-center"
-                onClick={() => window.location.href = '/notifications'}
+                className="w-full text-center text-xs"
+                onClick={() => router.push('/notifications')}
               >
                 Просмотреть все уведомления
               </Button>

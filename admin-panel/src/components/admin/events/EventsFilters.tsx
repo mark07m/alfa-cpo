@@ -8,6 +8,9 @@ import {
   XMarkIcon,
   CalendarIcon
 } from '@heroicons/react/24/outline'
+import { Button } from '@/components/admin/ui/Button'
+import { Input } from '@/components/admin/ui/Input'
+import { Select } from '@/components/admin/ui/Select'
 
 interface EventsFiltersProps {
   eventTypes: EventType[]
@@ -81,51 +84,34 @@ export function EventsFilters({
     <div className="bg-white shadow rounded-lg">
       <div className="px-4 py-5 sm:p-6">
         {/* Заголовок с кнопкой фильтров */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify_between mb-4">
           <h3 className="text-lg font-medium text-gray-900">Фильтры и поиск</h3>
           <div className="flex items-center space-x-2">
             {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="text-sm text-gray-500 hover:text-gray-700"
-              >
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
                 Очистить фильтры
-              </button>
+              </Button>
             )}
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={onToggle}
-              className={`inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                isOpen ? 'bg-gray-50' : ''
-              }`}
+              className={isOpen ? 'bg-gray-50' : ''}
+              icon={<FunnelIcon className="h-4 w-4" />}
             >
-              <FunnelIcon className="h-4 w-4 mr-2" />
               Фильтры
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Поиск */}
         <div className="mb-4">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Поиск по названию, описанию, месту проведения..."
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-            {searchTerm && (
-              <button
-                onClick={() => handleSearchChange('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-              >
-                <XMarkIcon className="h-4 w-4 text-gray-400 hover:text-gray-600" />
-              </button>
-            )}
-          </div>
+          <Input
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder="Поиск по названию, описанию, месту проведения..."
+            icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+          />
         </div>
 
         {/* Расширенные фильтры */}
@@ -137,18 +123,11 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Тип мероприятия
                 </label>
-                <select
+                <Select
                   value={localFilters.type || ''}
-                  onChange={(e) => handleFilterChange('type', e.target.value || undefined)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  <option value="">Все типы</option>
-                  {eventTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => handleFilterChange('type', (e.target as HTMLSelectElement).value || undefined)}
+                  options={[{ value: '', label: 'Все типы' }, ...eventTypes.map((type) => ({ value: type.id, label: type.name }))]}
+                />
               </div>
 
               {/* Статус */}
@@ -156,17 +135,11 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Статус
                 </label>
-                <select
+                <Select
                   value={localFilters.status || ''}
-                  onChange={(e) => handleFilterChange('status', e.target.value || undefined)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(e) => handleFilterChange('status', (e.target as HTMLSelectElement).value || undefined)}
+                  options={statusOptions}
+                />
               </div>
 
               {/* Регистрация */}
@@ -174,17 +147,11 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Регистрация
                 </label>
-                <select
-                  value={localFilters.registrationRequired !== undefined ? localFilters.registrationRequired.toString() : ''}
-                  onChange={(e) => handleFilterChange('registrationRequired', e.target.value === '' ? undefined : e.target.value === 'true')}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  {registrationOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={localFilters.registrationRequired !== undefined ? String(localFilters.registrationRequired) : ''}
+                  onChange={(e) => handleFilterChange('registrationRequired', (e.target as HTMLSelectElement).value === '' ? undefined : (e.target as HTMLSelectElement).value === 'true')}
+                  options={registrationOptions}
+                />
               </div>
 
               {/* Рекомендуемые */}
@@ -192,17 +159,11 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Рекомендуемые
                 </label>
-                <select
-                  value={localFilters.featured !== undefined ? localFilters.featured.toString() : ''}
-                  onChange={(e) => handleFilterChange('featured', e.target.value === '' ? undefined : e.target.value === 'true')}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                  {featuredOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={localFilters.featured !== undefined ? String(localFilters.featured) : ''}
+                  onChange={(e) => handleFilterChange('featured', (e.target as HTMLSelectElement).value === '' ? undefined : (e.target as HTMLSelectElement).value === 'true')}
+                  options={featuredOptions}
+                />
               </div>
 
               {/* Место проведения */}
@@ -210,12 +171,10 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Место проведения
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={localFilters.location || ''}
                   onChange={(e) => handleFilterChange('location', e.target.value || undefined)}
                   placeholder="Введите место проведения"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
 
@@ -224,12 +183,10 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Организатор
                 </label>
-                <input
-                  type="text"
+                <Input
                   value={localFilters.organizer || ''}
                   onChange={(e) => handleFilterChange('organizer', e.target.value || undefined)}
                   placeholder="Введите организатора"
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -240,34 +197,24 @@ export function EventsFilters({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Дата начала (от)
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="date"
-                    value={localFilters.dateFrom || ''}
-                    onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
+                <Input
+                  type="date"
+                  value={localFilters.dateFrom || ''}
+                  onChange={(e) => handleFilterChange('dateFrom', e.target.value || undefined)}
+                  icon={<CalendarIcon className="h-5 w-5" />}
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Дата начала (до)
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <CalendarIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="date"
-                    value={localFilters.dateTo || ''}
-                    onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  />
-                </div>
+                <Input
+                  type="date"
+                  value={localFilters.dateTo || ''}
+                  onChange={(e) => handleFilterChange('dateTo', e.target.value || undefined)}
+                  icon={<CalendarIcon className="h-5 w-5" />}
+                />
               </div>
             </div>
 
@@ -283,7 +230,6 @@ export function EventsFilters({
               >
                 Опубликованные
               </button>
-              
               <button
                 onClick={() => handleFilterChange('status', 'draft')}
                 className={`px-3 py-1 text-sm rounded-full ${
@@ -294,7 +240,6 @@ export function EventsFilters({
               >
                 Черновики
               </button>
-              
               <button
                 onClick={() => handleFilterChange('featured', true)}
                 className={`px-3 py-1 text-sm rounded-full ${
@@ -305,7 +250,6 @@ export function EventsFilters({
               >
                 Рекомендуемые
               </button>
-              
               <button
                 onClick={() => {
                   const today = new Date().toISOString().split('T')[0]

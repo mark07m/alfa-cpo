@@ -11,25 +11,42 @@ export interface DashboardService {
 class DashboardServiceImpl implements DashboardService {
   async getStats(): Promise<DashboardStats> {
     try {
-      const [newsRes, eventsRes, docsRes, usersRes, inspectionsRes, measuresRes] = await Promise.all([
-        apiService.get<any>('/news', { params: { page: 1, limit: 1 } }),
-        apiService.get<any>('/events', { params: { page: 1, limit: 1 } }),
-        apiService.get<any>('/documents', { params: { page: 1, limit: 1 } }),
-        apiService.get<any>('/users'),
-        apiService.get<any>('/inspections', { params: { page: 1, limit: 1 } }),
-        apiService.get<any>('/disciplinary-measures', { params: { page: 1, limit: 1 } })
+      // Add request-level timeouts and use allSettled to avoid blocking on a single slow endpoint
+      const req = (endpoint: string, params: any = {}) => apiService.get<any>(endpoint, { params: { page: 1, limit: 1, ...params } })
+      const withTimeout = <T,>(p: Promise<T>, ms = 6000) => Promise.race<T>([
+        p,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Request timeout')), ms)) as Promise<T>
       ])
+
+      const results = await Promise.allSettled([
+        withTimeout(req('/news')),
+        withTimeout(req('/events')),
+        withTimeout(req('/documents')),
+        withTimeout(req('/users')),
+        withTimeout(req('/inspections')),
+        withTimeout(req('/disciplinary-measures'))
+      ])
+
+      const safe = (idx: number) => (results[idx].status === 'fulfilled' ? (results[idx] as PromiseFulfilledResult<any>).value : null)
+
+      const newsRes = safe(0)
+      const eventsRes = safe(1)
+      const docsRes = safe(2)
+      const usersRes = safe(3)
+      const inspectionsRes = safe(4)
+      const measuresRes = safe(5)
 
       const newsCount = (newsRes as any)?.pagination?.total ?? (Array.isArray((newsRes as any)?.data) ? (newsRes as any).data.length : 0)
       const eventsCount = (eventsRes as any)?.pagination?.total ?? (Array.isArray((eventsRes as any)?.data) ? (eventsRes as any).data.length : 0)
       const documentsCount = (docsRes as any)?.pagination?.total ?? (Array.isArray((docsRes as any)?.data) ? (docsRes as any).data.length : 0)
-      const usersCount = Array.isArray((usersRes as any)?.data) ? (usersRes as any).data.length : ((usersRes as any)?.pagination?.total ?? 0)
+      const usersCount = (usersRes as any)?.pagination?.total ?? (Array.isArray((usersRes as any)?.data) ? (usersRes as any).data.length : 0)
       const inspectionsCount = (inspectionsRes as any)?.pagination?.total ?? (Array.isArray((inspectionsRes as any)?.data) ? (inspectionsRes as any).data.length : 0)
       const disciplinaryMeasuresCount = (measuresRes as any)?.pagination?.total ?? (Array.isArray((measuresRes as any)?.data) ? (measuresRes as any).data.length : 0)
 
       let compensationFundCount = 0
       try {
-        const cfRes = await apiService.get<any>('/compensation-fund/history', { params: { page: 1, limit: 1 } })
+        const cfResult = await Promise.allSettled([withTimeout(req('/compensation-fund/history'))])
+        const cfRes = cfResult[0].status === 'fulfilled' ? cfResult[0].value : null
         compensationFundCount = (cfRes as any)?.pagination?.total ?? (Array.isArray((cfRes as any)?.data) ? (cfRes as any).data.length : 0)
       } catch (e) {
         // ignore errors for optional metric
@@ -56,14 +73,29 @@ class DashboardServiceImpl implements DashboardService {
 
   async getActivities(limit: number = 10): Promise<ActivityItem[]> {
     try {
-      const [newsLatest, eventsList, docsList, registryList, inspectionsList, measuresList] = await Promise.all([
-        apiService.get<any>('/news/latest', { params: { limit } }),
-        apiService.get<any>('/events', { params: { page: 1, limit } }),
-        apiService.get<any>('/documents', { params: { page: 1, limit } }),
-        apiService.get<any>('/registry', { params: { page: 1, limit } }),
-        apiService.get<any>('/inspections', { params: { page: 1, limit } }),
-        apiService.get<any>('/disciplinary-measures', { params: { page: 1, limit } })
+      const req = (endpoint: string, params: any = {}) => apiService.get<any>(endpoint, { params })
+      const withTimeout = <T,>(p: Promise<T>, ms = 6000) => Promise.race<T>([
+        p,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Request timeout')), ms)) as Promise<T>
       ])
+
+      const results = await Promise.allSettled([
+        withTimeout(req('/news/latest', { limit })),
+        withTimeout(req('/events', { page: 1, limit })),
+        withTimeout(req('/documents', { page: 1, limit })),
+        withTimeout(req('/registry', { page: 1, limit })),
+        withTimeout(req('/inspections', { page: 1, limit })),
+        withTimeout(req('/disciplinary-measures', { page: 1, limit }))
+      ])
+
+      const safe = (idx: number) => (results[idx].status === 'fulfilled' ? (results[idx] as PromiseFulfilledResult<any>).value : { data: [] })
+
+      const newsLatest = safe(0)
+      const eventsList = safe(1)
+      const docsList = safe(2)
+      const registryList = safe(3)
+      const inspectionsList = safe(4)
+      const measuresList = safe(5)
 
       const items: ActivityItem[] = []
 
@@ -128,7 +160,7 @@ class DashboardServiceImpl implements DashboardService {
 
       pushSafe((measuresList as any)?.data || [], (m) => ({
         id: String(m.id || m._id || Math.random()),
-        type: 'disciplinary',
+        type: 'inspection',
         action: 'created',
         title: m.penalty || 'Дисциплинарная мера',
         user: { name: (m.issuedBy && (m.issuedBy.name || m.issuedBy.email)) || 'Система' },
@@ -154,12 +186,24 @@ class DashboardServiceImpl implements DashboardService {
       const startDateFrom = start.toISOString().split('T')[0]
       const startDateTo = end.toISOString().split('T')[0]
 
-      const [newsRes, eventsRes, docsRes, usersRes] = await Promise.all([
-        apiService.get<any>('/news', { params: { page: 1, limit: 100 } }),
-        apiService.get<any>('/events', { params: { page: 1, limit: 100, startDateFrom, startDateTo } }),
-        apiService.get<any>('/documents', { params: { page: 1, limit: 100 } }),
-        apiService.get<any>('/users')
+      const withTimeout = <T,>(p: Promise<T>, ms = 6000) => Promise.race<T>([
+        p,
+        new Promise<T>((_, reject) => setTimeout(() => reject(new Error('Request timeout')), ms)) as Promise<T>
       ])
+
+      const results = await Promise.allSettled([
+        withTimeout(apiService.get<any>('/news', { params: { page: 1, limit: 100 } })),
+        withTimeout(apiService.get<any>('/events', { params: { page: 1, limit: 100, startDateFrom, startDateTo } })),
+        withTimeout(apiService.get<any>('/documents', { params: { page: 1, limit: 100 } })),
+        withTimeout(apiService.get<any>('/users', { params: { page: 1, limit: 100 } }))
+      ])
+
+      const safe = (idx: number) => (results[idx].status === 'fulfilled' ? (results[idx] as PromiseFulfilledResult<any>).value : { data: [] })
+
+      const newsRes = safe(0)
+      const eventsRes = safe(1)
+      const docsRes = safe(2)
+      const usersRes = safe(3)
 
       const toArray = (res: any) => (Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [])
       const news = toArray(newsRes)

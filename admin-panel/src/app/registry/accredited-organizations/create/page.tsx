@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { useAccreditedOrganizations } from '@/hooks/admin/useAccreditedOrganizations';
 import { AccreditedOrganizationForm } from '@/components/admin/accreditedOrganizations/AccreditedOrganizationForm';
 import { AccreditedOrganizationFormData } from '@/types/admin';
@@ -24,13 +25,12 @@ export default function CreateAccreditedOrganizationPage() {
 
   return (
     <div className="space-y-6">
-      {/* Заголовок страницы */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Добавить аккредитованную организацию</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Заполните форму для добавления новой аккредитованной организации в реестр
-        </p>
-      </div>
+      <PageHeader
+        title="Добавить аккредитованную организацию"
+        subtitle="Заполните форму для добавления новой аккредитованной организации в реестр"
+        backUrl="/registry/accredited-organizations"
+        backLabel="К организациям"
+      />
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <AccreditedOrganizationForm

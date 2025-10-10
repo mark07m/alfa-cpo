@@ -1,60 +1,91 @@
 'use client';
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
   label?: string;
-  error?: string;
-  helperText?: string;
-  className?: string;
+  description?: string;
+  error?: boolean;
+  size?: 'sm' | 'md' | 'lg';
 }
 
-export const Checkbox: React.FC<CheckboxProps> = ({
-  label,
-  error,
-  helperText,
-  className,
-  id,
-  ...props
-}) => {
-  const checkboxId = id || `checkbox-${Math.random().toString(36).substr(2, 9)}`;
-
-  return (
-    <div className="w-full">
-      <div className="flex items-start space-x-3">
-        <input
-          id={checkboxId}
-          type="checkbox"
-          className={cn(
-            'h-4 w-4 rounded border-neutral-300 text-beige-600 focus:ring-beige-500',
-            error && 'border-red-500 focus:ring-red-500',
-            className
-          )}
-          {...props}
-        />
-        
-        {label && (
-          <div className="flex-1">
-            <label
-              htmlFor={checkboxId}
-              className="text-sm font-medium text-neutral-700 cursor-pointer"
-            >
-              {label}
-            </label>
-            
-            {helperText && !error && (
-              <p className="mt-1 text-sm text-neutral-500">{helperText}</p>
+export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
+  ({ 
+    label,
+    description,
+    error,
+    size = 'md',
+    className,
+    disabled,
+    ...props 
+  }, ref) => {
+    const sizeClasses = {
+      sm: 'h-4 w-4',
+      md: 'h-5 w-5',
+      lg: 'h-6 w-6'
+    };
+    
+    const textSizeClasses = {
+      sm: 'text-xs',
+      md: 'text-sm',
+      lg: 'text-base'
+    };
+    
+    const checkbox = (
+      <input
+        ref={ref}
+        type="checkbox"
+        disabled={disabled}
+        className={cn(
+          'rounded border-gray-300 text-primary-600 focus:ring-primary-500 focus:ring-2 focus:ring-offset-2',
+          'transition-all duration-200',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          error && 'border-red-500 text-red-600 focus:ring-red-500',
+          sizeClasses[size],
+          !label && className
+        )}
+        {...props}
+      />
+    );
+    
+    if (!label && !description) {
+      return checkbox;
+    }
+    
+    return (
+      <div className={cn('flex items-start', className)}>
+        <div className="flex items-center h-5">
+          {checkbox}
+        </div>
+        {(label || description) && (
+          <div className="ml-3">
+            {label && (
+              <label
+                htmlFor={props.id}
+                className={cn(
+                  'font-medium text-gray-700',
+                  textSizeClasses[size],
+                  disabled && 'opacity-50'
+                )}
+              >
+                {label}
+              </label>
             )}
-            
-            {error && (
-              <p className="mt-1 text-sm text-red-600">{error}</p>
+            {description && (
+              <p className={cn(
+                'text-gray-500',
+                size === 'sm' ? 'text-xs' : 'text-xs',
+                disabled && 'opacity-50'
+              )}>
+                {description}
+              </p>
             )}
           </div>
         )}
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
 
-export default Checkbox;
+Checkbox.displayName = 'Checkbox';

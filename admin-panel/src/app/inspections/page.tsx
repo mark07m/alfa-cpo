@@ -107,12 +107,12 @@ export default function InspectionsPage() {
     <AdminLayout>
       <div className="space-y-8">
         {/* Заголовок */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-8 border border-amber-100 shadow-md">
+        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center space-x-3 mb-2">
-                <div className="p-3 bg-white rounded-lg shadow-sm">
-                  <svg className="h-8 w-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="p-3 bg-primary-50 rounded-lg shadow-sm">
+                  <svg className="h-8 w-8 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
@@ -122,13 +122,13 @@ export default function InspectionsPage() {
                 </div>
               </div>
               <div className="flex items-center space-x-4 mt-4">
-                <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+                <div className="bg-gray-50 px-4 py-2 rounded-lg shadow-sm border border-gray-200">
                   <span className="text-sm text-gray-500">Всего проверок:</span>
                   <span className="ml-2 text-lg font-bold text-gray-900">{inspections.length}</span>
                 </div>
-                <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-                  <span className="text-sm text-gray-500">Найдено:</span>
-                  <span className="ml-2 text-lg font-bold text-amber-600">{filteredInspections.length}</span>
+                <div className="bg-primary-50 px-4 py-2 rounded-lg shadow-sm border border-primary-200">
+                  <span className="text-sm text-primary-600">Найдено:</span>
+                  <span className="ml-2 text-lg font-bold text-primary-700">{filteredInspections.length}</span>
                 </div>
               </div>
             </div>
@@ -136,22 +136,23 @@ export default function InspectionsPage() {
               <Button
                 variant="outline"
                 onClick={() => window.open('/inspections/calendar', '_blank')}
-                className="flex items-center space-x-2 justify-start hover:bg-white hover:border-amber-300 hover:shadow-md transition-all duration-200"
+                className="flex items-center space-x-2 justify-start"
               >
-                <CalendarIcon className="h-5 w-5 text-amber-600" />
+                <CalendarIcon className="h-5 w-5" />
                 <span className="font-medium">Календарь</span>
               </Button>
               <Button
                 variant="outline"
                 onClick={() => window.open('/inspections/reports', '_blank')}
-                className="flex items-center space-x-2 justify-start hover:bg-white hover:border-amber-300 hover:shadow-md transition-all duration-200"
+                className="flex items-center space-x-2 justify-start"
               >
-                <ChartBarIcon className="h-5 w-5 text-amber-600" />
+                <ChartBarIcon className="h-5 w-5" />
                 <span className="font-medium">Отчеты</span>
               </Button>
               <Button 
+                variant="primary"
                 onClick={handleCreate} 
-                className="flex items-center space-x-2 justify-center bg-amber-600 hover:bg-amber-700 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="flex items-center space-x-2 justify-center"
               >
                 <PlusIcon className="h-5 w-5" />
                 <span className="font-semibold">Создать проверку</span>

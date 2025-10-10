@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
 import { StatCard } from '@/components/admin/ui/StatCard'
 import { ActivityChart } from '@/components/admin/charts/ActivityChart'
@@ -14,7 +15,6 @@ import {
   CalendarIcon,
   DocumentTextIcon,
   UserGroupIcon,
-  ExclamationTriangleIcon,
   UsersIcon,
   CogIcon,
   ArrowRightIcon
@@ -24,7 +24,8 @@ export default function DashboardPage() {
   const { stats, activities, isLoading, error, isStale } = useDashboard()
   const { data: activityData, isLoading: activityLoading } = useActivityData(30)
 
-  if (isLoading) {
+  // Показываем спиннер только на самый первый загрузочный рендер (когда ещё нет данных)
+  if (isLoading && !stats) {
     return (
       <AdminLayout title="Дашборд">
         <LoadingCard text="Загрузка дашборда..." />
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   return (
     <AdminLayout title="Дашборд">
       <div className="space-y-6">
+        {/* Контент дашборда */}
         {/* Предупреждение о устаревших данных */}
         {isStale && (
           <Alert variant="warning" title="Данные могут быть устаревшими">
@@ -60,28 +62,24 @@ export default function DashboardPage() {
               value={stats.newsCount}
               change={stats.newsChange}
               icon={NewspaperIcon}
-              color="blue"
             />
             <StatCard
               title="Мероприятия"
               value={stats.eventsCount}
               change={stats.eventsChange}
               icon={CalendarIcon}
-              color="green"
             />
             <StatCard
               title="Документы"
               value={stats.documentsCount}
               change={stats.documentsChange}
               icon={DocumentTextIcon}
-              color="purple"
             />
             <StatCard
               title="Пользователи"
               value={stats.usersCount}
               change={stats.usersChange}
               icon={UserGroupIcon}
-              color="amber"
             />
           </div>
         )}
@@ -93,7 +91,7 @@ export default function DashboardPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">Активность за последние 30 дней</h3>
               {activityLoading ? (
                 <div className="flex items-center justify-center h-64">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
                 </div>
               ) : (
                 <ActivityChart data={activityData} />
@@ -109,8 +107,8 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Управление</h3>
               <div className="space-y-3">
-                <button
-                  onClick={() => window.location.href = '/settings/users'}
+                <Link
+                  href="/settings/users"
                   className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center space-x-3">
@@ -120,9 +118,9 @@ export default function DashboardPage() {
                     <span className="text-sm font-medium text-gray-900">Пользователи</span>
                   </div>
                   <ArrowRightIcon className="h-4 w-4 text-gray-400" />
-                </button>
-                <button
-                  onClick={() => window.location.href = '/settings'}
+                </Link>
+                <Link
+                  href="/settings"
                   className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center space-x-3">
@@ -132,7 +130,7 @@ export default function DashboardPage() {
                     <span className="text-sm font-medium text-gray-900">Настройки</span>
                   </div>
                   <ArrowRightIcon className="h-4 w-4 text-gray-400" />
-                </button>
+                </Link>
               </div>
             </div>
           </div>

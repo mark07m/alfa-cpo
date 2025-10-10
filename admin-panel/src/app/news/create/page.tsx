@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { PageHeader } from '@/components/admin/ui/PageHeader'
 import { NewsForm } from '@/components/admin/news/NewsForm'
 import { useNews } from '@/hooks/admin/useNews'
 import { News } from '@/types/admin'
@@ -43,12 +44,12 @@ export default function CreateNewsPage() {
   return (
     <AdminLayout title="Создание новости">
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Создание новости</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Заполните форму для создания новой новости
-          </p>
-        </div>
+        <PageHeader
+          title="Создание новости"
+          subtitle="Заполните форму для создания новой новости"
+          backUrl="/news"
+          backLabel="К новостям"
+        />
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">

@@ -70,7 +70,7 @@ export default function NewsCategoriesPage() {
     return (
       <AdminLayout title="Категории новостей">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       </AdminLayout>
     )
@@ -90,7 +90,7 @@ export default function NewsCategoriesPage() {
           <div className="mt-4 sm:mt-0">
             <button
               onClick={() => setIsFormOpen(true)}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Создать категорию

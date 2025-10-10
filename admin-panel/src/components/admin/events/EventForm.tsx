@@ -13,6 +13,11 @@ import {
   TrashIcon,
   EyeIcon
 } from '@heroicons/react/24/outline'
+import { Input } from '@/components/admin/ui/Input'
+import { Select } from '@/components/admin/ui/Select'
+import { Textarea } from '@/components/admin/ui/Textarea'
+import { Button } from '@/components/admin/ui/Button'
+import { Checkbox } from '@/components/admin/ui/Checkbox'
 
 interface EventFormProps {
   event?: Event
@@ -115,7 +120,6 @@ export function EventForm({
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
-      // В реальном приложении здесь будет загрузка на сервер
       const reader = new FileReader()
       reader.onload = (e) => {
         const result = e.target?.result as string
@@ -148,7 +152,6 @@ export function EventForm({
   }
 
   const onFormSubmit = async (data: EventFormData) => {
-    // Преобразуем данные для отправки
     const eventData: Partial<Event> = {
       ...data,
       startDate: new Date(data.startDate).toISOString(),
@@ -179,10 +182,10 @@ export function EventForm({
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as string)}
+                onClick={() => setActiveTab(tab.id as 'basic' | 'details' | 'agenda' | 'seo')}
                 className={`${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center`}
               >
@@ -202,9 +205,8 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Название мероприятия *
                   </label>
-                  <input
+                  <Input
                     {...register('title', { required: 'Название обязательно' })}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Введите название мероприятия"
                   />
                   {errors.title && (
@@ -216,10 +218,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Краткое описание *
                   </label>
-                  <textarea
+                  <Textarea
                     {...register('description', { required: 'Описание обязательно' })}
                     rows={3}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Краткое описание мероприятия"
                   />
                   {errors.description && (
@@ -231,10 +232,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Полное описание
                   </label>
-                  <textarea
+                  <Textarea
                     {...register('content')}
                     rows={6}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Подробное описание мероприятия"
                   />
                 </div>
@@ -243,10 +243,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Дата и время начала *
                   </label>
-                  <input
+                  <Input
                     type="datetime-local"
                     {...register('startDate', { required: 'Дата начала обязательна' })}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                   {errors.startDate && (
                     <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
@@ -257,10 +256,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Дата и время окончания
                   </label>
-                  <input
+                  <Input
                     type="datetime-local"
                     {...register('endDate')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
 
@@ -268,9 +266,8 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Место проведения *
                   </label>
-                  <input
+                  <Input
                     {...register('location', { required: 'Место проведения обязательно' })}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Адрес или название места проведения"
                   />
                   {errors.location && (
@@ -282,32 +279,26 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Тип мероприятия
                   </label>
-                  <select
+                  <Select
                     {...register('type')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="">Выберите тип</option>
-                    {eventTypes.map((type) => (
-                      <option key={type.id} value={type.id}>
-                        {type.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Выберите тип"
+                    options={eventTypes.map((type) => ({ value: type.id, label: type.name }))}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Статус
                   </label>
-                  <select
+                  <Select
                     {...register('status')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="draft">Черновик</option>
-                    <option value="published">Опубликовано</option>
-                    <option value="cancelled">Отменено</option>
-                    <option value="completed">Завершено</option>
-                  </select>
+                    options={[
+                      { value: 'draft', label: 'Черновик' },
+                      { value: 'published', label: 'Опубликовано' },
+                      { value: 'cancelled', label: 'Отменено' },
+                      { value: 'completed', label: 'Завершено' }
+                    ]}
+                  />
                 </div>
               </div>
 
@@ -340,7 +331,7 @@ export function EventForm({
                       <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
                     )}
                     <div className="flex text-sm text-gray-600">
-                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500">
                         <span>Загрузить изображение</span>
                         <input
                           type="file"
@@ -366,10 +357,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Максимальное количество участников
                   </label>
-                  <input
+                  <Input
                     type="number"
                     {...register('maxParticipants', { min: 1 })}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Неограниченно"
                   />
                 </div>
@@ -378,25 +368,19 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Цена (руб.)
                   </label>
-                  <input
+                  <Input
                     type="number"
                     {...register('price', { min: 0 })}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="0"
                   />
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      {...register('registrationRequired')}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label className="ml-2 block text-sm text-gray-900">
-                      Требуется регистрация
-                    </label>
-                  </div>
+                  <Checkbox
+                    {...register('registrationRequired')}
+                    label="Требуется регистрация"
+                    size="sm"
+                  />
                 </div>
 
                 {watchedRegistrationRequired && (
@@ -404,46 +388,38 @@ export function EventForm({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Срок регистрации
                     </label>
-                    <input
+                    <Input
                       type="datetime-local"
                       {...register('registrationDeadline')}
-                      className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
                 )}
 
                 <div className="md:col-span-2">
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      {...register('featured')}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label className="ml-2 block text-sm text-gray-900">
-                      Рекомендуемое мероприятие
-                    </label>
-                  </div>
+                  <Checkbox
+                    {...register('featured')}
+                    label="Рекомендуемое мероприятие"
+                    size="sm"
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Организатор
                   </label>
-                  <input
+                  <Input
                     {...register('organizer')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Название организации"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text.sm font-medium text-gray-700 mb-1">
                     Контактный email
                   </label>
-                  <input
+                  <Input
                     type="email"
                     {...register('contactEmail')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="contact@example.com"
                   />
                 </div>
@@ -452,10 +428,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Контактный телефон
                   </label>
-                  <input
+                  <Input
                     type="tel"
                     {...register('contactPhone')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="+7 (999) 123-45-67"
                   />
                 </div>
@@ -464,10 +439,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Требования к участникам
                   </label>
-                  <textarea
+                  <Textarea
                     {...register('requirements')}
                     rows={3}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Опишите требования к участникам"
                   />
                 </div>
@@ -493,10 +467,9 @@ export function EventForm({
                       </span>
                     ))}
                   </div>
-                  <input
-                    type="text"
+                  <Input
                     placeholder="Введите тег и нажмите Enter"
-                    onKeyPress={(e) => {
+                    onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault()
                         const input = e.target as HTMLInputElement
@@ -504,7 +477,6 @@ export function EventForm({
                         input.value = ''
                       }
                     }}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
@@ -516,14 +488,9 @@ export function EventForm({
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-gray-900">Программа мероприятия</h3>
-                <button
-                  type="button"
-                  onClick={addAgendaItem}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
+                <Button type="button" variant="outline" size="sm" onClick={addAgendaItem} icon={<PlusIcon className="h-4 w-4" />}>
                   Добавить пункт
-                </button>
+                </Button>
               </div>
 
               <div className="space-y-4">
@@ -547,9 +514,8 @@ export function EventForm({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Время
                         </label>
-                        <input
+                        <Input
                           {...register(`agenda.${index}.time`)}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           placeholder="10:00"
                         />
                       </div>
@@ -558,10 +524,9 @@ export function EventForm({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Длительность (мин.)
                         </label>
-                        <input
+                        <Input
                           type="number"
                           {...register(`agenda.${index}.duration`)}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           placeholder="60"
                         />
                       </div>
@@ -570,9 +535,8 @@ export function EventForm({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Название *
                         </label>
-                        <input
+                        <Input
                           {...register(`agenda.${index}.title`, { required: 'Название обязательно' })}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           placeholder="Название доклада или мероприятия"
                         />
                       </div>
@@ -581,9 +545,8 @@ export function EventForm({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Докладчик
                         </label>
-                        <input
+                        <Input
                           {...register(`agenda.${index}.speaker`)}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           placeholder="ФИО докладчика"
                         />
                       </div>
@@ -592,10 +555,9 @@ export function EventForm({
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Описание
                         </label>
-                        <textarea
+                        <Textarea
                           {...register(`agenda.${index}.description`)}
                           rows={2}
-                          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                           placeholder="Краткое описание доклада"
                         />
                       </div>
@@ -622,9 +584,8 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     SEO заголовок
                   </label>
-                  <input
+                  <Input
                     {...register('seoTitle')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Заголовок для поисковых систем"
                   />
                   <p className="mt-1 text-sm text-gray-500">
@@ -636,10 +597,9 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     SEO описание
                   </label>
-                  <textarea
+                  <Textarea
                     {...register('seoDescription')}
                     rows={3}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Описание для поисковых систем"
                   />
                   <p className="mt-1 text-sm text-gray-500">
@@ -651,9 +611,8 @@ export function EventForm({
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     SEO ключевые слова
                   </label>
-                  <input
+                  <Input
                     {...register('seoKeywords')}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     placeholder="Ключевые слова через запятую"
                   />
                   <p className="mt-1 text-sm text-gray-500">
@@ -667,20 +626,12 @@ export function EventForm({
 
         {/* Кнопки действий */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
+          <Button type="button" variant="outline" onClick={onCancel}>
             Отмена
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Сохранение...' : event ? 'Обновить' : 'Создать'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

@@ -183,31 +183,31 @@ export const Table = <T extends { id: string }>({
     );
   };
 
-  if (loading) {
+    if (loading) {
     return (
-      <div className={cn('bg-white rounded-lg border border-neutral-200', className)}>
+      <div className={cn('bg-white rounded-lg border border-gray-200 shadow-sm', className)}>
         <div className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto"></div>
-          <p className="mt-2 text-sm text-neutral-600">Загрузка данных...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600">Загрузка данных...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={cn('bg-white rounded-lg border border-neutral-200 overflow-hidden', className)}>
+    <div className={cn('bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden', className)}>
       <div className="overflow-x-auto">
-        <table className="w-full table-auto divide-y divide-gray-300">
-          <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+        <table className="w-full table-auto divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
               {columns.map((column, index) => (
                 <th
                   key={index}
                   scope="col"
                   className={cn(
-                    'px-2 py-2 text-left text-xs font-bold text-gray-700 uppercase tracking-wider',
+                    'px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider',
                     column.width || 'w-auto',
-                    column.sortable && 'cursor-pointer hover:bg-gray-200 transition-colors duration-150',
+                    column.sortable && 'cursor-pointer hover:bg-gray-100 transition-colors duration-200',
                     column.className
                   )}
                   onClick={() => column.sortable && onSort && handleSort(column.key)}
@@ -238,13 +238,13 @@ export const Table = <T extends { id: string }>({
               data.map((row, rowIndex) => (
                 <tr 
                   key={row.id || rowIndex} 
-                  className="hover:bg-amber-50 transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                  className="hover:bg-blue-50/50 transition-colors duration-200 border-b border-gray-100 last:border-b-0"
                 >
                   {columns.map((column, colIndex) => (
                     <td
                       key={colIndex}
                       className={cn(
-                        'px-2 py-2 text-sm leading-snug text-gray-900',
+                        'px-3 py-3 text-sm leading-snug text-gray-900',
                         column.className
                       )}
                     >

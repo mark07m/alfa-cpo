@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 import { ReportsDashboard } from '@/components/admin/reports/ReportsDashboard';
 import { Button } from '@/components/admin/ui/Button';
+import { Input } from '@/components/admin/ui/Input';
+import { Select } from '@/components/admin/ui/Select';
 import { DocumentArrowDownIcon, ChartBarIcon, CalendarIcon } from '@heroicons/react/24/outline';
 
 export default function ReportsPage() {
@@ -64,38 +66,30 @@ export default function ReportsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Тип отчета
               </label>
-              <select
+              <Select
                 value={selectedReportType}
-                onChange={(e) => setSelectedReportType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {reportTypes.map(type => (
-                  <option key={type.id} value={type.id}>
-                    {type.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(e) => setSelectedReportType((e.target as HTMLSelectElement).value)}
+                options={reportTypes.map(t => ({ value: t.id, label: t.name }))}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Дата начала
               </label>
-              <input
+              <Input
                 type="date"
                 value={selectedPeriod.from}
                 onChange={(e) => setSelectedPeriod(prev => ({ ...prev, from: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Дата окончания
               </label>
-              <input
+              <Input
                 type="date"
                 value={selectedPeriod.to}
                 onChange={(e) => setSelectedPeriod(prev => ({ ...prev, to: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

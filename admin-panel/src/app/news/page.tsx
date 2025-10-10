@@ -166,7 +166,7 @@ export default function NewsPage() {
           <div className="mt-4 flex md:mt-0 md:ml-4">
             <Link
               href="/news/create"
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 active:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
             >
               <PlusIcon className="h-4 w-4 mr-2" />
               Создать новость
@@ -315,13 +315,13 @@ export default function NewsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <button
-              className="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md border-blue-500 text-blue-700 bg-blue-50"
+              className="inline-flex items-center px-3 py-2 border-2 text-sm font-medium rounded-lg border-primary-500 text-primary-700 bg-primary-50 shadow-sm"
             >
               <NewspaperIcon className="h-4 w-4 mr-2" />
               Список
             </button>
             <button
-              className="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+              className="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-lg border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition-colors"
             >
               <EyeIcon className="h-4 w-4 mr-2" />
               Превью
@@ -331,9 +331,9 @@ export default function NewsPage() {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md ${
+              className={`inline-flex items-center px-3 py-2 border-2 text-sm font-medium rounded-lg transition-colors ${
                 showFilters
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
+                  ? 'border-primary-500 text-primary-700 bg-primary-50 shadow-sm'
                   : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
               }`}
             >

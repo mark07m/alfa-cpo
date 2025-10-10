@@ -3,12 +3,13 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useArbitrator } from '@/hooks/admin/useArbitrators';
 import { arbitratorsService } from '@/services/admin/arbitrators';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
+import { ActionButtons } from '@/components/admin/ui/ActionButtons';
+import { ConfirmDialog } from '@/components/admin/ui/ConfirmDialog';
 import { Button } from '@/components/admin/ui/Button';
 import { ArbitratorForm } from '@/components/admin/arbitrators/ArbitratorForm';
 import { useState } from 'react';
 import { 
-  PencilIcon, 
-  ArrowLeftIcon,
   UserIcon,
   IdentificationIcon,
   MapPinIcon,
@@ -18,8 +19,7 @@ import {
   ExclamationTriangleIcon,
   DocumentTextIcon,
   CurrencyDollarIcon,
-  ClipboardDocumentListIcon,
-  TrashIcon
+  ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -100,17 +100,11 @@ export default function ArbitratorDetailsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/registry/arbitrators')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Назад</span>
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Загрузка...</h1>
-        </div>
+        <PageHeader
+          title="Загрузка..."
+          backUrl="/registry/arbitrators"
+          backLabel="К арбитражным управляющим"
+        />
         <div className="bg-white rounded-lg border border-gray-200 p-8">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -125,17 +119,11 @@ export default function ArbitratorDetailsPage() {
   if (error || !arbitrator) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/registry/arbitrators')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Назад</span>
-          </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Ошибка</h1>
-        </div>
+        <PageHeader
+          title="Ошибка"
+          backUrl="/registry/arbitrators"
+          backLabel="К арбитражным управляющим"
+        />
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
           <p className="text-red-600 mb-4">
             {error || 'Арбитражный управляющий не найден'}
@@ -151,51 +139,38 @@ export default function ArbitratorDetailsPage() {
   return (
     <div className="space-y-6">
       {/* Заголовок страницы */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{arbitrator.fullName}</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Арбитражный управляющий • {arbitrator.registryNumber}
-        </p>
-      </div>
-
-      {/* Действия */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/registry/arbitrators')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Назад</span>
-          </Button>
-        </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            onClick={handleEdit}
-            className="flex items-center space-x-2"
-            disabled={isUpdating}
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span>{isEditing ? 'Отменить' : 'Редактировать'}</span>
-          </Button>
-          <Button
-            variant="danger"
-            onClick={() => setShowDeleteConfirm(true)}
-            className="flex items-center space-x-2"
-          >
-            <TrashIcon className="h-4 w-4" />
-            <span>Удалить</span>
-          </Button>
-        </div>
+      <PageHeader
+        title={arbitrator.fullName}
+        subtitle={`Арбитражный управляющий • ${arbitrator.registryNumber}`}
+        backUrl="/registry/arbitrators"
+        backLabel="К арбитражным управляющим"
+        badge={getStatusBadge(arbitrator.status)}
+        primaryAction={{
+          label: isEditing ? 'Отменить' : 'Редактировать',
+          onClick: handleEdit,
+          variant: 'primary',
+          disabled: isUpdating
+        }}
+      />
+      
+      {/* Delete Action */}
+      <div className="flex justify-end">
+        <ActionButtons
+          actions={[
+            {
+              type: 'delete',
+              onClick: () => setShowDeleteConfirm(true),
+              disabled: isDeleting
+            }
+          ]}
+        />
       </div>
 
       {/* Форма редактирования или просмотр данных */}
       {isEditing ? (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-base font-medium text-gray-900 flex items-center">
-              <PencilIcon className="h-4 w-4 mr-2" />
+            <h2 className="text-base font-medium text-gray-900">
               Редактирование арбитражного управляющего
             </h2>
           </div>
@@ -505,49 +480,18 @@ export default function ArbitratorDetailsPage() {
         </div>
       </div>
 
-      {/* Модальное окно подтверждения удаления */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center mb-4">
-              <div className="flex-shrink-0">
-                <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Подтверждение удаления
-                </h3>
-              </div>
-            </div>
-            <div className="mb-6">
-              <p className="text-sm text-gray-500">
-                Вы уверены, что хотите удалить арбитражного управляющего{' '}
-                <span className="font-medium text-gray-900">{arbitrator.fullName}</span>?
-              </p>
-              <p className="text-sm text-red-600 mt-2">
-                Это действие нельзя отменить.
-              </p>
-            </div>
-            <div className="flex justify-end space-x-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-              >
-                Отмена
-              </Button>
-              <Button
-                variant="danger"
-                onClick={handleDelete}
-                loading={isDeleting}
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Удаление...' : 'Удалить'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirm Delete Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Удалить арбитражного управляющего?"
+        message={`Вы уверены, что хотите удалить ${arbitrator.fullName}? Это действие нельзя отменить.`}
+        confirmLabel="Удалить"
+        cancelLabel="Отмена"
+        type="danger"
+        loading={isDeleting}
+      />
         </>
       )}
     </div>

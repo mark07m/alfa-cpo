@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/admin/ui/Button'
+import { Checkbox } from '@/components/admin/ui/Checkbox'
 import { Event, EventType } from '@/types/admin'
 import { 
   CalendarIcon, 
@@ -152,11 +154,10 @@ export function EventsList({
         {/* Заголовок с чекбоксом "Выбрать все" */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={selectedEvents.length === events.length && events.length > 0}
-              onChange={(e) => onSelectAll(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              onChange={(e) => onSelectAll((e.target as HTMLInputElement).checked)}
+              size="sm"
             />
             <span className="ml-2 text-sm text-gray-700">
               Выбрать все ({selectedEvents.length} из {events.length})
@@ -184,11 +185,11 @@ export function EventsList({
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     {/* Чекбокс выбора */}
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isSelected}
-                      onChange={(e) => onSelectEvent(event, e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      onChange={(e) => onSelectEvent(event, (e.target as HTMLInputElement).checked)}
+                      size="sm"
+                      className="mt-1"
                     />
 
                     {/* Изображение мероприятия */}
@@ -303,31 +304,18 @@ export function EventsList({
                     </Link>
 
                     {event.status === 'published' ? (
-                      <button
-                        onClick={() => onUpdateEventStatus(event.id, 'draft')}
-                        className="text-gray-400 hover:text-yellow-600"
-                        title="Снять с публикации"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => onUpdateEventStatus(event.id, 'draft')} title="Снять с публикации">
                         <XMarkIcon className="h-5 w-5" />
-                      </button>
+                      </Button>
                     ) : (
-                      <button
-                        onClick={() => onUpdateEventStatus(event.id, 'published')}
-                        className="text-gray-400 hover:text-green-600"
-                        title="Опубликовать"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => onUpdateEventStatus(event.id, 'published')} title="Опубликовать">
                         <CheckIcon className="h-5 w-5" />
-                      </button>
+                      </Button>
                     )}
 
-                    <button
-                      onClick={() => handleDelete(event.id)}
-                      disabled={isDeleting}
-                      className="text-gray-400 hover:text-red-600 disabled:opacity-50"
-                      title="Удалить"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(event.id)} disabled={isDeleting} title="Удалить" className="text-red-600 hover:text-red-700">
                       <TrashIcon className="h-5 w-5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -343,40 +331,24 @@ export function EventsList({
             </div>
             
             <div className="flex space-x-2">
-              <button
-                onClick={() => onPageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <Button variant="outline" size="sm" onClick={() => onPageChange(pagination.page - 1)} disabled={pagination.page === 1}>
                 Предыдущая
-              </button>
+              </Button>
               
               {[...Array(pagination.totalPages)].map((_, i) => {
                 const page = i + 1
                 const isCurrentPage = page === pagination.page
                 
                 return (
-                  <button
-                    key={page}
-                    onClick={() => onPageChange(page)}
-                    className={`px-3 py-2 text-sm font-medium rounded-md ${
-                      isCurrentPage
-                        ? 'text-white bg-blue-600 border border-blue-600'
-                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
+                  <Button key={page} variant={isCurrentPage ? 'primary' : 'outline'} size="sm" onClick={() => onPageChange(page)}>
                     {page}
-                  </button>
+                  </Button>
                 )
               })}
               
-              <button
-                onClick={() => onPageChange(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <Button variant="outline" size="sm" onClick={() => onPageChange(pagination.page + 1)} disabled={pagination.page === pagination.totalPages}>
                 Следующая
-              </button>
+              </Button>
             </div>
           </div>
         )}

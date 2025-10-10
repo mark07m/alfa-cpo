@@ -2,6 +2,10 @@
 
 import React, { useState, useRef } from 'react'
 import Image from 'next/image'
+import { Input } from '@/components/admin/ui/Input'
+import { Textarea } from '@/components/admin/ui/Textarea'
+import { Select } from '@/components/admin/ui/Select'
+import { Button } from '@/components/admin/ui/Button'
 import { News, NewsCategory } from '@/types/admin'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -135,11 +139,9 @@ export function NewsForm({
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                   Заголовок *
                 </label>
-                <input
+                <Input
                   {...register('title')}
-                  type="text"
                   id="title"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   placeholder="Введите заголовок новости"
                 />
                 {errors.title && (
@@ -151,18 +153,11 @@ export function NewsForm({
                 <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">
                   Категория *
                 </label>
-                <select
+                <Select
                   {...register('categoryId')}
                   id="categoryId"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-                >
-                  <option value="">Выберите категорию</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  options={[{ value: '', label: 'Выберите категорию' }, ...categories.map(c => ({ value: c.id, label: c.name }))]}
+                />
                 {errors.categoryId && (
                   <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
                 )}
@@ -173,11 +168,10 @@ export function NewsForm({
               <label htmlFor="excerpt" className="block text-sm font-medium text-gray-700">
                 Краткое описание *
               </label>
-              <textarea
+              <Textarea
                 {...register('excerpt')}
                 id="excerpt"
                 rows={3}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                 placeholder="Краткое описание новости для анонса"
               />
               {errors.excerpt && (
@@ -189,15 +183,15 @@ export function NewsForm({
               <label htmlFor="status" className="block text-sm font-medium text-gray-700">
                 Статус
               </label>
-              <select
+              <Select
                 {...register('status')}
                 id="status"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-              >
-                <option value="draft">Черновик</option>
-                <option value="published">Опубликовано</option>
-                <option value="archived">Архив</option>
-              </select>
+                options={[
+                  { value: 'draft', label: 'Черновик' },
+                  { value: 'published', label: 'Опубликовано' },
+                  { value: 'archived', label: 'Архив' }
+                ]}
+              />
             </div>
           </div>
 
@@ -208,11 +202,10 @@ export function NewsForm({
                 Содержание *
               </label>
               <div className="mt-1">
-                <textarea
+                <Textarea
                   {...register('content')}
                   id="content"
                   rows={12}
-                  className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   placeholder="Введите содержание новости..."
                 />
                 {errors.content && (
@@ -232,11 +225,9 @@ export function NewsForm({
                 <label htmlFor="seoTitle" className="block text-sm font-medium text-gray-700">
                   SEO заголовок
                 </label>
-                <input
+                <Input
                   {...register('seoTitle')}
-                  type="text"
                   id="seoTitle"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   placeholder="SEO заголовок (если отличается от основного)"
                 />
                 <p className="mt-1 text-sm text-gray-500">
@@ -248,11 +239,10 @@ export function NewsForm({
                 <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700">
                   SEO описание
                 </label>
-                <textarea
+                <Textarea
                   {...register('seoDescription')}
                   id="seoDescription"
                   rows={3}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   placeholder="Краткое описание для поисковых систем"
                 />
                 <p className="mt-1 text-sm text-gray-500">
@@ -264,11 +254,9 @@ export function NewsForm({
                 <label htmlFor="seoKeywords" className="block text-sm font-medium text-gray-700">
                   Ключевые слова
                 </label>
-                <input
+                <Input
                   {...register('seoKeywords')}
-                  type="text"
                   id="seoKeywords"
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   placeholder="Ключевые слова через запятую"
                 />
                 <p className="mt-1 text-sm text-gray-500">
@@ -345,20 +333,12 @@ export function NewsForm({
 
         {/* Кнопки действий */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-          >
+          <Button type="button" variant="outline" onClick={onCancel}>
             Отмена
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Сохранение...' : news ? 'Обновить' : 'Создать'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

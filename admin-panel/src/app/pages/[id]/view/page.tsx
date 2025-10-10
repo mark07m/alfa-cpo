@@ -3,10 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { PagePreview } from '@/components/admin/pages/PagePreview';
-import { Button } from '@/components/admin/ui/Button';
 import { LoadingSpinner } from '@/components/admin/ui/LoadingSpinner';
-import { ArrowLeftIcon, PencilIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { EyeIcon } from '@heroicons/react/24/outline';
 import { Page } from '@/types/admin';
 import { pagesService } from '@/services/admin/pages';
 
@@ -76,44 +76,27 @@ export default function ViewPagePage() {
   return (
     <AdminLayout title="Просмотр страницы">
       <div className="p-6">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                className="flex items-center space-x-2"
-              >
-                <ArrowLeftIcon className="h-4 w-4" />
-                <span>Назад к списку</span>
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-neutral-900">Просмотр страницы</h1>
-                <p className="text-neutral-600 mt-1">Предпросмотр: {page.title}</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                onClick={handleEdit}
-                className="flex items-center space-x-2"
-              >
-                <PencilIcon className="h-4 w-4" />
-                <span>Редактировать</span>
-              </Button>
-              <Button
-                variant="primary"
-                onClick={() => window.open(`/${page.slug}`, '_blank')}
-                className="flex items-center space-x-2"
-              >
-                <EyeIcon className="h-4 w-4" />
-                <span>Открыть на сайте</span>
-              </Button>
-            </div>
-          </div>
-        </div>
+        <PageHeader
+          title="Просмотр страницы"
+          subtitle={`Предпросмотр: ${page.title}`}
+          backUrl="/pages"
+          backLabel="К страницам"
+          secondaryActions={[
+            {
+              label: 'Открыть на сайте',
+              onClick: () => window.open(`/${page.slug}`, '_blank'),
+              icon: <EyeIcon className="h-4 w-4" />,
+              variant: 'outline'
+            }
+          ]}
+          primaryAction={{
+            label: 'Редактировать',
+            onClick: handleEdit,
+            variant: 'primary'
+          }}
+        />
 
-        <div className="max-w-6xl">
+        <div className="max-w-6xl mt-6">
           <PagePreview page={page} />
         </div>
       </div>

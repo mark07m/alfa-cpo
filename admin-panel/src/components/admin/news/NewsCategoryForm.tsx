@@ -124,7 +124,7 @@ export function NewsCategoryForm({
               {...register('name')}
               type="text"
               id="name"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              className="mt-1 block w-full border-gray-200 rounded-lg hover:border-gray-300 shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
               placeholder="Введите название категории"
             />
             {errors.name && (
@@ -140,7 +140,7 @@ export function NewsCategoryForm({
               {...register('slug')}
               type="text"
               id="slug"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              className="mt-1 block w-full border-gray-200 rounded-lg hover:border-gray-300 shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
               placeholder="url-slug"
             />
             {errors.slug && (
@@ -200,7 +200,7 @@ export function NewsCategoryForm({
                       setValue('color', e.target.value)
                     }}
                     placeholder="#3B82F6"
-                    className="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                    className="flex-1 border-gray-200 rounded-lg hover:border-gray-300 shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   />
                 </div>
               )}
@@ -246,7 +246,7 @@ export function NewsCategoryForm({
             type="number"
             id="sortOrder"
             min="0"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+            className="mt-1 block w-full border-gray-200 rounded-lg hover:border-gray-300 shadow-sm focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
             placeholder="0"
           />
           {errors.sortOrder && (
@@ -279,7 +279,7 @@ export function NewsCategoryForm({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+            className="px-4 py-2 border border-gray-200 rounded-lg hover:border-gray-300 shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
           >
             Отмена
           </button>

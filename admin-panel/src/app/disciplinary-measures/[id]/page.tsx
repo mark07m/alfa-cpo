@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
-import { Button } from '@/components/admin/ui/Button';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { disciplinaryMeasuresService } from '@/services/admin/disciplinaryMeasures';
-import { ArrowLeftIcon, PencilIcon } from '@heroicons/react/24/outline';
 
 export default function DisciplinaryMeasureViewPage() {
   const params = useParams();
@@ -35,21 +34,17 @@ export default function DisciplinaryMeasureViewPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => router.push('/disciplinary-measures')} className="flex items-center gap-2">
-              <ArrowLeftIcon className="h-4 w-4" />
-              Назад
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Просмотр дисциплинарной меры</h1>
-          </div>
-          {id && (
-            <Button onClick={() => router.push(`/disciplinary-measures/${id}/edit`)} className="flex items-center gap-2">
-              <PencilIcon className="h-4 w-4" />
-              Редактировать
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title="Просмотр дисциплинарной меры"
+          subtitle={measure?.arbitratorName}
+          backUrl="/disciplinary-measures"
+          backLabel="К дисциплинарным мерам"
+          primaryAction={id ? {
+            label: 'Редактировать',
+            onClick: () => router.push(`/disciplinary-measures/${id}/edit`),
+            variant: 'primary'
+          } : undefined}
+        />
 
         {loading && (
           <div className="bg-white rounded-xl shadow border p-8 text-center">Загрузка...</div>

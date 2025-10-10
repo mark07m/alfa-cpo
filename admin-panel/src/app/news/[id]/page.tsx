@@ -1,16 +1,15 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { AdminLayout } from '@/components/admin/layout/AdminLayout'
+import { PageHeader } from '@/components/admin/ui/PageHeader'
+import { Badge } from '@/components/admin/ui/Badge'
 import { News } from '@/types/admin'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import {
-  ArrowLeftIcon,
-  PencilIcon,
   CheckCircleIcon,
   ClockIcon,
   ArchiveBoxIcon
@@ -18,6 +17,7 @@ import {
 
 export default function NewsPreviewPage() {
   const params = useParams()
+  const router = useRouter()
   const newsId = params.id as string
   
   const [news, setNews] = useState<News | null>(null)
@@ -147,28 +147,25 @@ export default function NewsPreviewPage() {
     <AdminLayout title="Предварительный просмотр">
       <div className="space-y-6">
         {/* Заголовок и действия */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link
-              href="/news"
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+        <PageHeader
+          title="Предварительный просмотр"
+          subtitle={news.title}
+          backUrl="/news"
+          backLabel="К новостям"
+          badge={
+            <Badge 
+              color={news.status === 'published' ? 'green' : news.status === 'draft' ? 'yellow' : 'gray'}
+              size="md"
             >
-              <ArrowLeftIcon className="h-4 w-4 mr-1" />
-              Назад к списку
-            </Link>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <h1 className="text-2xl font-bold text-gray-900">Предварительный просмотр</h1>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Link
-              href={`/news/${news.id}/edit`}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-            >
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Редактировать
-            </Link>
-          </div>
-        </div>
+              {getStatusText(news.status)}
+            </Badge>
+          }
+          primaryAction={{
+            label: 'Редактировать',
+            onClick: () => router.push(`/news/${news.id}/edit`),
+            variant: 'primary'
+          }}
+        />
 
         {/* Информация о новости */}
         <div className="bg-white shadow rounded-lg p-6">

@@ -75,10 +75,10 @@ export default function CompensationFundPage() {
     }
   };
 
-  if (loading && !fundInfo) {
+    if (loading && !fundInfo) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -137,9 +137,9 @@ export default function CompensationFundPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as 'overview' | 'history' | 'statistics' | 'edit')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
+                    ? 'border-primary-500 text-primary-700'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -175,7 +175,7 @@ export default function CompensationFundPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
+                    <DocumentTextIcon className="h-5 w-5 mr-2 text-primary-600" />
                     Банковские реквизиты
                   </CardTitle>
                 </CardHeader>

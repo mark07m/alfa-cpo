@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { useAccreditedOrganizations, useAccreditedOrganization } from '@/hooks/admin/useAccreditedOrganizations';
 import { AccreditedOrganizationForm } from '@/components/admin/accreditedOrganizations/AccreditedOrganizationForm';
 import { AccreditedOrganizationFormData } from '@/types/admin';
@@ -28,7 +29,7 @@ export default function EditAccreditedOrganizationPage() {
   if (fetchLoading) {
     return (
       <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         <p className="mt-2 text-sm text-gray-500">Загрузка организации...</p>
       </div>
     );
@@ -46,13 +47,12 @@ export default function EditAccreditedOrganizationPage() {
 
   return (
     <div className="space-y-6">
-      {/* Заголовок страницы */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Редактирование аккредитованной организации</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Редактирование данных аккредитованной организации: {organization.name}
-        </p>
-      </div>
+      <PageHeader
+        title="Редактирование аккредитованной организации"
+        subtitle={organization.name}
+        backUrl="/registry/accredited-organizations"
+        backLabel="К организациям"
+      />
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <AccreditedOrganizationForm

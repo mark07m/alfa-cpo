@@ -3,6 +3,9 @@
 import React from 'react'
 import Image from 'next/image'
 import { News, NewsCategory, PaginationParams } from '@/types/admin'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/admin/ui/Button'
+import { Checkbox } from '@/components/admin/ui/Checkbox'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import {
@@ -39,6 +42,7 @@ export function NewsList({
   onStatusChange,
   onPageChange
 }: NewsListProps) {
+  const router = useRouter()
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'published':
@@ -131,11 +135,10 @@ export function NewsList({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-1 py-3 text-left w-8">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={selectedNews.length === (news?.length || 0) && (news?.length || 0) > 0}
                   onChange={(e) => onSelectAll(e.target.checked)}
-                  className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                  size="sm"
                 />
               </th>
               <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">
@@ -167,11 +170,10 @@ export function NewsList({
                 }`}
               >
                 <td className="px-1 py-2 whitespace-nowrap">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selectedNews.some(item => item.id === newsItem.id)}
                     onChange={(e) => onSelectNews(newsItem, e.target.checked)}
-                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300 rounded"
+                    size="sm"
                   />
                 </td>
                 <td className="px-2 py-2">
@@ -239,57 +241,75 @@ export function NewsList({
                 </td>
                 <td className="px-1 py-2 whitespace-nowrap text-right text-xs font-medium">
                   <div className="flex items-center justify-end space-x-0.5">
-                    <button
+                    <Button
                       onClick={() => window.open(`/news/${newsItem.id}`, '_blank')}
-                      className="text-gray-400 hover:text-gray-600 p-0.5"
+                      variant="ghost"
+                      size="xs"
+                      icon={<EyeIcon className="h-3 w-3" />}
                       title="Предварительный просмотр"
-                    >
-                      <EyeIcon className="h-3 w-3" />
-                    </button>
-                    <a
-                      href={`/news/${newsItem.id}/edit`}
-                      className="text-amber-600 hover:text-amber-900 p-0.5"
+                      aria-label="Предварительный просмотр"
+                      iconOnly
+                      className="p-0.5"
+                    />
+                    <Button
+                      onClick={() => router.push(`/news/${newsItem.id}/edit`)}
+                      variant="ghost"
+                      size="xs"
+                      icon={<PencilIcon className="h-3 w-3" />}
                       title="Редактировать"
-                    >
-                      <PencilIcon className="h-3 w-3" />
-                    </a>
+                      aria-label="Редактировать"
+                      iconOnly
+                      className="text-amber-600 hover:text-amber-900 p-0.5"
+                    />
                     <div className="relative group">
-                      <button
-                        className="text-gray-400 hover:text-gray-600 p-0.5"
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        icon={<CheckCircleIcon className="h-3 w-3" />}
                         title="Изменить статус"
-                      >
-                        <CheckCircleIcon className="h-3 w-3" />
-                      </button>
+                        aria-label="Изменить статус"
+                        iconOnly
+                        className="p-0.5"
+                      />
                       <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                         <div className="py-1">
-                          <button
+                          <Button
                             onClick={() => onStatusChange(newsItem.id, 'published')}
-                            className="block w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
+                            variant="ghost"
+                            size="xs"
+                            className="block w-full justify-start px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             Опубликовать
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => onStatusChange(newsItem.id, 'draft')}
-                            className="block w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
+                            variant="ghost"
+                            size="xs"
+                            className="block w-full justify-start px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             В черновики
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => onStatusChange(newsItem.id, 'archived')}
-                            className="block w-full text-left px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
+                            variant="ghost"
+                            size="xs"
+                            className="block w-full justify-start px-2 py-1 text-xs text-gray-700 hover:bg-gray-100"
                           >
                             Архивировать
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
-                    <button
+                    <Button
                       onClick={() => onDeleteNews(newsItem.id)}
-                      className="text-red-600 hover:text-red-900 p-0.5"
+                      variant="ghost"
+                      size="xs"
+                      icon={<TrashIcon className="h-3 w-3" />}
                       title="Удалить"
-                    >
-                      <TrashIcon className="h-3 w-3" />
-                    </button>
+                      aria-label="Удалить"
+                      iconOnly
+                      className="text-red-600 hover:text-red-900 p-0.5"
+                    />
                   </div>
                 </td>
               </tr>
@@ -302,23 +322,25 @@ export function NewsList({
       {pagination && pagination.totalPages > 1 && (
         <div className="bg-white px-2 py-1 flex items-center justify-between border-t border-gray-200">
           <div className="flex-1 flex justify-between sm:hidden">
-            <button
+            <Button
               onClick={() => onPageChange(pagination.page - 1)}
               disabled={pagination.page <= 1}
-              className="relative inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="outline"
+              size="xs"
             >
               ←
-            </button>
+            </Button>
             <span className="text-xs text-gray-500 px-2">
               {pagination.page} / {pagination.totalPages}
             </span>
-            <button
+            <Button
               onClick={() => onPageChange(pagination.page + 1)}
               disabled={pagination.page >= pagination.totalPages}
-              className="relative inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="outline"
+              size="xs"
             >
               →
-            </button>
+            </Button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
@@ -336,37 +358,38 @@ export function NewsList({
             </div>
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
+                <Button
                   onClick={() => onPageChange(pagination.page - 1)}
                   disabled={pagination.page <= 1}
-                  className="relative inline-flex items-center px-1.5 py-1 rounded-l-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="outline"
+                  size="xs"
+                  className="rounded-l-md"
                 >
                   ←
-                </button>
+                </Button>
                 {[...Array(Math.min(pagination.totalPages, 3))].map((_, i) => {
                   const pageNum = pagination.page <= 2 ? i + 1 : pagination.page - 1 + i;
                   if (pageNum > pagination.totalPages) return null;
                   return (
-                    <button
+                    <Button
                       key={pageNum}
                       onClick={() => onPageChange(pageNum)}
-                      className={`relative inline-flex items-center px-2 py-1 border text-xs font-medium ${
-                        pagination.page === pageNum
-                          ? 'z-10 bg-amber-50 border-amber-500 text-amber-600'
-                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                      }`}
+                      variant={pagination.page === pageNum ? 'primary' : 'outline'}
+                      size="xs"
                     >
                       {pageNum}
-                    </button>
+                    </Button>
                   );
                 })}
-                <button
+                <Button
                   onClick={() => onPageChange(pagination.page + 1)}
                   disabled={pagination.page >= pagination.totalPages}
-                  className="relative inline-flex items-center px-1.5 py-1 rounded-r-md border border-gray-300 bg-white text-xs font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="outline"
+                  size="xs"
+                  className="rounded-r-md"
                 >
                   →
-                </button>
+                </Button>
               </nav>
             </div>
           </div>

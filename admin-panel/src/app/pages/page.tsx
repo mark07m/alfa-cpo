@@ -149,11 +149,10 @@ export default function PagesPage() {
       key: 'select' as const,
       title: 'Выбор',
       render: (value: unknown, page: Page) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedPages.includes(page.id)}
-          onChange={(e) => handleSelectPage(page.id, e.target.checked)}
-          className="h-4 w-4 rounded border-neutral-300 text-beige-600 focus:ring-beige-500"
+          onChange={(e) => handleSelectPage(page.id, (e.target as HTMLInputElement).checked)}
+          size="sm"
         />
       ),
       width: 'w-16',

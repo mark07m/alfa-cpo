@@ -179,7 +179,7 @@ export function CompensationFundHistory({
                 id="operation"
                 value={operationFilter}
                 onChange={(e) => setOperationFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg hover:border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-2 focus:ring-primary-100 focus:border-primary-400"
               >
                 <option value="">Все операции</option>
                 {operationTypes.map(type => (
@@ -324,7 +324,7 @@ export function CompensationFundHistory({
               <select
                 id="operation"
                 {...register('operation')}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-2 focus:ring-primary-100 focus:border-primary-400 ${
                   errors.operation ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -358,7 +358,7 @@ export function CompensationFundHistory({
               <textarea
                 id="description"
                 {...register('description')}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-2 focus:ring-primary-100 focus:border-primary-400 ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 rows={3}
@@ -420,7 +420,7 @@ export function CompensationFundHistory({
               <select
                 id="edit-operation"
                 {...register('operation')}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-2 focus:ring-primary-100 focus:border-primary-400 ${
                   errors.operation ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -453,7 +453,7 @@ export function CompensationFundHistory({
               <textarea
                 id="edit-description"
                 {...register('description')}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-2 focus:ring-primary-100 focus:border-primary-400 ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 rows={3}

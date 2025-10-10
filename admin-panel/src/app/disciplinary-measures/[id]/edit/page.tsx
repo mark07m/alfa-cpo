@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
-import { Button } from '@/components/admin/ui/Button';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { DisciplinaryMeasureForm } from '@/components/admin/disciplinary/DisciplinaryMeasureForm';
 import { disciplinaryMeasuresService } from '@/services/admin/disciplinaryMeasures';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function DisciplinaryMeasureEditPage() {
   const params = useParams();
@@ -65,15 +64,12 @@ export default function DisciplinaryMeasureEditPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => router.push(`/disciplinary-measures/${id}`)} className="flex items-center gap-2">
-              <ArrowLeftIcon className="h-4 w-4" />
-              Назад
-            </Button>
-            <h1 className="text-2xl font-bold text-gray-900">Редактирование дисциплинарной меры</h1>
-          </div>
-        </div>
+        <PageHeader
+          title="Редактирование дисциплинарной меры"
+          subtitle={measure?.arbitratorName}
+          backUrl={`/disciplinary-measures/${id}`}
+          backLabel="К дисциплинарной мере"
+        />
 
         {loading && (
           <div className="bg-white rounded-xl shadow border p-8 text-center">Загрузка...</div>

@@ -37,16 +37,16 @@ export function useDashboard(): UseDashboardReturn {
       }
       if (!allowFallback) throw err
       // Return mock data when fallback enabled
-      return {
+      const fallback = {
         stats: {
           newsCount: 24,
-          newsChange: { value: '+12%', type: 'increase' },
+          newsChange: { value: '+12%', type: 'increase' as const },
           eventsCount: 8,
-          eventsChange: { value: '+5%', type: 'increase' },
+          eventsChange: { value: '+5%', type: 'increase' as const },
           documentsCount: 156,
-          documentsChange: { value: '+8%', type: 'increase' },
+          documentsChange: { value: '+8%', type: 'increase' as const },
           usersCount: 342,
-          usersChange: { value: '+3%', type: 'increase' },
+          usersChange: { value: '+3%', type: 'increase' as const },
           inspectionsCount: 12,
           disciplinaryMeasuresCount: 3,
           compensationFundCount: 45
@@ -54,8 +54,8 @@ export function useDashboard(): UseDashboardReturn {
         activities: [
           {
             id: '1',
-            type: 'news',
-            action: 'created',
+            type: 'news' as const,
+            action: 'created' as const,
             title: 'Новая статья о банкротстве',
             user: { name: 'Иван Петров', id: '1' },
             timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -63,8 +63,8 @@ export function useDashboard(): UseDashboardReturn {
           },
           {
             id: '2',
-            type: 'arbitrator',
-            action: 'updated',
+            type: 'arbitrator' as const,
+            action: 'updated' as const,
             title: 'Обновлены данные управляющего',
             user: { name: 'Мария Сидорова', id: '2' },
             timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
@@ -72,15 +72,16 @@ export function useDashboard(): UseDashboardReturn {
           },
           {
             id: '3',
-            type: 'event',
-            action: 'created',
+            type: 'event' as const,
+            action: 'created' as const,
             title: 'Семинар по новому законодательству',
             user: { name: 'Алексей Козлов', id: '3' },
             timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
             details: 'Планируется на 15 января 2025'
           }
         ]
-      }
+      };
+      return fallback
     }
   }, [])
 
@@ -88,7 +89,9 @@ export function useDashboard(): UseDashboardReturn {
     fetchFn: fetchDashboardData,
     staleTime: 2 * 60 * 1000, // 2 минуты для дашборда
     enabled: true,
-    refetchOnMount: true
+    refetchOnMount: true,
+    cacheKey: 'dashboard:stats+activities',
+    requestTimeoutMs: 8000
   })
 
   return {
@@ -140,7 +143,9 @@ export function useActivityData(days: number = 30) {
     dependencies: [days],
     staleTime: 5 * 60 * 1000, // 5 минут для графиков
     enabled: true,
-    refetchOnMount: true
+    refetchOnMount: true,
+    cacheKey: `dashboard:activity:${days}`,
+    requestTimeoutMs: 8000
   })
 
   return { 

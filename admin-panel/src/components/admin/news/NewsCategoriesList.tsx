@@ -3,6 +3,7 @@
 import React from 'react'
 import { NewsCategory } from '@/types/admin'
 import { PencilIcon, TrashIcon, Bars3Icon } from '@heroicons/react/24/outline'
+import { Button } from '@/components/admin/ui/Button'
 
 interface NewsCategoriesListProps {
   categories: NewsCategory[]
@@ -62,20 +63,26 @@ export function NewsCategoriesList({
                 </div>
                 
                 <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
+                  <Button
                     onClick={() => onEditCategory(category)}
-                    className="text-gray-400 hover:text-amber-600"
+                    variant="ghost"
+                    size="xs"
+                    icon={<PencilIcon className="h-4 w-4" />}
                     title="Редактировать"
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </button>
-                  <button
+                    aria-label="Редактировать"
+                    iconOnly
+                    className="text-gray-400 hover:text-amber-600"
+                  />
+                  <Button
                     onClick={() => onDeleteCategory(category.id)}
-                    className="text-gray-400 hover:text-red-600"
+                    variant="ghost"
+                    size="xs"
+                    icon={<TrashIcon className="h-4 w-4" />}
                     title="Удалить"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
+                    aria-label="Удалить"
+                    iconOnly
+                    className="text-gray-400 hover:text-red-600"
+                  />
                 </div>
               </div>
             </div>

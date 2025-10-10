@@ -41,7 +41,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   {
     name: 'Дашборд',
-    href: '/',
+    href: '/dashboard',
     icon: HomeIcon
   },
   {
@@ -101,13 +101,50 @@ const navigation: NavigationItem[] = [
 
 export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const pathname = usePathname()
+  
+  // Выбираем один-единственный самый специфичный пункт меню по текущему пути
+  const activeHref = React.useMemo(() => {
+    const hrefs: string[] = []
+    navigation.forEach(item => {
+      hrefs.push(item.href)
+      if (item.children) {
+        item.children.forEach(child => hrefs.push(child.href))
+      }
+    })
 
-  const isActive = (href: string) => {
-    if (href === '/') {
-      return pathname === '/'
+    // Сначала пробуем точное совпадение
+    let best = hrefs.find(h => h === pathname) || ''
+    if (best) return best
+
+    // Затем ищем по префиксу, выбирая самый длинный путь
+    hrefs.forEach(h => {
+      if (h !== '/' && (pathname === h || pathname.startsWith(h + '/'))) {
+        if (h.length > best.length) best = h
+      }
+    })
+
+    // Специальный случай для корня/дашборда
+    if (!best && (pathname === '/' || pathname === '/dashboard')) {
+      best = '/dashboard'
     }
-    return pathname.startsWith(href)
-  }
+    return best
+  }, [pathname])
+  // Сохраняем позицию скролла и восстанавливаем при навигации
+  React.useEffect(() => {
+    const container = document.querySelector('.admin-sidebar-scroll') as HTMLElement | null
+    if (!container) return
+    const saved = sessionStorage.getItem('adminSidebarScroll')
+    if (saved) {
+      container.scrollTop = Number(saved)
+    }
+    const onScroll = () => {
+      sessionStorage.setItem('adminSidebarScroll', String(container.scrollTop))
+    }
+    container.addEventListener('scroll', onScroll)
+    return () => container.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const isActive = (href: string) => href === activeHref
 
   const getBadgeColor = (color: string) => {
     const colorMap = {
@@ -121,27 +158,27 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   }
 
   const renderNavigationItem = (item: NavigationItem, level = 0) => {
-    const active = isActive(item.href)
     const hasChildren = item.children && item.children.length > 0
+    const active = isActive(item.href)
 
     return (
       <div key={item.name}>
         <Link
           href={item.href}
           className={cn(
-            'group flex items-center justify-between px-2 py-2 text-sm font-medium rounded-md transition-colors',
+            'group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200',
             level > 0 ? 'ml-4' : '',
             active
-              ? 'bg-amber-100 text-amber-900'
-              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              ? 'bg-primary-50 text-primary-900 shadow-sm'
+              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
           )}
           onClick={onClose}
         >
           <div className="flex items-center">
             <item.icon
               className={cn(
-                'mr-3 h-5 w-5 flex-shrink-0',
-                active ? 'text-amber-500' : 'text-gray-400 group-hover:text-gray-500'
+                'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
+                active ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'
               )}
             />
             {item.name}
@@ -157,9 +194,45 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
           )}
         </Link>
 
-        {hasChildren && (
+          {hasChildren && (
           <div className="ml-4 mt-1 space-y-1">
-            {item.children!.map((child) => renderNavigationItem(child, level + 1))}
+            {item.children!.map((child) => {
+              const childActive = isActive(child.href)
+              return (
+                <div key={child.name}>
+                  <Link
+                    href={child.href}
+                    className={cn(
+                      'group flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ml-4',
+                      childActive
+                        ? 'bg-primary-50 text-primary-900 shadow-sm'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    )}
+                    onClick={onClose}
+                  >
+                    <div className="flex items-center">
+                      {child.icon && (
+                        <child.icon
+                          className={cn(
+                            'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
+                            childActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-primary-500'
+                          )}
+                        />
+                      )}
+                      {child.name}
+                    </div>
+                    {child.badge && child.badge.count > 0 && (
+                      <span className={cn(
+                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                        getBadgeColor(child.badge.color || 'gray')
+                      )}>
+                        {child.badge.count}
+                      </span>
+                    )}
+                  </Link>
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -170,19 +243,19 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
     <>
       {/* Desktop sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex min-h-0 flex-1 flex-col bg-white border-r border-gray-200">
-          <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
-            <div className="flex flex-shrink-0 items-center px-4">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">СРО</span>
+        <div className="flex min-h-0 flex-1 flex-col bg-white border-r border-gray-200 shadow-sm">
+          <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4 admin-sidebar-scroll">
+            <div className="flex flex-shrink-0 items-center px-4 mb-2">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-lg">А</span>
               </div>
               <div className="ml-3">
-                <h1 className="text-lg font-semibold text-gray-900">Админ панель</h1>
+                <h1 className="text-lg font-bold text-gray-900">Админ панель</h1>
                 <p className="text-xs text-gray-500">СРО арбитражных управляющих</p>
               </div>
             </div>
             
-            <nav className="mt-8 flex-1 space-y-1 px-2">
+            <nav className="mt-6 flex-1 space-y-1 px-3">
               {navigation.map((item) => renderNavigationItem(item))}
             </nav>
           </div>
@@ -191,28 +264,28 @@ export function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
 
       {/* Mobile sidebar */}
       <div className={cn(
-        'fixed inset-y-0 left-0 z-50 w-64 bg-white transform transition-transform duration-300 ease-in-out lg:hidden',
+        'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex items-center">
-              <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center">
-                <span className="text-white font-bold text-sm">СРО</span>
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-lg">А</span>
               </div>
               <div className="ml-3">
-                <h1 className="text-lg font-semibold text-gray-900">Админ панель</h1>
+                <h1 className="text-lg font-bold text-gray-900">Админ панель</h1>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              className="rounded-lg p-2 text-gray-400 hover:bg-white hover:text-gray-600 transition-colors"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
           
-          <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
+          <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto admin-sidebar-scroll">
             {navigation.map((item) => renderNavigationItem(item))}
           </nav>
         </div>

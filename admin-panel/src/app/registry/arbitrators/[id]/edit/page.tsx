@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter, useParams } from 'next/navigation';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
+import { Button } from '@/components/admin/ui/Button';
 import { useArbitrator, useArbitrators } from '@/hooks/admin/useArbitrators';
 import { ArbitratorForm } from '@/components/admin/arbitrators/ArbitratorForm';
 import { ArbitratorFormData } from '@/services/admin/arbitrators';
@@ -29,10 +31,12 @@ export default function EditArbitratorPage() {
   if (loadingArbitrator) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Редактирование арбитражного управляющего</h1>
-          <p className="text-sm text-gray-500 mt-1">Загрузка данных...</p>
-        </div>
+        <PageHeader
+          title="Редактирование арбитражного управляющего"
+          subtitle="Загрузка данных..."
+          backUrl="/registry/arbitrators"
+          backLabel="К арбитражным управляющим"
+        />
         <div className="bg-white rounded-lg border border-gray-200 p-8">
           <div className="animate-pulse space-y-4">
             <div className="h-4 bg-gray-200 rounded w-1/4"></div>
@@ -47,17 +51,19 @@ export default function EditArbitratorPage() {
   if (!arbitrator) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Арбитражный управляющий не найден</h1>
-          <p className="text-sm text-gray-500 mt-1">Запрашиваемый арбитражный управляющий не существует</p>
-        </div>
+        <PageHeader
+          title="Арбитражный управляющий не найден"
+          subtitle="Запрашиваемый арбитражный управляющий не существует"
+          backUrl="/registry/arbitrators"
+          backLabel="К арбитражным управляющим"
+        />
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-          <button
+          <Button
+            variant="primary"
             onClick={() => router.push('/registry/arbitrators')}
-            className="text-blue-600 hover:text-blue-500"
           >
             Вернуться к списку
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -65,13 +71,12 @@ export default function EditArbitratorPage() {
 
   return (
     <div className="space-y-6">
-      {/* Заголовок страницы */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Редактирование арбитражного управляющего</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Редактирование данных арбитражного управляющего: {arbitrator.fullName}
-        </p>
-      </div>
+      <PageHeader
+        title="Редактирование арбитражного управляющего"
+        subtitle={arbitrator.fullName}
+        backUrl="/registry/arbitrators"
+        backLabel="К арбитражным управляющим"
+      />
 
       <div className="bg-white rounded-lg border border-gray-200 p-6">
         <ArbitratorForm

@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { Document, DocumentCategory } from '@/types/admin'
+import { Button } from '@/components/admin/ui/Button'
+import { Checkbox } from '@/components/admin/ui/Checkbox'
 import { 
   DocumentIcon, 
   EyeIcon,
@@ -166,7 +168,7 @@ export function DocumentsList({
           <div className="mt-6">
             <Link
               href="/documents/upload"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition-all duration-150"
             >
               Загрузить документ
             </Link>
@@ -182,11 +184,10 @@ export function DocumentsList({
         {/* Заголовок с чекбоксом "Выбрать все" */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={selectedDocuments.length === documents.length && documents.length > 0}
               onChange={(e) => onSelectAll(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              size="md"
             />
             <span className="ml-2 text-sm text-gray-700">
               Выбрать все ({selectedDocuments.length} из {documents.length})
@@ -208,18 +209,18 @@ export function DocumentsList({
             return (
               <div
                 key={uniqueKey}
-                className={`border rounded-lg p-4 transition-colors ${
-                  isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                className={`border rounded-lg p-4 transition-all duration-150 ${
+                  isSelected ? 'border-primary-500 bg-primary-50/30 ring-2 ring-primary-100' : 'border-gray-200 hover:border-gray-300'
                 } ${isDeleting ? 'opacity-50' : ''}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
                     {/* Чекбокс выбора */}
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={isSelected}
                       onChange={(e) => onSelectDocument(document, e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      className="mt-1"
+                      size="md"
                     />
 
                     {/* Иконка файла */}
@@ -336,13 +337,15 @@ export function DocumentsList({
 
                   {/* Действия */}
                   <div className="ml-4 flex-shrink-0 flex items-center space-x-2">
-                    <button
+                    <Button
                       onClick={() => onDownloadDocument(document.id)}
-                      className="text-gray-400 hover:text-blue-600"
+                      variant="ghost"
+                      size="sm"
+                      icon={<ArrowDownTrayIcon className="h-4 w-4" />}
                       title="Скачать"
-                    >
-                      <ArrowDownTrayIcon className="h-5 w-5" />
-                    </button>
+                      aria-label="Скачать"
+                      iconOnly
+                    />
                     
                     <Link
                       href={`/documents/${document.id}`}
@@ -360,14 +363,16 @@ export function DocumentsList({
                       <PencilIcon className="h-5 w-5" />
                     </Link>
 
-                    <button
+                    <Button
                       onClick={() => handleDelete(document.id)}
                       disabled={isDeleting}
-                      className="text-gray-400 hover:text-red-600 disabled:opacity-50"
+                      variant="ghost"
+                      size="sm"
+                      icon={<TrashIcon className="h-4 w-4" />}
                       title="Удалить"
-                    >
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
+                      aria-label="Удалить"
+                      iconOnly
+                    />
                   </div>
                 </div>
               </div>
@@ -383,40 +388,39 @@ export function DocumentsList({
             </div>
             
             <div className="flex space-x-2">
-              <button
+              <Button
                 onClick={() => onPageChange(pagination.page - 1)}
                 disabled={pagination.page === 1}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="outline"
+                size="sm"
               >
                 Предыдущая
-              </button>
+              </Button>
               
               {[...Array(pagination.totalPages)].map((_, i) => {
                 const page = i + 1
                 const isCurrentPage = page === pagination.page
                 
                 return (
-                  <button
+                  <Button
                     key={page}
                     onClick={() => onPageChange(page)}
-                    className={`px-3 py-2 text-sm font-medium rounded-md ${
-                      isCurrentPage
-                        ? 'text-white bg-blue-600 border border-blue-600'
-                        : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
-                    }`}
+                    variant={isCurrentPage ? 'primary' : 'outline'}
+                    size="sm"
                   >
                     {page}
-                  </button>
+                  </Button>
                 )
               })}
               
-              <button
+              <Button
                 onClick={() => onPageChange(pagination.page + 1)}
                 disabled={pagination.page === pagination.totalPages}
-                className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="outline"
+                size="sm"
               >
                 Следующая
-              </button>
+              </Button>
             </div>
           </div>
         )}

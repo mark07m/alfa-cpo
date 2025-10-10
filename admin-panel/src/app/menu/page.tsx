@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/admin/ui/Button';
 import { Table } from '@/components/admin/ui/Table';
+import { Checkbox } from '@/components/admin/ui/Checkbox';
 import { Modal } from '@/components/admin/ui/Modal';
 import { Card, CardContent } from '@/components/admin/ui/Card';
 import { 
@@ -75,11 +76,10 @@ export default function AdminMenuPage() {
       key: 'select' as const,
       title: 'Выбор',
       render: (value: unknown, item: MenuItem) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={selectedItems.includes(item.id)}
-          onChange={(e) => handleSelectItem(item.id, e.target.checked)}
-          className="h-4 w-4 rounded border-neutral-300 text-beige-600 focus:ring-beige-500"
+          onChange={(e) => handleSelectItem(item.id, (e.target as HTMLInputElement).checked)}
+          size="sm"
         />
       ),
       width: 'w-12',
@@ -104,7 +104,7 @@ export default function AdminMenuPage() {
           href={url} 
           target={item.isExternal ? "_blank" : "_self"} 
           rel="noopener noreferrer" 
-          className="text-blue-600 hover:underline flex items-center"
+          className="text-primary-600 hover:underline flex items-center"
         >
           {url} 
           {item.isExternal && <LinkIcon className="h-4 w-4 inline-block ml-1" />}

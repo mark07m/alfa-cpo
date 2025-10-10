@@ -3,12 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/layout/AdminLayout';
+import { PageHeader } from '@/components/admin/ui/PageHeader';
 import { Button } from '@/components/admin/ui/Button';
 import { Badge } from '@/components/admin/ui/Badge';
 import { inspectionsService } from '@/services/admin/inspections';
 import { 
-  ArrowLeftIcon, 
-  PencilIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
@@ -159,43 +158,24 @@ export default function InspectionViewPage() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        {/* Навигация */}
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/inspections')}
-            className="flex items-center space-x-2"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span>Назад к списку</span>
-          </Button>
-          <Button
-            onClick={() => router.push(`/inspections/${inspection.id}/edit`)}
-            className="flex items-center space-x-2 bg-amber-600 hover:bg-amber-700"
-          >
-            <PencilIcon className="h-4 w-4" />
-            <span>Редактировать</span>
-          </Button>
-        </div>
-
-        {/* Заголовок */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Проверка #{inspection.id}
-                </h1>
-                {getStatusBadge(inspection.status)}
-                {getTypeBadge(inspection.type)}
-              </div>
-              <p className="text-gray-600">
-                Создано: {formatDateTime(inspection.createdAt)} • 
-                Обновлено: {formatDateTime(inspection.updatedAt)}
-              </p>
+        {/* Заголовок страницы */}
+        <PageHeader
+          title={`Проверка #${inspection.id}`}
+          subtitle={`Создано: ${formatDateTime(inspection.createdAt)} • Обновлено: ${formatDateTime(inspection.updatedAt)}`}
+          backUrl="/inspections"
+          backLabel="К проверкам"
+          badge={
+            <div className="flex items-center gap-2">
+              {getStatusBadge(inspection.status)}
+              {getTypeBadge(inspection.type)}
             </div>
-          </div>
-        </div>
+          }
+          primaryAction={{
+            label: 'Редактировать',
+            onClick: () => router.push(`/inspections/${inspection.id}/edit`),
+            variant: 'primary'
+          }}
+        />
 
         {/* Основная информация */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
