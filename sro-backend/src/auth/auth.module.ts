@@ -15,6 +15,7 @@ import { LoginLoggerService } from './login-logger.service';
 import { RefreshToken, RefreshTokenSchema } from '@/database/schemas/refresh-token.schema';
 import { PasswordResetToken, PasswordResetTokenSchema } from '@/database/schemas/password-reset-token.schema';
 import { LoginAttempt, LoginAttemptSchema } from '@/database/schemas/login-attempt.schema';
+import { BlockedIp, BlockedIpSchema } from '@/database/schemas/blocked-ip.schema';
 import { User, UserSchema } from '@/database/schemas/user.schema';
 
 @Module({
@@ -35,6 +36,7 @@ import { User, UserSchema } from '@/database/schemas/user.schema';
       { name: RefreshToken.name, schema: RefreshTokenSchema },
       { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
       { name: LoginAttempt.name, schema: LoginAttemptSchema },
+      { name: BlockedIp.name, schema: BlockedIpSchema },
       { name: User.name, schema: UserSchema },
     ]),
     UsersModule,

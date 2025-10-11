@@ -1,5 +1,6 @@
 import { apiService } from './api'
 import { SiteSettings, ApiResponse } from '@/types/admin'
+import { toAbsoluteFileUrl } from '@/lib/utils'
 
 function mapFromBackend(payload: any): SiteSettings {
   const id = payload?._id || payload?.id || '1'
@@ -14,8 +15,9 @@ function mapFromBackend(payload: any): SiteSettings {
     contactEmail: payload?.contactEmail || '',
     contactPhone: payload?.contactPhone || '',
     address: payload?.address || '',
-    logoUrl: theme?.logoUrl ?? '',
-    faviconUrl: theme?.faviconUrl ?? '',
+    workingHours: payload?.workingHours || '',
+    logoUrl: toAbsoluteFileUrl(theme?.logoUrl ?? ''),
+    faviconUrl: toAbsoluteFileUrl(theme?.faviconUrl ?? ''),
     seoTitle: seo?.defaultTitle || '',
     seoDescription: seo?.defaultDescription || '',
     seoKeywords: seo?.defaultKeywords || '',
@@ -56,6 +58,7 @@ function buildFullDto(current: SiteSettings, patch: Partial<SiteSettings>) {
     contactEmail: isValidEmail(merged.contactEmail) ? merged.contactEmail : undefined,
     contactPhone: merged.contactPhone || undefined,
     address: merged.address || undefined,
+    workingHours: merged.workingHours || undefined,
     seoSettings: {
       defaultTitle: merged.seoTitle,
       defaultDescription: merged.seoDescription,

@@ -13,6 +13,8 @@ interface ImageUploadProps {
   disabled?: boolean;
   accept?: string;
   maxSize?: number; // in MB
+  onFileSelected?: (file: File) => Promise<string> | string;
+  helperText?: string;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -22,7 +24,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   className,
   disabled = false,
   accept = 'image/*',
-  maxSize = 10 // 10MB
+  maxSize = 10, // 10MB
+  onFileSelected,
+  helperText
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +47,24 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       return;
     }
 
-    // Convert to base64
+    // If custom upload handler provided, use it to get URL
+    if (onFileSelected) {
+      try {
+        const maybe = onFileSelected(file) as any;
+        if (maybe && typeof maybe.then === 'function') {
+          (maybe as Promise<string>)
+            .then((url) => onChange(url))
+            .catch(() => setError('Ошибка загрузки файла'));
+        } else {
+          onChange(maybe as string);
+        }
+      } catch (e) {
+        setError('Ошибка загрузки файла');
+      }
+      return;
+    }
+
+    // Fallback: convert to base64 (preview-only)
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
@@ -164,6 +185,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               <p className="text-xs text-neutral-500 mt-1">
                 PNG, JPG, GIF до {maxSize}MB
               </p>
+              {helperText && (
+                <p className="text-xs text-neutral-500 mt-1">{helperText}</p>
+              )}
             </div>
           </div>
         )}

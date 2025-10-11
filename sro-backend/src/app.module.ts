@@ -16,6 +16,7 @@ import { PagesModule } from '@/pages/pages.module';
 import { SettingsModule } from '@/settings/settings.module';
 import { FilesModule } from '@/files/files.module';
 import { AccreditedOrganizationsModule } from '@/accredited-organizations/accredited-organizations.module';
+import { SecurityModule } from '@/security/security.module';
 import appConfig from '@/config/app.config';
 
 @Module({
@@ -38,6 +39,7 @@ import appConfig from '@/config/app.config';
     SettingsModule,
     FilesModule,
     AccreditedOrganizationsModule,
+    SecurityModule,
   ],
   controllers: [AppController],
   providers: [AppService],

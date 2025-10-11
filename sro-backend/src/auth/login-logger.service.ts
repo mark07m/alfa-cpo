@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LoginAttempt, LoginAttemptDocument } from '@/database/schemas/login-attempt.schema';
+import { BlockedIp, BlockedIpDocument } from '@/database/schemas/blocked-ip.schema';
 
 @Injectable()
 export class LoginLoggerService {
   constructor(
     @InjectModel(LoginAttempt.name)
     private loginAttemptModel: Model<LoginAttemptDocument>,
+    @InjectModel(BlockedIp.name)
+    private blockedIpModel: Model<BlockedIpDocument>,
   ) {}
 
   async logLoginAttempt(
@@ -48,6 +51,12 @@ export class LoginLoggerService {
   }
 
   async isIpBlocked(ipAddress: string, maxAttempts: number = 5): Promise<boolean> {
+    // Если IP явно в списке блокировок и блокировка не истекла — блокируем
+    const explicitBlock = await this.blockedIpModel.findOne({ ipAddress }).lean();
+    if (explicitBlock) {
+      if (!explicitBlock.expiresAt || explicitBlock.expiresAt > new Date()) return true;
+    }
+    // Иначе проверяем rate-limit по неудачным попыткам
     const failedAttempts = await this.getFailedAttemptsCount(ipAddress);
     return failedAttempts >= maxAttempts;
   }

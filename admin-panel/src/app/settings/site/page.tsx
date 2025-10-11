@@ -22,6 +22,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { useSiteSettings } from '@/hooks/admin/useSiteSettings';
 import { toast } from 'react-toastify';
+import apiService from '@/services/admin/api';
+import { toAbsoluteFileUrl } from '@/lib/utils';
 
 const siteSettingsSchema = z.object({
   siteName: z.string().min(1, 'Название сайта обязательно'),
@@ -29,6 +31,7 @@ const siteSettingsSchema = z.object({
   contactEmail: z.string().email('Некорректный формат email').optional().or(z.literal('')),
   contactPhone: z.string().optional(),
   address: z.string().optional(),
+  workingHours: z.string().optional(),
   logoUrl: z.string().optional().nullable(),
   faviconUrl: z.string().optional().nullable(),
   seoTitle: z.string().optional(),
@@ -49,6 +52,8 @@ const siteSettingsSchema = z.object({
   copyrightText: z.string().optional(),
 });
 
+type FormValues = z.infer<typeof siteSettingsSchema>;
+
 export default function AdminSiteSettingsPage() {
   const { settings, loading, error, updateSettings, fetchSettings } = useSiteSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,24 +64,21 @@ export default function AdminSiteSettingsPage() {
     control,
     reset,
     formState: { errors, isDirty }
-  } = useForm<SiteSettings>({
-    resolver: zodResolver(siteSettingsSchema),
+  } = useForm<FormValues>({
+    resolver: zodResolver(siteSettingsSchema) as unknown as any,
     defaultValues: {
       siteName: '',
       siteDescription: '',
       contactEmail: '',
       contactPhone: '',
       address: '',
-      logoUrl: null,
-      faviconUrl: null,
+      workingHours: '',
+      logoUrl: '',
+      faviconUrl: '',
       seoTitle: '',
       seoDescription: '',
       seoKeywords: '',
-      theme: {
-        primaryColor: '#D4B89A',
-        secondaryColor: '#F5F5DC',
-        accentColor: '#8B4513',
-      },
+      theme: { primaryColor: '#D4B89A', secondaryColor: '#F5F5DC', accentColor: '#8B4513' },
       socialMedia: {
         facebook: '',
         twitter: '',
@@ -95,19 +97,29 @@ export default function AdminSiteSettingsPage() {
   useEffect(() => {
     if (settings) {
       reset({
-        ...settings,
-        logoUrl: settings.logoUrl || null,
-        faviconUrl: settings.faviconUrl || null,
-        socialMedia: settings.socialMedia || {},
-        theme: settings.theme || { primaryColor: '#D4B89A', secondaryColor: '#F5F5DC', accentColor: '#8B4513' },
+        siteName: settings.siteName || '',
+        siteDescription: settings.siteDescription || '',
+        contactEmail: settings.contactEmail || '',
+        contactPhone: settings.contactPhone || '',
+        address: settings.address || '',
+        workingHours: settings.workingHours || '',
+        logoUrl: settings.logoUrl || '',
+        faviconUrl: settings.faviconUrl || '',
+        seoTitle: settings.seoTitle || '',
+        seoDescription: settings.seoDescription || '',
+        seoKeywords: settings.seoKeywords || '',
+        theme: settings.theme ?? { primaryColor: '#D4B89A', secondaryColor: '#F5F5DC', accentColor: '#8B4513' },
+        socialMedia: settings.socialMedia ?? { facebook: '', twitter: '', linkedin: '', instagram: '' },
+        footerText: settings.footerText || '',
+        copyrightText: settings.copyrightText || '',
       });
     }
   }, [settings, reset]);
 
-  const onSubmit = async (data: SiteSettings) => {
+  const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      await updateSettings(data);
+      await updateSettings(data as unknown as Partial<SiteSettings>);
     } catch (err) {
       console.error('Error updating settings:', err);
     } finally {
@@ -130,7 +142,7 @@ export default function AdminSiteSettingsPage() {
     return (
       <AdminLayout title="Настройки сайта">
         <div className="text-center py-10 text-red-500">
-          <p>Ошибка загрузки настроек: {error.message}</p>
+          <p>Ошибка загрузки настроек: {error}</p>
         </div>
       </AdminLayout>
     );
@@ -190,13 +202,15 @@ export default function AdminSiteSettingsPage() {
                   placeholder="Введите название сайта"
                 />
                 
-                <Textarea
-                  label="Описание сайта"
-                  {...register('siteDescription')}
-                  error={errors.siteDescription?.message}
-                  placeholder="Краткое описание сайта"
-                  rows={3}
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Описание сайта</label>
+                  <Textarea
+                    {...register('siteDescription')}
+                    error={!!errors.siteDescription}
+                    placeholder="Краткое описание сайта"
+                    rows={3}
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -215,21 +229,21 @@ export default function AdminSiteSettingsPage() {
                   helperText="Заголовок для главной страницы и страниц без специфичного SEO"
                 />
                 
-                <Textarea
-                  label="SEO Description по умолчанию"
-                  {...register('seoDescription')}
-                  error={errors.seoDescription?.message}
-                  placeholder="Описание для поисковых систем"
-                  rows={3}
-                  helperText="Краткое описание для поисковых систем"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">SEO Description по умолчанию</label>
+                  <Textarea
+                    {...register('seoDescription')}
+                    error={!!errors.seoDescription}
+                    placeholder="Описание для поисковых систем"
+                    rows={3}
+                  />
+                </div>
                 
                 <Input
                   label="SEO Keywords по умолчанию"
                   {...register('seoKeywords')}
                   error={errors.seoKeywords?.message}
                   placeholder="ключевые, слова, через, запятую"
-                  helperText="Ключевые слова через запятую"
                 />
               </CardContent>
             </Card>
@@ -241,7 +255,7 @@ export default function AdminSiteSettingsPage() {
                 <h3 className="text-lg font-semibold">Контактная информация</h3>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Input
+                  <Input
                   label="Email для связи"
                   type="email"
                   {...register('contactEmail')}
@@ -249,20 +263,29 @@ export default function AdminSiteSettingsPage() {
                   placeholder="info@example.com"
                 />
                 
-                <Input
+                  <Input
                   label="Телефон для связи"
                   {...register('contactPhone')}
                   error={errors.contactPhone?.message}
                   placeholder="+7 (495) 123-45-67"
                 />
                 
-                <Textarea
-                  label="Адрес"
-                  {...register('address')}
-                  error={errors.address?.message}
-                  placeholder="г. Москва, ул. Примерная, д. 1"
-                  rows={3}
+                <Input
+                  label="Время работы"
+                  {...register('workingHours')}
+                  error={errors.workingHours?.message as any}
+                  placeholder="Пн-Пт: 9:00-18:00"
                 />
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Адрес</label>
+                  <Textarea
+                    {...register('address')}
+                    error={!!errors.address}
+                    placeholder="г. Москва, ул. Примерная, д. 1"
+                    rows={3}
+                  />
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -351,8 +374,13 @@ export default function AdminSiteSettingsPage() {
                   control={control}
                   render={({ field }) => (
                     <ImageUpload
-                      value={field.value || ''}
+                      value={toAbsoluteFileUrl(field.value || '')}
                       onChange={field.onChange}
+                      onFileSelected={async (file) => {
+                        const resp = await apiService.uploadFile(file, '/files/upload');
+                        const url = (resp?.data as any)?.fileUrl || (resp as any)?.data?.url;
+                        return toAbsoluteFileUrl(url);
+                      }}
                       placeholder="Загрузить логотип сайта"
                       helperText="Основной логотип, отображаемый в шапке сайта"
                     />
@@ -364,8 +392,13 @@ export default function AdminSiteSettingsPage() {
                   control={control}
                   render={({ field }) => (
                     <ImageUpload
-                      value={field.value || ''}
+                      value={toAbsoluteFileUrl(field.value || '')}
                       onChange={field.onChange}
+                      onFileSelected={async (file) => {
+                        const resp = await apiService.uploadFile(file, '/files/upload');
+                        const url = (resp?.data as any)?.fileUrl || (resp as any)?.data?.url;
+                        return toAbsoluteFileUrl(url);
+                      }}
                       placeholder="Загрузить фавикон"
                       helperText="Иконка сайта для вкладки браузера (16x16, 32x32)"
                     />

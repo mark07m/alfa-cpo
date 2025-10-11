@@ -20,6 +20,7 @@ import { RefreshToken, RefreshTokenSchema } from './schemas/refresh-token.schema
 import { PasswordResetToken, PasswordResetTokenSchema } from './schemas/password-reset-token.schema';
 import { LoginAttempt, LoginAttemptSchema } from './schemas/login-attempt.schema';
 import { createIndexes } from './indexes';
+import { BlockedIp, BlockedIpSchema } from './schemas/blocked-ip.schema';
 import { AccreditedOrganization, AccreditedOrganizationSchema } from './schemas/accredited-organization.schema';
 
 @Module({
@@ -49,6 +50,7 @@ import { AccreditedOrganization, AccreditedOrganizationSchema } from './schemas/
       { name: RefreshToken.name, schema: RefreshTokenSchema },
       { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
       { name: LoginAttempt.name, schema: LoginAttemptSchema },
+      { name: BlockedIp.name, schema: BlockedIpSchema },
       { name: AccreditedOrganization.name, schema: AccreditedOrganizationSchema },
     ]),
   ],
@@ -72,6 +74,7 @@ export class DatabaseModule implements OnModuleInit {
     @InjectModel(RefreshToken.name) private refreshTokenModel: Model<RefreshToken>,
     @InjectModel(PasswordResetToken.name) private passwordResetTokenModel: Model<PasswordResetToken>,
     @InjectModel(LoginAttempt.name) private loginAttemptModel: Model<LoginAttempt>,
+    @InjectModel(BlockedIp.name) private blockedIpModel: Model<BlockedIp>,
     @InjectModel(AccreditedOrganization.name) private accreditedOrganizationModel: Model<AccreditedOrganization>,
   ) {}
 
@@ -94,6 +97,7 @@ export class DatabaseModule implements OnModuleInit {
         RefreshToken: this.refreshTokenModel,
         PasswordResetToken: this.passwordResetTokenModel,
         LoginAttempt: this.loginAttemptModel,
+        BlockedIp: this.blockedIpModel,
         AccreditedOrganization: this.accreditedOrganizationModel,
       };
 

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { toAbsoluteFileUrl } from '@/lib/utils';
 import { Page } from '@/types/admin';
 import { Card, CardContent, CardHeader } from '@/components/admin/ui/Card';
 import { Badge } from '@/components/admin/ui/Badge';
@@ -119,7 +120,7 @@ export const PagePreview: React.FC<PagePreviewProps> = ({ page }) => {
           {page.imageUrl && (
             <div className="mb-4">
               <img
-                src={page.imageUrl}
+                src={toAbsoluteFileUrl(page.imageUrl)}
                 alt={page.title}
                 className="w-full h-48 object-cover rounded-lg"
               />

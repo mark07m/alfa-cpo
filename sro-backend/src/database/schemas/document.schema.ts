@@ -102,3 +102,7 @@ export class DocumentModel {
 }
 
 export const DocumentSchema = SchemaFactory.createForClass(DocumentModel);
+// Composite and single-field indexes for frequent queries and sorting
+DocumentSchema.index({ category: 1, isPublic: 1 });
+DocumentSchema.index({ tags: 1 });
+DocumentSchema.index({ uploadedAt: -1 });

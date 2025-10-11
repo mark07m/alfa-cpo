@@ -32,3 +32,6 @@ export class LoginAttempt {
 }
 
 export const LoginAttemptSchema = SchemaFactory.createForClass(LoginAttempt);
+// Indexes to support security analytics and rate limiting checks
+LoginAttemptSchema.index({ createdAt: -1 });
+LoginAttemptSchema.index({ ipAddress: 1, createdAt: -1 });

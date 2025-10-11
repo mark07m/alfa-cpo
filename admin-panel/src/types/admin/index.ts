@@ -438,6 +438,7 @@ export interface SiteSettings {
   contactEmail: string;
   contactPhone: string;
   address: string;
+  workingHours: string;
   logoUrl?: string;
   faviconUrl?: string;
   seoTitle: string;

@@ -92,7 +92,7 @@ const navigation: NavigationItem[] = [
     href: '/settings',
     icon: CogIcon,
     children: [
-      { name: 'Сайт', href: '/settings', icon: CogIcon },
+      { name: 'Сайт', href: '/settings/site', icon: CogIcon },
       { name: 'Пользователи', href: '/settings/users', icon: UsersIcon },
       { name: 'Безопасность', href: '/settings/security', icon: ShieldCheckIcon }
     ]

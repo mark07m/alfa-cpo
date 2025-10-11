@@ -202,7 +202,7 @@ export default function SecurityPage() {
                 <Checkbox
                   id="requireStrongPasswords"
                   checked={settings?.requireStrongPasswords || false}
-                  onChange={(checked) => updateSettings('password', { ...settings, requireStrongPasswords: checked })}
+                  onChange={(e) => updateSettings('password', { ...settings, requireStrongPasswords: (e.target as HTMLInputElement).checked })}
                 />
                 <label htmlFor="requireStrongPasswords" className="text-sm font-medium text-gray-700">
                   Требовать сложные пароли
@@ -241,7 +241,7 @@ export default function SecurityPage() {
                   <Checkbox
                     id="requireUppercase"
                     checked={settings?.requireUppercase || false}
-                    onChange={(checked) => updateSettings('password', { ...settings, requireUppercase: checked })}
+                    onChange={(e) => updateSettings('password', { ...settings, requireUppercase: (e.target as HTMLInputElement).checked })}
                   />
                   <label htmlFor="requireUppercase" className="text-sm font-medium text-gray-700">
                     Требовать заглавные буквы
@@ -251,7 +251,7 @@ export default function SecurityPage() {
                   <Checkbox
                     id="requireLowercase"
                     checked={settings?.requireLowercase || false}
-                    onChange={(checked) => updateSettings('password', { ...settings, requireLowercase: checked })}
+                    onChange={(e) => updateSettings('password', { ...settings, requireLowercase: (e.target as HTMLInputElement).checked })}
                   />
                   <label htmlFor="requireLowercase" className="text-sm font-medium text-gray-700">
                     Требовать строчные буквы
@@ -261,7 +261,7 @@ export default function SecurityPage() {
                   <Checkbox
                     id="requireNumbers"
                     checked={settings?.requireNumbers || false}
-                    onChange={(checked) => updateSettings('password', { ...settings, requireNumbers: checked })}
+                    onChange={(e) => updateSettings('password', { ...settings, requireNumbers: (e.target as HTMLInputElement).checked })}
                   />
                   <label htmlFor="requireNumbers" className="text-sm font-medium text-gray-700">
                     Требовать цифры
@@ -271,7 +271,7 @@ export default function SecurityPage() {
                   <Checkbox
                     id="requireSpecialChars"
                     checked={settings?.requireSpecialChars || false}
-                    onChange={(checked) => updateSettings('password', { ...settings, requireSpecialChars: checked })}
+                    onChange={(e) => updateSettings('password', { ...settings, requireSpecialChars: (e.target as HTMLInputElement).checked })}
                   />
                   <label htmlFor="requireSpecialChars" className="text-sm font-medium text-gray-700">
                     Требовать специальные символы
@@ -326,7 +326,7 @@ export default function SecurityPage() {
                   <Checkbox
                     id="requireReauth"
                     checked={settings?.requireReauth || false}
-                    onChange={(checked) => updateSettings('sessions', { ...settings, requireReauth: checked })}
+                    onChange={(e) => updateSettings('sessions', { ...settings, requireReauth: (e.target as HTMLInputElement).checked })}
                   />
                   <label htmlFor="requireReauth" className="text-sm font-medium text-gray-700">
                     Требовать повторную аутентификацию
@@ -336,7 +336,7 @@ export default function SecurityPage() {
                   <Checkbox
                     id="rememberMe"
                     checked={settings?.allowRememberMe || false}
-                    onChange={(checked) => updateSettings('sessions', { ...settings, allowRememberMe: checked })}
+                    onChange={(e) => updateSettings('sessions', { ...settings, allowRememberMe: (e.target as HTMLInputElement).checked })}
                   />
                   <label htmlFor="rememberMe" className="text-sm font-medium text-gray-700">
                     Разрешить "Запомнить меня"
@@ -397,7 +397,7 @@ export default function SecurityPage() {
             <Checkbox
               id="enableIPRestrictions"
               checked={settings?.enableIPRestrictions || false}
-              onChange={(checked) => updateSettings('ip', { ...settings, enableIPRestrictions: checked })}
+              onChange={(e) => updateSettings('ip', { ...settings, enableIPRestrictions: (e.target as HTMLInputElement).checked })}
             />
             <label htmlFor="enableIPRestrictions" className="text-sm font-medium text-gray-700">
               Включить IP-ограничения
@@ -450,7 +450,7 @@ export default function SecurityPage() {
               <Checkbox
                 id="enableSecurityAlerts"
                 checked={settings?.enableSecurityAlerts || false}
-                onChange={(checked) => updateSettings('monitoring', { ...settings, enableSecurityAlerts: checked })}
+                onChange={(e) => updateSettings('monitoring', { ...settings, enableSecurityAlerts: (e.target as HTMLInputElement).checked })}
               />
               <label htmlFor="enableSecurityAlerts" className="text-sm font-medium text-gray-700">
                 Включить уведомления о нарушениях безопасности
@@ -460,7 +460,7 @@ export default function SecurityPage() {
               <Checkbox
                 id="logAllActions"
                 checked={settings?.logAllActions || false}
-                onChange={(checked) => updateSettings('monitoring', { ...settings, logAllActions: checked })}
+                onChange={(e) => updateSettings('monitoring', { ...settings, logAllActions: (e.target as HTMLInputElement).checked })}
               />
               <label htmlFor="logAllActions" className="text-sm font-medium text-gray-700">
                 Логировать все действия пользователей

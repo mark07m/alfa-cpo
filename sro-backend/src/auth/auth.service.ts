@@ -86,17 +86,14 @@ export class AuthService {
     );
 
     return {
-      success: true,
-      data: {
-        token: accessToken,
-        refreshToken: refreshToken,
-        user: {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          permissions: user.permissions || [],
-        },
+      token: accessToken,
+      refreshToken: refreshToken,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        permissions: user.permissions || [],
       },
     };
   }
@@ -119,24 +116,20 @@ export class AuthService {
     await this.refreshTokenService.revokeRefreshToken(refreshToken);
 
     return {
-      success: true,
-      data: {
-        token: newAccessToken,
-        refreshToken: newRefreshToken,
-        user: {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          permissions: user.permissions || [],
-        },
+      token: newAccessToken,
+      refreshToken: newRefreshToken,
+      user: {
+        id: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        permissions: user.permissions || [],
       },
     };
   }
 
   async logout(refreshToken: string) {
     await this.refreshTokenService.revokeRefreshToken(refreshToken);
-    return { message: 'Logged out successfully' };
   }
 
   async forgotPassword(email: string, ipAddress?: string) {
@@ -144,15 +137,13 @@ export class AuthService {
     
     // Здесь должна быть отправка email с токеном
     // Пока просто возвращаем токен для тестирования
-    return { 
-      message: 'Инструкции по восстановлению пароля отправлены на email',
-      token // В продакшене не возвращаем токен
+    return {
+      token,
     };
   }
 
   async resetPassword(token: string, newPassword: string) {
     await this.passwordResetService.resetPassword(token, newPassword);
-    return { message: 'Пароль успешно изменен' };
   }
 
   async getProfile(userId: string) {

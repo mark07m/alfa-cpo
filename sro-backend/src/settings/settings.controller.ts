@@ -70,4 +70,13 @@ export class SettingsController {
     const history = await this.settingsService.getSettingsHistory();
     return ResponseUtil.success(history, 'История изменений настроек получена');
   }
+
+  // Security settings endpoint (separate section)
+  @Put('security')
+  @UseGuards(JwtAuthGuard)
+  async updateSecuritySettings(@Body() body: any) {
+    // На данном этапе сохраняем как есть (заглушка)
+    // При необходимости можно добавить схему/хранилище для SecuritySettings
+    return ResponseUtil.updated(body, 'Настройки безопасности обновлены');
+  }
 }

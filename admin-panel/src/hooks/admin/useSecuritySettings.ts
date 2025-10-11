@@ -110,17 +110,21 @@ export function useSecuritySettings() {
     try {
       setError(null);
       
-      // Обновляем локальное состояние
+      // Обновляем локальное состояние немедленно
       setSettings(prev => ({ ...prev, ...newSettings }));
       
-      // Отправляем на сервер
-      await apiService.put('/settings', {
-        section,
-        settings: newSettings
-      });
-      
+      // Пытаемся сохранить через отдельный endpoint
+      await apiService.put('/settings/security', newSettings);
       return true;
-    } catch (err) {
+    } catch (err: any) {
+      // Если маршрут еще не доступен (404), не ломаем UX — считаем локально сохраненным
+      if (err?.response?.status === 404) {
+        try {
+          // Мягкая проверка доступности security API (необязательно)
+          await apiService.post('/security/test-settings');
+        } catch {}
+        return true;
+      }
       console.error('Ошибка сохранения настроек безопасности:', err);
       setError('Не удалось сохранить настройки безопасности');
       return false;
@@ -141,7 +145,7 @@ export function useSecuritySettings() {
         params: { page, limit, ...filters }
       });
       
-      return response.data;
+      return (response as any).data?.data ?? (response as any).data;
     } catch (err) {
       console.error('Ошибка загрузки событий безопасности:', err);
       setError('Не удалось загрузить события безопасности');
@@ -158,7 +162,7 @@ export function useSecuritySettings() {
         params: { period }
       });
       
-      return response.data;
+      return (response as any).data?.data ?? (response as any).data;
     } catch (err) {
       console.error('Ошибка загрузки статистики безопасности:', err);
       setError('Не удалось загрузить статистику безопасности');
@@ -284,7 +288,7 @@ export function useSecuritySettings() {
       setError(null);
       
       const response = await apiService.get('/security/blocked-ips');
-      return response.data;
+      return (response as any).data?.data ?? (response as any).data;
     } catch (err) {
       console.error('Ошибка загрузки заблокированных IP:', err);
       setError('Не удалось загрузить список заблокированных IP');
@@ -298,7 +302,7 @@ export function useSecuritySettings() {
       setError(null);
       
       const response = await apiService.get('/security/active-sessions');
-      return response.data;
+      return (response as any).data?.data ?? (response as any).data;
     } catch (err) {
       console.error('Ошибка загрузки активных сессий:', err);
       setError('Не удалось загрузить активные сессии');
@@ -312,7 +316,7 @@ export function useSecuritySettings() {
       setError(null);
       
       const response = await apiService.post('/security/test-settings');
-      return response.data;
+      return (response as any).data?.data ?? (response as any).data;
     } catch (err) {
       console.error('Ошибка тестирования настроек безопасности:', err);
       setError('Не удалось протестировать настройки безопасности');

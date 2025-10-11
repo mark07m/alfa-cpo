@@ -143,10 +143,81 @@
     {
       "name": "Settings",
       "item": [
-        {"name": "Update Settings", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"siteName\": \"Название сайта\",\n  \"description\": \"Описание сайта\"\n}"}, "url": {"raw": "{{baseUrl}}/api/settings", "host": ["{{baseUrl}}"], "path": ["api", "settings"]}}},
-        {"name": "Update Theme Settings", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}, {"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"primaryColor\": \"#007bff\",\n  \"secondaryColor\": \"#6c757d\"\n}"}, "url": {"raw": "{{baseUrl}}/api/settings/theme", "host": ["{{baseUrl}}"], "path": ["api", "settings", "theme"]}}},
-        {"name": "Reset Settings", "request": {"method": "PUT", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/settings/reset", "host": ["{{baseUrl}}"], "path": ["api", "settings", "reset"]}}},
-        {"name": "Get Settings History", "request": {"method": "GET", "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}], "url": {"raw": "{{baseUrl}}/api/settings/history", "host": ["{{baseUrl}}"], "path": ["api", "settings", "history"]}}}
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/settings", "host": ["{{baseUrl}}"], "path": ["api", "settings"]}
+          }
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"siteName\": \"Название сайта\",\n  \"siteDescription\": \"Описание сайта\",\n  \"contactEmail\": \"info@example.com\",\n  \"contactPhone\": \"+7 (495) 123-45-67\",\n  \"address\": \"г. Москва, ул. Примерная, д. 1\",\n  \"workingHours\": \"Пн-Пт: 9:00-18:00\",\n  \"socialLinks\": {\n    \"facebook\": \"https://facebook.com/yourpage\",\n    \"twitter\": \"https://twitter.com/yourpage\",\n    \"linkedin\": \"https://linkedin.com/company/yourcompany\"\n  },\n  \"seoSettings\": {\n    \"defaultTitle\": \"Заголовок по умолчанию\",\n    \"defaultDescription\": \"Описание по умолчанию\",\n    \"defaultKeywords\": \"ключевые, слова\"\n  },\n  \"themeSettings\": {\n    \"primaryColor\": \"#D4B89A\",\n    \"secondaryColor\": \"#F5F5DC\",\n    \"accentColor\": \"#8B4513\",\n    \"logoUrl\": \"/uploads/files/logo.png\",\n    \"faviconUrl\": \"/uploads/files/favicon.ico\"\n  }\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/settings", "host": ["{{baseUrl}}"], "path": ["api", "settings"]}
+          }
+        },
+        {
+          "name": "Get Theme Settings",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/settings/theme", "host": ["{{baseUrl}}"], "path": ["api", "settings", "theme"]}
+          }
+        },
+        {
+          "name": "Update Theme Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{accessToken}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {"mode": "raw", "raw": "{\n  \"primaryColor\": \"#007bff\",\n  \"secondaryColor\": \"#6c757d\"\n}"},
+            "url": {"raw": "{{baseUrl}}/api/settings/theme", "host": ["{{baseUrl}}"], "path": ["api", "settings", "theme"]}
+          }
+        },
+        {
+          "name": "Get SEO Settings",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/settings/seo", "host": ["{{baseUrl}}"], "path": ["api", "settings", "seo"]}
+          }
+        },
+        {
+          "name": "Get Contact Info",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/settings/contact", "host": ["{{baseUrl}}"], "path": ["api", "settings", "contact"]}
+          }
+        },
+        {
+          "name": "Reset Settings",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/settings/reset", "host": ["{{baseUrl}}"], "path": ["api", "settings", "reset"]}
+          }
+        },
+        {
+          "name": "Get Settings History",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+            "url": {"raw": "{{baseUrl}}/api/settings/history", "host": ["{{baseUrl}}"], "path": ["api", "settings", "history"]}
+          }
+        }
       ]
     },
     {
@@ -188,7 +259,7 @@
     }
   ],
   "variable": [
-    {"key": "baseUrl", "value": "http://localhost:3000", "description": "Base URL for the API"},
+    {"key": "baseUrl", "value": "http://localhost:3001", "description": "Base URL for the API"},
     {"key": "accessToken", "value": "your_access_token_here", "description": "JWT access token for authentication"}
   ]
 }

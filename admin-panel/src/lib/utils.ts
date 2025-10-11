@@ -177,3 +177,16 @@ export function getErrorMessage(error: unknown): string {
   }
   return 'Произошла неизвестная ошибка'
 }
+
+// Build absolute URLs for files served from backend static '/uploads'
+export function getBackendBaseUrl(): string {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+  return apiUrl.replace(/\/api\/?$/, '')
+}
+
+export function toAbsoluteFileUrl(path?: string): string {
+  if (!path) return ''
+  if (/^https?:\/\//i.test(path)) return path
+  if (path.startsWith('/uploads/')) return `${getBackendBaseUrl()}${path}`
+  return path
+}
