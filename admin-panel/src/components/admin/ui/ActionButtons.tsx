@@ -22,7 +22,7 @@ interface ActionButton {
   onClick: () => void;
   disabled?: boolean;
   loading?: boolean;
-  icon?: React.ReactNode;
+  icon?: React.ReactNode | React.ComponentType<any>;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning';
   showLabel?: boolean;
   tooltip?: string;
@@ -80,6 +80,19 @@ export function ActionButtons({
   orientation = 'horizontal',
   className
 }: ActionButtonsProps) {
+  const renderIcon = (icon: any) => {
+    if (!icon) return null;
+    // If icon is already a React element, clone to apply sizing
+    if (React.isValidElement(icon)) {
+      return React.cloneElement(icon as any, { className: cn('h-4 w-4', (icon as any).props?.className) });
+    }
+    // Otherwise treat as a component type (including forwardRef objects)
+    try {
+      return React.createElement(icon as any, { className: 'h-4 w-4' });
+    } catch {
+      return null;
+    }
+  };
   return (
     <div
       className={cn(
@@ -89,7 +102,7 @@ export function ActionButtons({
       )}
     >
       {actions.map((action, index) => {
-        const IconComponent = action.type !== 'custom' 
+        const IconCandidate = action.type !== 'custom' 
           ? (action.icon || defaultIcons[action.type])
           : action.icon;
         
@@ -112,10 +125,8 @@ export function ActionButtons({
           >
             {action.loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent" />
-            ) : IconComponent && typeof IconComponent === 'function' ? (
-              <IconComponent className="h-4 w-4" />
             ) : (
-              IconComponent
+              renderIcon(IconCandidate)
             )}
             {showLabel && <span>{label}</span>}
           </Button>

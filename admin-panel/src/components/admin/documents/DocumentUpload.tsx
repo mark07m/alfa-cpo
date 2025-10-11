@@ -22,7 +22,7 @@ import {
 
 interface DocumentUploadProps {
   documentCategories: DocumentCategory[]
-  onUpload: (uploadData: DocumentUploadType) => Promise<{ success: boolean; error?: string }>
+  onUpload: (uploadData: DocumentUploadType, onProgress?: (percent: number) => void) => Promise<{ success: boolean; error?: string }>
   isUploading: boolean
   onCancel: () => void
 }
@@ -37,6 +37,7 @@ interface UploadFile {
   isPublic: boolean
   metadata: DocumentMetadata
   status: 'pending' | 'uploading' | 'success' | 'error'
+  progress?: number
   error?: string
 }
 
@@ -49,6 +50,9 @@ export function DocumentUpload({
   const [files, setFiles] = useState<UploadFile[]>([])
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const allowedExtensions = new Set(['pdf','doc','docx','xls','xlsx','txt','csv','jpg','jpeg','png','gif','webp'])
+  const MAX_SIZE_BYTES = 50 * 1024 * 1024
 
   const getFileIcon = (fileType: string) => {
     switch (fileType.toLowerCase()) {
@@ -113,22 +117,34 @@ export function DocumentUpload({
   }, [])
 
   const addFiles = (newFiles: File[]) => {
-    const uploadFiles: UploadFile[] = newFiles.map(file => ({
-      file,
-      id: Math.random().toString(36).substr(2, 9),
-      title: file.name.replace(/\.[^/.]+$/, ''),
-      description: '',
-      category: documentCategories[0]?.id || '',
-      tags: [],
-      isPublic: true,
-      metadata: {
-        author: '',
-        publisher: '',
-        language: 'ru',
-        pages: undefined
-      },
-      status: 'pending'
-    }))
+    const defaultCategory = documentCategories[0]?.slug || 'other'
+    const uploadFiles: UploadFile[] = newFiles.map(file => {
+      const ext = (file.name.split('.').pop() || '').toLowerCase()
+      const isAllowed = allowedExtensions.has(ext)
+      const isTooBig = file.size > MAX_SIZE_BYTES
+      const initialError = !isAllowed
+        ? 'Неподдерживаемый тип файла. Разрешено: PDF, DOC/DOCX, XLS/XLSX, TXT, CSV, JPG, JPEG, PNG, GIF, WEBP'
+        : isTooBig
+          ? 'Файл превышает 50 MB'
+          : undefined
+      return {
+        file,
+        id: Math.random().toString(36).substr(2, 9),
+        title: file.name.replace(/\.[^/.]+$/, ''),
+        description: '',
+        category: defaultCategory,
+        tags: [],
+        isPublic: true,
+        metadata: {
+          author: '',
+          publisher: '',
+          language: 'ru',
+          pages: undefined
+        },
+        status: initialError ? 'error' : 'pending',
+        error: initialError
+      }
+    })
 
     setFiles(prev => [...prev, ...uploadFiles])
   }
@@ -157,10 +173,25 @@ export function DocumentUpload({
     }
   }
 
+  const validateBeforeUpload = (f: UploadFile): string | null => {
+    if (f.status === 'error') return f.error || 'Ошибка файла'
+    if (!f.title || f.title.trim().length < 3) return 'Название должно быть не короче 3 символов'
+    if (!f.category) return 'Выберите категорию'
+    if (f.file.size > MAX_SIZE_BYTES) return 'Файл превышает 50 MB'
+    const ext = (f.file.name.split('.').pop() || '').toLowerCase()
+    if (!allowedExtensions.has(ext)) return 'Неподдерживаемый тип файла'
+    return null
+  }
+
   const handleUpload = async () => {
     for (const file of files) {
       if (file.status === 'pending') {
-        updateFile(file.id, { status: 'uploading' })
+        const validationError = validateBeforeUpload(file)
+        if (validationError) {
+          updateFile(file.id, { status: 'error', error: validationError })
+          continue
+        }
+        updateFile(file.id, { status: 'uploading', progress: 0 })
         
         const uploadData: DocumentUploadType = {
           file: file.file,
@@ -173,14 +204,18 @@ export function DocumentUpload({
         }
 
         try {
-          const result = await onUpload(uploadData)
+          const result = await onUpload(uploadData, (percent?: number) => {
+            if (typeof percent === 'number') {
+              updateFile(file.id, { progress: percent })
+            }
+          })
           if (result.success) {
-            updateFile(file.id, { status: 'success' })
+            updateFile(file.id, { status: 'success', progress: 100 })
           } else {
-            updateFile(file.id, { status: 'error', error: result.error })
+            updateFile(file.id, { status: 'error', error: result.error, progress: undefined })
           }
         } catch (error) {
-          updateFile(file.id, { status: 'error', error: 'Ошибка загрузки' })
+          updateFile(file.id, { status: 'error', error: 'Ошибка загрузки', progress: undefined })
         }
       }
     }
@@ -219,11 +254,11 @@ export function DocumentUpload({
               multiple
               className="sr-only"
               onChange={handleFileInput}
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.mp4,.avi,.mov,.mp3,.wav,.zip,.rar"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp"
             />
           </div>
           <p className="mt-1 text-xs text-gray-500">
-            PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, GIF, MP4, MP3, ZIP и другие
+            Допустимые форматы: PDF, DOC/DOCX, XLS/XLSX, TXT, CSV, JPG, JPEG, PNG, GIF, WEBP (до 50 MB)
           </p>
         </div>
       </div>
@@ -267,9 +302,17 @@ export function DocumentUpload({
                       </span>
                     )}
                     {file.status === 'uploading' && (
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Загружается...
-                      </span>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Загружается...
+                          </span>
+                          <span className="text-xs text-gray-500">{Math.round(file.progress || 0)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${Math.round(file.progress || 0)}%` }}></div>
+                        </div>
+                      </div>
                     )}
                     {file.status === 'success' && (
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -307,7 +350,22 @@ export function DocumentUpload({
                           <Select
                             value={file.category}
                             onChange={(e) => updateFile(file.id, { category: (e.target as HTMLSelectElement).value })}
-                            options={[{ value: '', label: 'Выберите категорию' }, ...documentCategories.map(c => ({ value: c.id, label: c.name }))]}
+                            options={[
+                              { value: '', label: 'Выберите категорию' },
+                              ...(
+                                documentCategories.length
+                                  ? documentCategories.map(c => ({ value: c.slug, label: c.name }))
+                                  : [
+                                      { value: 'regulatory', label: 'Нормативные документы' },
+                                      { value: 'rules', label: 'Правила профессиональной деятельности' },
+                                      { value: 'reports', label: 'Отчеты' },
+                                      { value: 'compensation-fund', label: 'Компенсационный фонд' },
+                                      { value: 'labor-activity', label: 'Трудовая деятельность' },
+                                      { value: 'accreditation', label: 'Аккредитация' },
+                                      { value: 'other', label: 'Прочие документы' }
+                                    ]
+                              )
+                            ]}
                           />
                         </div>
                       </div>
@@ -418,7 +476,7 @@ export function DocumentUpload({
           Отмена
         </Button>
         <Button onClick={handleUpload} disabled={!canUpload || isUploading}>
-          {isUploading ? 'Загрузка...' : `Загрузить ${files.length} файлов`}
+          {isUploading ? 'Загрузка...' : `Загрузить ${files.length} файл(ов)`}
         </Button>
       </div>
     </div>

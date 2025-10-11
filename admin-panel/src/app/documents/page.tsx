@@ -7,6 +7,7 @@ import { DocumentsFilters } from '@/components/admin/documents/DocumentsFilters'
 import { DocumentUpload } from '@/components/admin/documents/DocumentUpload'
 import { useDocuments } from '@/hooks/admin/useDocuments'
 import { Document, DocumentFilters } from '@/types/admin'
+import type { DocumentUpload as DocumentUploadType } from '@/types/admin'
 import { 
   FunnelIcon, 
   CloudArrowUpIcon,
@@ -111,9 +112,9 @@ export default function DocumentsPage() {
     }
   }
 
-  const handleUploadDocument = async (uploadData: unknown) => {
+  const handleUploadDocument = async (uploadData: DocumentUploadType, onProgress?: (percent: number) => void) => {
     try {
-      const result = await uploadDocument(uploadData)
+      const result = await uploadDocument(uploadData, onProgress)
       if (result.success) {
         setShowUpload(false)
         await fetchDocuments() // Обновляем список

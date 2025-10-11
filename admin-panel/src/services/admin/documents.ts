@@ -8,7 +8,7 @@ export interface DocumentsService {
   updateDocument(id: string, documentData: Partial<Document>): Promise<ApiResponse<Document>>
   deleteDocument(id: string): Promise<ApiResponse<void>>
   bulkDeleteDocuments(ids: string[]): Promise<ApiResponse<void>>
-  uploadDocument(uploadData: DocumentUpload): Promise<ApiResponse<Document>>
+  uploadDocument(uploadData: DocumentUpload, onProgress?: (percent: number) => void): Promise<ApiResponse<Document>>
   downloadDocument(id: string): Promise<Blob>
   previewDocument(id: string): Promise<string>
   getDocumentCategories(): Promise<ApiResponse<DocumentCategory[]>>
@@ -101,9 +101,44 @@ class DocumentsServiceImpl implements DocumentsService {
   async getDocument(id: string): Promise<ApiResponse<Document>> {
     try {
       const response = await apiService.get(`/documents/${id}`)
-      return response.data
-    } catch (error) {
+      if (response && response.success) {
+        const doc: any = response.data
+        const transformed: Document = {
+          ...doc,
+          id: doc._id || doc.id,
+          category: {
+            id: doc.category || 'other',
+            name: this.getCategoryName(doc.category),
+            slug: doc.category || 'other',
+            description: `${this.getCategoryName(doc.category)} документы`,
+            color: this.getCategoryColor(doc.category),
+            icon: this.getCategoryIcon(doc.category),
+            isActive: true,
+            sortOrder: 1,
+            createdAt: doc.createdAt || new Date().toISOString(),
+            updatedAt: doc.updatedAt || new Date().toISOString()
+          }
+        } as any
+        return {
+          success: true,
+          data: transformed,
+          message: response.message
+        }
+      }
+      return response as any
+    } catch (error: any) {
       console.error('Failed to fetch document:', error)
+      if (error.code === 'NETWORK_ERROR' || 
+          error.message === 'Network Error' || 
+          error.code === 'ECONNREFUSED' ||
+          error.code === 'ERR_NETWORK' ||
+          error.code === 'EADDRINUSE' ||
+          error.response?.status === 400 ||
+          error.response?.status === 404 ||
+          error.response?.status === 503 ||
+          !error.response) {
+        throw error
+      }
       return {
         success: false,
         data: null,
@@ -168,40 +203,47 @@ class DocumentsServiceImpl implements DocumentsService {
     }
   }
 
-  async uploadDocument(uploadData: DocumentUpload): Promise<ApiResponse<Document>> {
+  async uploadDocument(uploadData: DocumentUpload, onProgress?: (percent: number) => void): Promise<ApiResponse<Document>> {
     try {
       const formData = new FormData()
       formData.append('file', uploadData.file)
       formData.append('title', uploadData.title)
       if (uploadData.description) formData.append('description', uploadData.description)
       formData.append('category', uploadData.category)
-      if (uploadData.tags) formData.append('tags', uploadData.tags.join(','))
+      if (uploadData.version) formData.append('version', uploadData.version)
+      if (uploadData.tags) uploadData.tags.forEach(tag => formData.append('tags', tag))
       if (uploadData.isPublic !== undefined) formData.append('isPublic', uploadData.isPublic.toString())
-      if (uploadData.metadata) formData.append('metadata', JSON.stringify(uploadData.metadata))
+      // metadata is not part of UploadDocumentDto; do not send to backend to avoid 400
 
       const response = await apiService.post('/documents/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: (event: ProgressEvent) => {
+          if (onProgress && event.total) {
+            const percent = Math.round((event.loaded * 100) / event.total)
+            onProgress(percent)
+          }
         }
       })
-      return response.data
+      return response
     } catch (error: any) {
       console.error('Failed to upload document:', error)
+      // For network-level issues, rethrow to hit mock fallback or global handlers
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
           error.code === 'ECONNREFUSED' ||
           error.code === 'ERR_NETWORK' ||
           error.code === 'EADDRINUSE' ||
-          error.response?.status === 400 ||
-          error.response?.status === 404 ||
-          error.response?.status === 503 ||
           !error.response) {
-        throw error // Re-throw to be caught by Proxy fallback
+        throw error
       }
+      // Surface backend message for validation or fileFilter errors (e.g., 400)
+      const backendMessage = error.response?.data?.message || error.response?.statusText || 'Upload failed'
       return {
         success: false,
         data: null,
-        message: 'API unavailable'
+        message: backendMessage
       }
     }
   }
@@ -211,7 +253,8 @@ class DocumentsServiceImpl implements DocumentsService {
       const response = await apiService.get(`/documents/${id}/download`, {
         responseType: 'blob'
       })
-      return response.data
+      const blob: any = (response as any).data || (response as any)
+      return blob as Blob
     } catch (error) {
       console.error('Failed to download document:', error)
       throw error
@@ -223,8 +266,8 @@ class DocumentsServiceImpl implements DocumentsService {
       const response = await apiService.get(`/documents/${id}/preview`, {
         responseType: 'blob'
       })
-      const blob = response.data
-      return URL.createObjectURL(blob)
+      const blob: any = (response as any).data || (response as any)
+      return URL.createObjectURL(blob as Blob)
     } catch (error) {
       console.error('Failed to preview document:', error)
       throw error
@@ -237,11 +280,11 @@ class DocumentsServiceImpl implements DocumentsService {
       
       // Преобразуем формат API в формат UI
       const apiCategories = response.data.data || []
-      const categories: DocumentCategory[] = apiCategories.map((cat: any, index: number) => ({
+      let categories: DocumentCategory[] = apiCategories.map((cat: any, index: number) => ({
         id: cat.value,
-        name: cat.label,
+        name: this.getCategoryName(cat.value),
         slug: cat.value,
-        description: `${cat.label} (${cat.count} документов)`,
+        description: `${this.getCategoryName(cat.value)} (${cat.count} документов)`,
         color: this.getCategoryColor(cat.value),
         icon: this.getCategoryIcon(cat.value),
         isActive: true,
@@ -249,6 +292,23 @@ class DocumentsServiceImpl implements DocumentsService {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }))
+
+      // Если с сервера пришел пустой список (нет публичных документов), используем дефолтные категории из enum
+      if (!categories.length) {
+        const values = ['regulatory','rules','reports','compensation-fund','labor-activity','accreditation','other']
+        categories = values.map((value, index) => ({
+          id: value,
+          name: this.getCategoryName(value),
+          slug: value,
+          description: this.getCategoryName(value),
+          color: this.getCategoryColor(value),
+          icon: this.getCategoryIcon(value),
+          isActive: true,
+          sortOrder: index + 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }))
+      }
       
       return {
         success: true,

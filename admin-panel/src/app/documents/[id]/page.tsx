@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/admin/ui/ConfirmDialog'
 import { useDocuments } from '@/hooks/admin/useDocuments'
 import { 
   ArrowDownTrayIcon,
+  ArrowLeftIcon,
   DocumentIcon,
   DocumentTextIcon,
   PhotoIcon,
@@ -37,6 +38,7 @@ export default function DocumentViewPage() {
     isLoading,
     error,
     fetchDocument,
+    previewDocument,
     deleteDocument,
     downloadDocument,
     clearError
@@ -126,6 +128,26 @@ export default function DocumentViewPage() {
       console.error('Error downloading document:', error)
     }
   }
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const doPreview = async () => {
+      if (!selectedDocument) return
+      try {
+        const url = await previewDocument(selectedDocument.id)
+        setPreviewUrl(url)
+      } catch (e) {
+        setPreviewUrl(null)
+      }
+    }
+    doPreview()
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [selectedDocument])
 
   if (isLoading) {
     return (
@@ -320,6 +342,23 @@ export default function DocumentViewPage() {
                   <p className="text-gray-500 italic">Описание не указано</p>
                 )}
               </div>
+
+              {/* Предпросмотр */}
+              {previewUrl && (
+                <div className="px-6 py-4 border-t border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Предпросмотр</h3>
+                  {['pdf'].includes(selectedDocument.fileType.toLowerCase()) ? (
+                    <iframe
+                      src={previewUrl}
+                      className="w-full h-[600px] border rounded"
+                    />
+                  ) : selectedDocument.mimeType?.startsWith('image/') ? (
+                    <img src={previewUrl} alt={selectedDocument.title} className="max-w-full rounded border" />
+                  ) : (
+                    <p className="text-sm text-gray-500">Предпросмотр для данного типа файлов недоступен. Используйте скачивание.</p>
+                  )}
+                </div>
+              )}
 
               {/* Метаданные */}
               {selectedDocument.metadata && (

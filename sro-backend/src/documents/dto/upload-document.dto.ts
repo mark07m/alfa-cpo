@@ -33,6 +33,22 @@ export class UploadDocumentDto {
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    // Accept both comma-separated string and repeated form fields
+    if (typeof value === 'string') {
+      return value
+        .split(',')
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0)
+    }
+    if (Array.isArray(value)) {
+      return value
+        .flatMap((v: any) => String(v).split(','))
+        .map((tag: string) => tag.trim())
+        .filter((tag: string) => tag.length > 0)
+    }
+    return undefined
+  })
   tags?: string[];
 
   @IsBoolean()

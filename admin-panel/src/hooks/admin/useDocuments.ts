@@ -34,7 +34,7 @@ interface UseDocumentsReturn {
   updateDocument: (id: string, documentData: Partial<Document>) => Promise<{ success: boolean; data?: Document; error?: string }>
   deleteDocument: (id: string) => Promise<{ success: boolean; error?: string }>
   bulkDeleteDocuments: (ids: string[]) => Promise<{ success: boolean; error?: string }>
-  uploadDocument: (uploadData: DocumentUpload) => Promise<{ success: boolean; data?: Document; error?: string }>
+  uploadDocument: (uploadData: DocumentUpload, onProgress?: (percent: number) => void) => Promise<{ success: boolean; data?: Document; error?: string }>
   downloadDocument: (id: string) => Promise<void>
   previewDocument: (id: string) => Promise<string>
   
@@ -228,22 +228,26 @@ export function useDocuments(): UseDocumentsReturn {
     }
   }, [fetchDocuments])
 
-  const uploadDocument = useCallback(async (uploadData: DocumentUpload) => {
+  const uploadDocument = useCallback(async (uploadData: DocumentUpload, onProgress?: (percent: number) => void) => {
     setIsUploading(true)
     setError(null)
     
     try {
-      const response = await documentsService.uploadDocument(uploadData)
+      const response = await documentsService.uploadDocument(uploadData, onProgress)
       
       if (response && response.success) {
         await fetchDocuments() // Обновляем список
         return { success: true, data: response.data }
       } else {
-        return { success: false, error: 'Не удалось загрузить документ' }
+        const msg = response?.message || 'Не удалось загрузить документ'
+        setError(msg)
+        return { success: false, error: msg }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error uploading document:', err)
-      return { success: false, error: 'Ошибка при загрузке документа' }
+      const msg = err?.message || 'Ошибка при загрузке документа'
+      setError(msg)
+      return { success: false, error: msg }
     } finally {
       setIsUploading(false)
     }
