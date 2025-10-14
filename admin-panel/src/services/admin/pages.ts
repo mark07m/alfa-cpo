@@ -231,7 +231,7 @@ export const pagesService = {
   bulkDeletePages: async (ids: string[]): Promise<void> => {
     try {
       // Backend не поддерживает массовое удаление, удаляем по одной
-      const deletePromises = ids.map(id => this.deletePage(id));
+      const deletePromises = ids.map(id => pagesService.deletePage(id));
       await Promise.all(deletePromises);
     } catch (error: any) {
       console.error('Error bulk deleting pages:', error);
@@ -242,7 +242,7 @@ export const pagesService = {
   bulkUpdateStatus: async (ids: string[], status: 'draft' | 'published' | 'archived'): Promise<void> => {
     try {
       // Backend не поддерживает массовое обновление, обновляем по одной
-      const updatePromises = ids.map(id => this.updatePageStatus(id, status));
+      const updatePromises = ids.map(id => pagesService.updatePageStatus(id, status));
       await Promise.all(updatePromises);
     } catch (error: any) {
       console.error('Error bulk updating page status:', error);
