@@ -83,6 +83,24 @@ export const eventsService = {
     const res = await api.get<any[]>(`/events/calendar?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}`)
     return res
   },
+
+  async getById(id: string): Promise<ApiResponse<Event>> {
+    const res = await api.get<any>(`/events/${id}`)
+    const item = res?.data ? normalizeEvent(res.data) : undefined
+    return { success: !!item, data: item as Event }
+  },
+
+  async byType(typeSlug: string, limit = 3, excludeId?: string): Promise<ApiResponse<Event[]>> {
+    const params: any = { type: typeSlug, limit }
+    const res = await api.get(`/events`, { params })
+    const items = Array.isArray(res.data) ? (res.data as any[]).map(normalizeEvent) : []
+    const filtered = excludeId ? items.filter(e => e.id !== excludeId) : items
+    return { success: true, data: filtered }
+  },
+
+  async register(id: string, payload: { fullName: string; email: string; phone?: string; organization?: string; notes?: string; }): Promise<ApiResponse<{ success: boolean; message: string }>> {
+    return api.post<{ success: boolean; message: string }>(`/events/${id}/register`, payload)
+  },
 }
 
 export type EventsService = typeof eventsService

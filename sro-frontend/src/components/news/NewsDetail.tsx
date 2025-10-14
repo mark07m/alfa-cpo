@@ -46,15 +46,24 @@ export default function NewsDetail({
   const handleShare = () => {
     if (onShare) {
       onShare(news);
-    } else if (navigator.share) {
-      navigator.share({
-        title: news.title,
-        text: news.excerpt,
-        url: window.location.href
-      });
-    } else {
-      // Fallback - copy to clipboard
-      navigator.clipboard.writeText(window.location.href);
+      return;
+    }
+
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      // @ts-expect-error: Web Share API is not in all TS DOM libs
+      navigator
+        .share({
+          title: news.title,
+          text: news.excerpt,
+          url: window.location.href,
+        })
+        .catch((err: any) => {
+          // Ignore user cancellation (AbortError), log others
+          if (err?.name === 'AbortError' || /abort/i.test(err?.message || '')) return;
+          console.warn('Share failed', err);
+        });
+    } else if (navigator.clipboard && 'writeText' in navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href).catch(() => {});
     }
   };
 

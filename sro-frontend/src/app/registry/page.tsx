@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SearchForm, RegistryTable, Pagination, FilterPanel, SearchFilters } from '@/components/registry';
 import { ArbitraryManager } from '@/types';
+import { registryService } from '@/services/registry';
 import { formatDate } from '@/utils/dateUtils';
 
 // Моковые данные для демонстрации
@@ -159,9 +160,10 @@ const mockManagers: ArbitraryManager[] = [
 
 export default function RegistryPage() {
   const router = useRouter();
-  const [managers, setManagers] = useState<ArbitraryManager[]>(mockManagers);
-  const [filteredManagers, setFilteredManagers] = useState<ArbitraryManager[]>(mockManagers);
+  const [managers, setManagers] = useState<ArbitraryManager[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     fullName: '',
@@ -171,65 +173,92 @@ export default function RegistryPage() {
     status: 'active'
   });
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
 
   // Фильтрация и поиск
-  const filteredData = useMemo(() => {
-    let filtered = managers;
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        // Prefer exact lookup by INN or registry number if provided
+        if (searchFilters.inn) {
+          const res = await registryService.byInn(searchFilters.inn)
+          if (!cancelled && res.success && res.data) {
+            const item: any = res.data
+            setManagers([{
+              id: item.id || item._id,
+              fullName: item.fullName,
+              inn: item.inn,
+              registryNumber: item.registryNumber,
+              region: item.region,
+              status: item.status,
+            }])
+            setTotalItems(1)
+            setTotalPages(1)
+          } else if (!cancelled) {
+            setManagers([]); setTotalItems(0); setTotalPages(1)
+          }
+          return
+        }
+        if (searchFilters.registryNumber) {
+          const res = await registryService.byRegistryNumber(searchFilters.registryNumber)
+          if (!cancelled && res.success && res.data) {
+            const item: any = res.data
+            setManagers([{
+              id: item.id || item._id,
+              fullName: item.fullName,
+              inn: item.inn,
+              registryNumber: item.registryNumber,
+              region: item.region,
+              status: item.status,
+            }])
+            setTotalItems(1)
+            setTotalPages(1)
+          } else if (!cancelled) {
+            setManagers([]); setTotalItems(0); setTotalPages(1)
+          }
+          return
+        }
 
-    if (searchFilters.fullName) {
-      filtered = filtered.filter(manager =>
-        manager.fullName.toLowerCase().includes(searchFilters.fullName!.toLowerCase())
-      );
+        const res = await registryService.list({
+          search: searchFilters.fullName || searchFilters.search || undefined,
+          region: searchFilters.region || undefined,
+          status: (searchFilters.status && searchFilters.status !== 'all') ? searchFilters.status as any : undefined,
+          page: currentPage,
+          limit: itemsPerPage,
+          sortBy: 'fullName',
+          sortOrder: 'asc',
+        })
+        if (!cancelled && res.success) {
+          setManagers(res.data.data as any)
+          setTotalPages(res.data.pagination.totalPages)
+          setTotalItems(res.data.pagination.total)
+        } else if (!cancelled) {
+          setManagers([]); setTotalPages(1); setTotalItems(0)
+        }
+      } catch {
+        if (!cancelled) { setManagers([]); setTotalPages(1); setTotalItems(0) }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-
-    if (searchFilters.inn) {
-      filtered = filtered.filter(manager =>
-        manager.inn.includes(searchFilters.inn!)
-      );
-    }
-
-    if (searchFilters.registryNumber) {
-      filtered = filtered.filter(manager =>
-        manager.registryNumber.toLowerCase().includes(searchFilters.registryNumber!.toLowerCase())
-      );
-    }
-
-    if (searchFilters.region) {
-      filtered = filtered.filter(manager =>
-        manager.region === searchFilters.region
-      );
-    }
-
-    if (searchFilters.status && searchFilters.status !== 'all') {
-      filtered = filtered.filter(manager =>
-        manager.status === searchFilters.status
-      );
-    }
-
-    return filtered;
-  }, [managers, searchFilters]);
+    load()
+    return () => { cancelled = true }
+  }, [searchFilters, currentPage])
 
   // Пагинация
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const paginatedData = managers
 
   // Статистика
-  const stats = useMemo(() => {
-    const active = managers.filter(m => m.status === 'active').length;
-    const excluded = managers.filter(m => m.status === 'excluded').length;
-    const suspended = managers.filter(m => m.status === 'suspended').length;
-    
-    return {
-      total: managers.length,
-      active,
-      excluded,
-      suspended
-    };
-  }, [managers]);
+  const [stats, setStats] = useState({ total: 0, active: 0, excluded: 0, suspended: 0 })
+  useEffect(() => {
+    let cancelled = false
+    registryService.stats().then(res => {
+      if (!cancelled && res.success) setStats(res.data)
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [])
 
   const handleSearch = (filters: SearchFilters) => {
     setSearchFilters(filters);
@@ -339,7 +368,7 @@ export default function RegistryPage() {
                     Результаты поиска
                   </h2>
                   <span className="text-sm text-neutral-600">
-                    Найдено: {filteredData.length} арбитражных управляющих
+                    Найдено: {totalItems} арбитражных управляющих
                   </span>
                 </div>
               </CardHeader>
@@ -350,13 +379,13 @@ export default function RegistryPage() {
                   loading={loading}
                 />
 
-                {filteredData.length > 0 && (
+                {totalItems > 0 && (
                   <div className="mt-6">
                     <Pagination
                       currentPage={currentPage}
                       totalPages={totalPages}
                       onPageChange={handlePageChange}
-                      totalItems={filteredData.length}
+                      totalItems={totalItems}
                       itemsPerPage={itemsPerPage}
                       loading={loading}
                     />

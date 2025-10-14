@@ -68,9 +68,10 @@ export default function RegistryTable({ managers, onManagerClick, loading = fals
     }
   };
 
-  const formatPhone = (phone: string) => {
-    // Простое форматирование телефона
-    const cleaned = phone.replace(/\D/g, '');
+  const formatPhone = (phone?: string) => {
+    // Безопасное форматирование телефона
+    if (!phone) return '—';
+    const cleaned = String(phone).replace(/\D/g, '');
     if (cleaned.length === 11) {
       return `+7 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9)}`;
     }
@@ -153,7 +154,7 @@ export default function RegistryTable({ managers, onManagerClick, loading = fals
                 <div className="flex items-center">
                   <EnvelopeIcon className="h-4 w-4 mr-2 text-neutral-400" />
                   <span className="font-medium">Email:</span>
-                  <span className="ml-1">{manager.email}</span>
+                  <span className="ml-1">{manager.email || '—'}</span>
                 </div>
                 {manager.region && (
                   <div className="flex items-center">

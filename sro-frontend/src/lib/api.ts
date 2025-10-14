@@ -16,6 +16,12 @@ class FrontendApiClient {
     return { success: true, data: res.data as T }
   }
 
+  async post<T>(path: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const res = await this.api.post(path, data, config)
+    if (res.data && (res.data.data !== undefined || res.data.success !== undefined)) return res.data
+    return { success: true, data: res.data as T }
+  }
+
   async getPaginated<T>(path: string, params?: Record<string, any>): Promise<ApiResponse<PaginatedResponse<T>>> {
     const res = await this.api.get(path, { params })
     return res.data

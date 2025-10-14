@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
@@ -20,6 +20,7 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { ArbitraryManager } from '@/types';
+import { registryService } from '@/services/registry';
 
 // Моковые данные для демонстрации
 const mockManagers: ArbitraryManager[] = [
@@ -171,9 +172,29 @@ interface ManagerDetailPageProps {
 export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
   const router = useRouter();
   const { id } = use(params);
-  const manager = mockManagers.find(m => m.id === id);
+  const [manager, setManager] = useState<ArbitraryManager | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  if (!manager) {
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      try {
+        const res = await registryService.getById(id)
+        if (!cancelled && res.success && res.data) setManager(res.data)
+        else if (!cancelled) setError('not-found')
+      } catch {
+        if (!cancelled) setError('not-found')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [id])
+
+  if (!loading && (!manager || error)) {
     notFound();
   }
 
@@ -198,11 +219,12 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
     return configs[status];
   };
 
-  const statusConfig = getStatusConfig(manager.status);
+  const statusConfig = manager ? getStatusConfig(manager.status) : getStatusConfig('active');
   const StatusIcon = statusConfig.icon;
 
-  const formatDateLong = (dateString: string) => {
+  const formatDateLong = (dateString?: string) => {
     try {
+      if (!dateString) return 'Неизвестно'
       const date = new Date(dateString);
       if (isNaN(date.getTime())) {
         return 'Неизвестно';
@@ -223,7 +245,8 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
     }
   };
 
-  const formatPhone = (phone: string) => {
+  const formatPhone = (phone?: string) => {
+    if (!phone) return '—'
     const cleaned = phone.replace(/\D/g, '');
     if (cleaned.length === 11) {
       return `+7 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9)}`;
@@ -238,6 +261,16 @@ export default function ManagerDetailPage({ params }: ManagerDetailPageProps) {
   const handleBack = () => {
     router.back();
   };
+
+  if (loading || !manager) {
+    return (
+      <Layout title="Загрузка..." description="">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-neutral-500">Загрузка...</div>
+        </div>
+      </Layout>
+    )
+  }
 
   return (
     <Layout

@@ -152,6 +152,7 @@ const LegacyTabs: React.FC<LegacyTabsProps> = ({ tabs, children, initialTab }) =
         <nav className="-mb-px flex flex-wrap gap-x-2 gap-y-1" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
+              type="button"
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(

@@ -77,6 +77,19 @@ export const newsService = {
     const items = Array.isArray(res.data) ? res.data.map(normalizeNews) : []
     return { success: true, data: items }
   },
+
+  async getById(id: string): Promise<ApiResponse<NewsItem>> {
+    const res = await api.get<any>(`/news/${id}`)
+    const item = res?.data ? normalizeNews(res.data) : undefined
+    return { success: !!item, data: item as NewsItem }
+  },
+
+  async byCategory(categorySlug: string, limit = 3, excludeId?: string): Promise<ApiResponse<NewsItem[]>> {
+    const res = await api.get<any[]>(`/news/category/${encodeURIComponent(categorySlug)}?limit=${limit}`)
+    let items = Array.isArray(res.data) ? res.data.map(normalizeNews) : []
+    if (excludeId) items = items.filter(n => n.id !== excludeId)
+    return { success: true, data: items }
+  },
 }
 
 export type NewsService = typeof newsService
