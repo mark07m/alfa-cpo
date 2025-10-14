@@ -21,6 +21,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   const editorRef = useRef<HTMLDivElement>(null);
   const [isHtmlMode, setIsHtmlMode] = useState(false);
   const pendingSyncRef = useRef<string | null>(null);
+  const savedSelectionRef = useRef<Range | null>(null);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
@@ -39,6 +40,24 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     if (editorRef.current) {
       onChange(editorRef.current.innerHTML);
     }
+  };
+
+  const saveSelection = () => {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) return;
+    const range = selection.getRangeAt(0);
+    if (editorRef.current && editorRef.current.contains(range.commonAncestorContainer)) {
+      // Clone the range to decouple from live DOM mutations
+      savedSelectionRef.current = range.cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    const selection = window.getSelection();
+    const range = savedSelectionRef.current;
+    if (!selection || !range) return;
+    selection.removeAllRanges();
+    selection.addRange(range);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -61,9 +80,22 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     }
   };
 
+  const preventToolbarFocus = (e: React.MouseEvent) => {
+    // Keep focus/selection in the contentEditable field
+    e.preventDefault();
+  };
+
   const execCommand = (command: string, value?: string) => {
-    document.execCommand(command, false, value);
+    if (isHtmlMode || disabled) return;
+    // Ensure editor has focus and selection restored before executing the command
     editorRef.current?.focus();
+    restoreSelection();
+    document.execCommand(command, false, value);
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML);
+      // Save new selection after command execution
+      saveSelection();
+    }
   };
 
   const decodeHtml = (str: string) => {
@@ -82,6 +114,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
       const toInsert = html || decodeHtml(text);
       document.execCommand('insertHTML', false, toInsert);
       onChange(editorRef.current?.innerHTML || '');
+      saveSelection();
     }
   };
 
@@ -99,8 +132,11 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     <div className={cn('w-full', className)}>
       {/* Toolbar */}
       <div className="border border-neutral-300 rounded-t-md bg-neutral-50 p-2 flex flex-wrap gap-1">
+        {/* format dropdown removed */}
+
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('bold')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm font-bold hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -110,6 +146,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         </button>
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('italic')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm italic hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -119,6 +156,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         </button>
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('underline')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm underline hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -126,28 +164,75 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         >
           U
         </button>
+        <button
+          type="button"
+          onMouseDown={preventToolbarFocus}
+          onClick={() => execCommand('strikeThrough')}
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Зачеркнутый"
+        >
+          S
+        </button>
         <div className="w-px h-6 bg-neutral-300 mx-1" />
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('insertUnorderedList')}
           disabled={disabled || isHtmlMode}
-          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          className={cn('p-1 hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Маркированный список"
         >
-          • Список
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+            <circle cx="3" cy="5" r="1" />
+            <circle cx="3" cy="10" r="1" />
+            <circle cx="3" cy="15" r="1" />
+            <line x1="6" y1="5" x2="17" y2="5" />
+            <line x1="6" y1="10" x2="17" y2="10" />
+            <line x1="6" y1="15" x2="17" y2="15" />
+          </svg>
         </button>
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('insertOrderedList')}
           disabled={disabled || isHtmlMode}
-          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          className={cn('p-1 hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Нумерованный список"
         >
-          1. Список
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
+            <text x="2" y="6" fontSize="7" fill="currentColor">1.</text>
+            <text x="2" y="11" fontSize="7" fill="currentColor">2.</text>
+            <text x="2" y="16" fontSize="7" fill="currentColor">3.</text>
+            <line x1="7" y1="5" x2="17" y2="5" />
+            <line x1="7" y1="10" x2="17" y2="10" />
+            <line x1="7" y1="15" x2="17" y2="15" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          onMouseDown={preventToolbarFocus}
+          onClick={() => execCommand('indent')}
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Увеличить отступ"
+        >
+          →|
+        </button>
+        <button
+          type="button"
+          onMouseDown={preventToolbarFocus}
+          onClick={() => execCommand('outdent')}
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Уменьшить отступ"
+        >
+          |←
         </button>
         <div className="w-px h-6 bg-neutral-300 mx-1" />
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('justifyLeft')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -157,6 +242,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         </button>
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('justifyCenter')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -166,6 +252,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         </button>
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('justifyRight')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -173,9 +260,11 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         >
           →
         </button>
+        {/* blockquote and code-block buttons removed */}
         <div className="w-px h-6 bg-neutral-300 mx-1" />
         <button
           type="button"
+          onMouseDown={preventToolbarFocus}
           onClick={() => execCommand('removeFormat')}
           disabled={disabled || isHtmlMode}
           className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
@@ -195,6 +284,7 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
               editorRef.current?.focus();
             }
           }}
+          onMouseDown={preventToolbarFocus}
           className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
           title="Вставить HTML"
         >
@@ -209,10 +299,58 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
             onChange(editorRef.current?.innerHTML || '');
             editorRef.current?.focus();
           }}
+          onMouseDown={preventToolbarFocus}
           className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
           title="Разделитель"
         >
           ─
+        </button>
+
+        <div className="w-px h-6 bg-neutral-300 mx-1" />
+        <button
+          type="button"
+          onClick={() => {
+            if (disabled || isHtmlMode) return;
+            const url = prompt('Введите URL ссылки');
+            if (url) execCommand('createLink', url);
+          }}
+          onMouseDown={preventToolbarFocus}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Вставить ссылку"
+          disabled={disabled || isHtmlMode}
+        >
+          🔗
+        </button>
+        <button
+          type="button"
+          onMouseDown={preventToolbarFocus}
+          onClick={() => execCommand('unlink')}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Убрать ссылку"
+          disabled={disabled || isHtmlMode}
+        >
+          ⨯🔗
+        </button>
+        <div className="w-px h-6 bg-neutral-300 mx-1" />
+        <button
+          type="button"
+          onMouseDown={preventToolbarFocus}
+          onClick={() => execCommand('undo')}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Отменить"
+          disabled={disabled || isHtmlMode}
+        >
+          ↶
+        </button>
+        <button
+          type="button"
+          onMouseDown={preventToolbarFocus}
+          onClick={() => execCommand('redo')}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
+          title="Повторить"
+          disabled={disabled || isHtmlMode}
+        >
+          ↷
         </button>
 
         <div className="ml-auto flex items-center gap-1">
@@ -244,9 +382,12 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
           contentEditable={!disabled}
           onInput={handleInput}
           onKeyDown={handleKeyDown}
+          onFocus={saveSelection}
+          onKeyUp={saveSelection}
+          onMouseUp={saveSelection}
           onPaste={handlePaste}
           className={cn(
-            'w-full min-h-[200px] p-3 border border-neutral-300 border-t-0 rounded-b-md focus:outline-none focus:ring-2 focus:ring-beige-500 focus:border-beige-500',
+            'w-full min-h-[200px] p-3 border border-neutral-300 border-t-0 rounded-b-md focus:outline-none focus:ring-2 focus:ring-beige-500 focus:border-beige-500 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6',
             disabled && 'bg-neutral-100 cursor-not-allowed'
           )}
           style={{ minHeight: '200px' }}
