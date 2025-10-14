@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsArray, IsDateString, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsArray, IsDateString, IsObject, IsBoolean } from 'class-validator';
 
 export class CreatePageDto {
   @IsString()
@@ -42,4 +42,8 @@ export class CreatePageDto {
   @IsOptional()
   @IsDateString()
   publishedAt?: Date;
+
+  @IsOptional()
+  @IsBoolean()
+  isCategoryMain?: boolean;
 }

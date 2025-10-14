@@ -24,6 +24,61 @@ export interface EventsService {
 }
 
 class EventsServiceImpl implements EventsService {
+  private normalizeEventType(apiType: any | undefined): EventType | undefined {
+    if (!apiType) return undefined
+    // apiType can be string (ObjectId) or populated object
+    if (typeof apiType === 'string') {
+      return { id: apiType, name: '', slug: '', isActive: true, createdAt: '', updatedAt: '' } as unknown as EventType
+    }
+    return {
+      id: apiType.id || apiType._id || '',
+      name: apiType.name || '',
+      slug: apiType.slug || '',
+      description: apiType.description,
+      color: apiType.color,
+      icon: apiType.icon,
+      isActive: apiType.isActive ?? true,
+      createdAt: apiType.createdAt || '',
+      updatedAt: apiType.updatedAt || ''
+    }
+  }
+
+  private normalizeEvent(apiEvent: any): Event {
+    return {
+      id: apiEvent.id || apiEvent._id || '',
+      title: apiEvent.title || '',
+      description: apiEvent.description || '',
+      content: apiEvent.content,
+      startDate: apiEvent.startDate,
+      endDate: apiEvent.endDate,
+      location: apiEvent.location || '',
+      type: this.normalizeEventType(apiEvent.type),
+      status: apiEvent.status || 'draft',
+      maxParticipants: apiEvent.maxParticipants,
+      currentParticipants: apiEvent.currentParticipants || 0,
+      registrationRequired: apiEvent.registrationRequired ?? false,
+      registrationDeadline: apiEvent.registrationDeadline,
+      materials: apiEvent.materials,
+      imageUrl: apiEvent.imageUrl,
+      cover: apiEvent.cover,
+      featured: apiEvent.featured ?? false,
+      tags: Array.isArray(apiEvent.tags) ? apiEvent.tags : [],
+      organizer: apiEvent.organizer,
+      contactEmail: apiEvent.contactEmail,
+      contactPhone: apiEvent.contactPhone,
+      price: apiEvent.price,
+      currency: apiEvent.currency || 'RUB',
+      requirements: apiEvent.requirements,
+      agenda: Array.isArray(apiEvent.agenda) ? apiEvent.agenda : [],
+      seoTitle: apiEvent.seoTitle,
+      seoDescription: apiEvent.seoDescription,
+      seoKeywords: Array.isArray(apiEvent.seoKeywords) ? apiEvent.seoKeywords : [],
+      createdAt: apiEvent.createdAt || '',
+      updatedAt: apiEvent.updatedAt || '',
+      createdBy: apiEvent.createdBy || { id: '', email: '', name: '', role: 'ADMIN', permissions: [], isActive: true, createdAt: '', updatedAt: '' },
+      updatedBy: apiEvent.updatedBy || { id: '', email: '', name: '', role: 'ADMIN', permissions: [], isActive: true, createdAt: '', updatedAt: '' }
+    }
+  }
   async getEvents(filters: EventFilters & PaginationParams = {}): Promise<ApiResponse<{ events: Event[]; pagination: any }>> {
     try {
       const params = new URLSearchParams()
@@ -31,8 +86,9 @@ class EventsServiceImpl implements EventsService {
       if (filters.search) params.append('search', filters.search)
       if (filters.type) params.append('type', filters.type)
       if (filters.status) params.append('status', filters.status)
-      if (filters.dateFrom) params.append('dateFrom', filters.dateFrom)
-      if (filters.dateTo) params.append('dateTo', filters.dateTo)
+      // Map UI date filters to backend query names
+      if (filters.dateFrom) params.append('startDateFrom', filters.dateFrom)
+      if (filters.dateTo) params.append('startDateTo', filters.dateTo)
       if (filters.featured !== undefined) params.append('featured', filters.featured.toString())
       if (filters.registrationRequired !== undefined) params.append('registrationRequired', filters.registrationRequired.toString())
       if (filters.location) params.append('location', filters.location)
@@ -44,17 +100,22 @@ class EventsServiceImpl implements EventsService {
 
       const response = await apiService.get(`/events?${params.toString()}`)
       console.log('Events service response:', response) // Debug log
-      
-      // Ensure we always return a valid response
-      if (!response || !response.data) {
+
+      if (!response || typeof response !== 'object') {
         return {
           success: false,
           data: { events: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0 } },
           message: 'API unavailable'
         }
       }
-      
-      return response.data
+
+      // Backend returns { success, data: Event[], pagination }
+      const eventsArray = Array.isArray((response as any).data) ? (response as any).data : []
+      const pagination = (response as any).pagination || { page: 1, limit: 10, total: 0, totalPages: 0 }
+      return {
+        success: true,
+        data: { events: (eventsArray as any[]).map((e) => this.normalizeEvent(e)), pagination }
+      }
     } catch (error: any) {
       console.error('Failed to fetch events:', error)
       if (error.message === 'MOCK_MODE') {
@@ -84,7 +145,11 @@ class EventsServiceImpl implements EventsService {
   async getEvent(id: string): Promise<ApiResponse<Event>> {
     try {
       const response = await apiService.get(`/events/${id}`)
-      return response.data
+      return {
+        success: (response as any).success !== false,
+        data: this.normalizeEvent((response as any).data),
+        message: (response as any).message
+      }
     } catch (error) {
       console.error('Failed to fetch event:', error)
       return {
@@ -97,8 +162,17 @@ class EventsServiceImpl implements EventsService {
 
   async createEvent(eventData: Partial<Event>): Promise<ApiResponse<Event>> {
     try {
-      const response = await apiService.post('/events', eventData)
-      return response.data
+      const payload: any = { ...eventData }
+      // Backend expects type as string (ObjectId)
+      if (payload.type && typeof payload.type === 'object' && (payload.type as any).id) {
+        payload.type = (payload.type as any).id
+      }
+      const response = await apiService.post('/events', payload)
+      return {
+        success: (response as any).success !== false,
+        data: this.normalizeEvent((response as any).data),
+        message: (response as any).message
+      }
     } catch (error) {
       console.error('Failed to create event:', error)
       return {
@@ -111,8 +185,17 @@ class EventsServiceImpl implements EventsService {
 
   async updateEvent(id: string, eventData: Partial<Event>): Promise<ApiResponse<Event>> {
     try {
-      const response = await apiService.put(`/events/${id}`, eventData)
-      return response.data
+      const payload: any = { ...eventData }
+      if (payload.type && typeof payload.type === 'object' && (payload.type as any).id) {
+        payload.type = (payload.type as any).id
+      }
+      // Backend uses PATCH for updates
+      const response = await apiService.patch(`/events/${id}`, payload)
+      return {
+        success: (response as any).success !== false,
+        data: this.normalizeEvent((response as any).data),
+        message: (response as any).message
+      }
     } catch (error) {
       console.error('Failed to update event:', error)
       return {
@@ -126,7 +209,7 @@ class EventsServiceImpl implements EventsService {
   async deleteEvent(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await apiService.delete(`/events/${id}`)
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to delete event:', error)
       return {
@@ -140,7 +223,7 @@ class EventsServiceImpl implements EventsService {
   async bulkDeleteEvents(ids: string[]): Promise<ApiResponse<void>> {
     try {
       const response = await apiService.delete('/events/bulk', { data: { ids } })
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to bulk delete events:', error)
       return {
@@ -154,7 +237,11 @@ class EventsServiceImpl implements EventsService {
   async updateEventStatus(id: string, status: Event['status']): Promise<ApiResponse<Event>> {
     try {
       const response = await apiService.patch(`/events/${id}/status`, { status })
-      return response.data
+      return {
+        success: (response as any).success !== false,
+        data: this.normalizeEvent((response as any).data),
+        message: (response as any).message
+      }
     } catch (error) {
       console.error('Failed to update event status:', error)
       return {
@@ -168,7 +255,19 @@ class EventsServiceImpl implements EventsService {
   async getEventTypes(): Promise<ApiResponse<EventType[]>> {
     try {
       const response = await apiService.get('/events/types')
-      return response.data
+      const raw = (response as any).data || []
+      const types: EventType[] = (raw as any[]).map((t) => ({
+        id: t.id || t._id || '',
+        name: t.name || '',
+        slug: t.slug || '',
+        description: t.description,
+        color: t.color,
+        icon: t.icon,
+        isActive: t.isActive ?? true,
+        createdAt: t.createdAt || '',
+        updatedAt: t.updatedAt || ''
+      }))
+      return { success: true, data: types }
     } catch (error: any) {
       console.error('Failed to fetch event types:', error)
       if (error.message === 'MOCK_MODE') {
@@ -196,7 +295,21 @@ class EventsServiceImpl implements EventsService {
   async createEventType(typeData: Partial<EventType>): Promise<ApiResponse<EventType>> {
     try {
       const response = await apiService.post('/events/types', typeData)
-      return response.data
+      const t = (response as any).data
+      return {
+        success: true,
+        data: {
+          id: t.id || t._id || '',
+          name: t.name || '',
+          slug: t.slug || '',
+          description: t.description,
+          color: t.color,
+          icon: t.icon,
+          isActive: t.isActive ?? true,
+          createdAt: t.createdAt || '',
+          updatedAt: t.updatedAt || ''
+        }
+      }
     } catch (error) {
       console.error('Failed to create event type:', error)
       return {
@@ -209,8 +322,23 @@ class EventsServiceImpl implements EventsService {
 
   async updateEventType(id: string, typeData: Partial<EventType>): Promise<ApiResponse<EventType>> {
     try {
-      const response = await apiService.put(`/events/types/${id}`, typeData)
-      return response.data
+      // Backend uses PATCH
+      const response = await apiService.patch(`/events/types/${id}`, typeData)
+      const t = (response as any).data
+      return {
+        success: true,
+        data: {
+          id: t.id || t._id || '',
+          name: t.name || '',
+          slug: t.slug || '',
+          description: t.description,
+          color: t.color,
+          icon: t.icon,
+          isActive: t.isActive ?? true,
+          createdAt: t.createdAt || '',
+          updatedAt: t.updatedAt || ''
+        }
+      }
     } catch (error) {
       console.error('Failed to update event type:', error)
       return {
@@ -224,7 +352,7 @@ class EventsServiceImpl implements EventsService {
   async deleteEventType(id: string): Promise<ApiResponse<void>> {
     try {
       const response = await apiService.delete(`/events/types/${id}`)
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to delete event type:', error)
       return {
@@ -238,7 +366,7 @@ class EventsServiceImpl implements EventsService {
   async getEventParticipants(eventId: string): Promise<ApiResponse<EventParticipant[]>> {
     try {
       const response = await apiService.get(`/events/${eventId}/participants`)
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to fetch event participants:', error)
       return {
@@ -252,7 +380,7 @@ class EventsServiceImpl implements EventsService {
   async addEventParticipant(eventId: string, participantData: Partial<EventParticipant>): Promise<ApiResponse<EventParticipant>> {
     try {
       const response = await apiService.post(`/events/${eventId}/participants`, participantData)
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to add event participant:', error)
       return {
@@ -265,8 +393,9 @@ class EventsServiceImpl implements EventsService {
 
   async updateEventParticipant(eventId: string, participantId: string, participantData: Partial<EventParticipant>): Promise<ApiResponse<EventParticipant>> {
     try {
-      const response = await apiService.put(`/events/${eventId}/participants/${participantId}`, participantData)
-      return response.data
+      // Backend uses PATCH
+      const response = await apiService.patch(`/events/${eventId}/participants/${participantId}`, participantData)
+      return response
     } catch (error) {
       console.error('Failed to update event participant:', error)
       return {
@@ -280,7 +409,7 @@ class EventsServiceImpl implements EventsService {
   async removeEventParticipant(eventId: string, participantId: string): Promise<ApiResponse<void>> {
     try {
       const response = await apiService.delete(`/events/${eventId}/participants/${participantId}`)
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to remove event participant:', error)
       return {
@@ -310,7 +439,8 @@ class EventsServiceImpl implements EventsService {
   async getUpcomingEvents(limit: number = 10): Promise<ApiResponse<Event[]>> {
     try {
       const response = await apiService.get(`/events/upcoming?limit=${limit}`)
-      return response.data
+      const data = (response as any).data || []
+      return { success: true, data: (data as any[]).map((e) => this.normalizeEvent(e)) }
     } catch (error) {
       console.error('Failed to fetch upcoming events:', error)
       return {
@@ -324,7 +454,8 @@ class EventsServiceImpl implements EventsService {
   async getFeaturedEvents(limit: number = 10): Promise<ApiResponse<Event[]>> {
     try {
       const response = await apiService.get(`/events/featured?limit=${limit}`)
-      return response.data
+      const data = (response as any).data || []
+      return { success: true, data: (data as any[]).map((e) => this.normalizeEvent(e)) }
     } catch (error) {
       console.error('Failed to fetch featured events:', error)
       return {
@@ -342,7 +473,7 @@ class EventsServiceImpl implements EventsService {
       if (month) params.append('month', month.toString())
       
       const response = await apiService.get(`/events/calendar?${params.toString()}`)
-      return response.data
+      return response
     } catch (error) {
       console.error('Failed to fetch events calendar:', error)
       return {

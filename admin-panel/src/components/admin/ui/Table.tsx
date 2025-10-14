@@ -183,9 +183,9 @@ export const Table = <T extends { id: string }>({
     );
   };
 
-    if (loading) {
+  if (loading) {
     return (
-      <div className={cn('bg-white rounded-lg border border-gray-200 shadow-sm', className)}>
+      <div className={cn('w-full bg-white rounded-lg border border-gray-200 shadow-sm', className)}>
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-2 text-sm text-gray-600">Загрузка данных...</p>
@@ -195,9 +195,9 @@ export const Table = <T extends { id: string }>({
   }
 
   return (
-    <div className={cn('bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden', className)}>
-      <div className="overflow-x-auto">
-        <table className="w-full table-auto divide-y divide-gray-200">
+    <div className={cn('w-full bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden', className)}>
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               {columns.map((column, index) => (
@@ -245,11 +245,12 @@ export const Table = <T extends { id: string }>({
                       key={colIndex}
                       className={cn(
                         'px-3 py-3 text-sm leading-snug text-gray-900',
+                        column.width || 'w-auto',
                         column.className
                       )}
                     >
                       <div className={cn(
-                        column.key === 'actions' ? 'action-buttons flex flex-wrap items-center gap-1' : 'break-words'
+                        column.key === 'actions' ? 'action-buttons flex flex-wrap items-center gap-1' : 'truncate'
                       )}>
                         {column.render
                           ? column.render(row[column.key as keyof T], row)

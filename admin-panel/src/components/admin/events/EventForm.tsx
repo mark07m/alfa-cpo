@@ -52,7 +52,7 @@ interface EventFormData {
   agenda: EventAgendaItem[]
   seoTitle?: string
   seoDescription?: string
-  seoKeywords?: string[]
+  seoKeywords?: string | string[]
 }
 
 export function EventForm({
@@ -98,7 +98,7 @@ export function EventForm({
       agenda: event?.agenda || [],
       seoTitle: event?.seoTitle || '',
       seoDescription: event?.seoDescription || '',
-      seoKeywords: event?.seoKeywords || []
+      seoKeywords: event?.seoKeywords ? event.seoKeywords.join(', ') : ''
     }
   })
 
@@ -152,15 +152,35 @@ export function EventForm({
   }
 
   const onFormSubmit = async (data: EventFormData) => {
+    // Parse SEO keywords from possible comma-separated string to array
+    const seoKeywordsArray: string[] | undefined = Array.isArray(data.seoKeywords)
+      ? (data.seoKeywords as string[]).filter((k: string) => (k || '').trim() !== '')
+      : (typeof data.seoKeywords === 'string' && (data.seoKeywords as string).trim().length > 0)
+        ? (data.seoKeywords as string).split(',').map((k: string) => k.trim()).filter((k: string) => k.length > 0)
+        : undefined
+
+    const agendaFiltered = (data.agenda || []).filter((item) =>
+      (item.title || '').trim() !== '' && (item.time || '').trim() !== ''
+    )
+
     const eventData: Partial<Event> = {
       ...data,
+      // Normalize numbers
+      maxParticipants: data.maxParticipants !== undefined && data.maxParticipants !== null && data.maxParticipants !== ('' as any)
+        ? Number(data.maxParticipants)
+        : undefined,
+      price: data.price !== undefined && data.price !== null && data.price !== ('' as any)
+        ? Number(data.price)
+        : undefined,
+      // Normalize dates
       startDate: new Date(data.startDate).toISOString(),
       endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
       registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline).toISOString() : undefined,
-      type: data.type ? { id: data.type } as EventType : undefined,
-      tags: data.tags.filter(tag => tag.trim() !== ''),
-      agenda: data.agenda.filter(item => item.title.trim() !== ''),
-      seoKeywords: data.seoKeywords?.filter(keyword => keyword.trim() !== '')
+      // Backend expects type as string ObjectId; omit if empty string
+      type: data.type && String(data.type).trim().length > 0 ? (data.type as unknown as any) : undefined,
+      tags: (data.tags || []).filter(tag => (tag || '').trim() !== ''),
+      agenda: agendaFiltered,
+      seoKeywords: seoKeywordsArray
     }
 
     await onSubmit(eventData)
@@ -182,6 +202,7 @@ export function EventForm({
             {tabs.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id as 'basic' | 'details' | 'agenda' | 'seo')}
                 className={`${
                   activeTab === tab.id

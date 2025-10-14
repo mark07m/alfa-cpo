@@ -8,6 +8,8 @@ import { DocumentModel, DocumentDocument } from '../src/database/schemas/documen
 import { EventType, EventTypeDocument } from '../src/database/schemas/event-type.schema';
 import { ArbitraryManager, ArbitraryManagerDocument } from '../src/database/schemas/arbitrary-manager.schema';
 import { Types } from 'mongoose';
+import { Page, PageDocument } from '../src/database/schemas/page.schema';
+import { User, UserDocument } from '../src/database/schemas/user.schema';
 
 async function seedData() {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -17,6 +19,8 @@ async function seedData() {
   const documentModel = app.get<Model<DocumentDocument>>(getModelToken(DocumentModel.name));
   const eventTypeModel = app.get<Model<EventTypeDocument>>(getModelToken(EventType.name));
   const arbitraryManagerModel = app.get<Model<ArbitraryManagerDocument>>(getModelToken(ArbitraryManager.name));
+  const pageModel = app.get<Model<PageDocument>>(getModelToken(Page.name));
+  const userModel = app.get<Model<UserDocument>>(getModelToken(User.name));
 
   try {
     console.log('🌱 Начинаем заполнение тестовыми данными...');
@@ -297,6 +301,253 @@ async function seedData() {
       }
     } else {
       console.log('⚠️ Нет арбитражных управляющих для создания дисциплинарных мер');
+    }
+
+    // 5. Создаем/обновляем страницы сайта (pages)
+    console.log('🗂️ Создаем страницы сайта...');
+
+    // Определяем пользователя для createdBy/updatedBy (если есть), иначе используем новые ObjectId
+    let authorId: Types.ObjectId | null = null;
+    try {
+      const anyUser = await userModel.findOne().select('_id').lean();
+      if (anyUser?._id) {
+        authorId = new Types.ObjectId(anyUser._id);
+      }
+    } catch (_) {
+      // ignore, fallback to generated ids below
+    }
+
+    type SeedPage = {
+      slug: string;
+      title: string;
+      content: string;
+      excerpt?: string;
+      status?: 'published' | 'draft' | 'archived';
+      seoTitle?: string;
+      seoDescription?: string;
+      seoKeywords?: string[];
+      template?: string;
+      isCategoryMain?: boolean;
+    };
+
+    const pages: SeedPage[] = [
+      // Главная
+      {
+        slug: '/',
+        title: 'Главная',
+        content: '<h1>СРО Арбитражных Управляющих</h1><p>Официальный сайт саморегулируемой организации арбитражных управляющих.</p>',
+        excerpt: 'Официальный сайт саморегулируемой организации арбитражных управляющих',
+        status: 'published',
+        seoTitle: 'СРО Арбитражных Управляющих - Главная',
+        seoDescription: 'Официальный сайт саморегулируемой организации арбитражных управляющих. Реестр членов, нормативные документы, компенсационный фонд.',
+        template: 'home',
+        isCategoryMain: true,
+      },
+      // О нас и подразделы
+      {
+        slug: 'about',
+        title: 'О нашей Ассоциации',
+        content: '<h1>О нашей Ассоциации</h1><p>Информация об истории, миссии и структуре организации.</p>',
+        excerpt: 'Информация о саморегулируемой организации',
+        status: 'published',
+        seoTitle: 'Об Ассоциации - СРО Арбитражных Управляющих',
+        seoDescription: 'Информация о саморегулируемой организации арбитражных управляющих: история, руководство, структура управления.',
+        template: 'about',
+        isCategoryMain: true,
+      },
+      {
+        slug: 'about/history',
+        title: 'История',
+        content: '<h1>История развития</h1><p>Ключевые вехи развития Ассоциации.</p>',
+        status: 'published',
+        template: 'about',
+      },
+      {
+        slug: 'about/leadership',
+        title: 'Руководство',
+        content: '<h1>Руководство</h1><p>Информация о руководящих органах Ассоциации.</p>',
+        status: 'published',
+        template: 'about',
+      },
+      {
+        slug: 'about/structure',
+        title: 'Структура',
+        content: '<h1>Структура управления</h1><p>Организационная структура управления.</p>',
+        status: 'published',
+        template: 'about',
+      },
+      // Документы и подразделы
+      {
+        slug: 'documents',
+        title: 'Документы',
+        content: '<h1>Документы</h1><p>Учредительные и нормативные документы, правила и стандарты.</p>',
+        excerpt: 'Нормативные документы, правила деятельности, устав',
+        status: 'published',
+        seoTitle: 'Документы - СРО Арбитражных Управляющих',
+        seoDescription: 'Нормативные документы, правила деятельности, учредительные документы саморегулируемой организации арбитражных управляющих.',
+        template: 'documents',
+        isCategoryMain: true,
+      },
+      {
+        slug: 'documents/regulatory',
+        title: 'Нормативные документы',
+        content: '<h1>Нормативные документы</h1><p>Устав, свидетельства, выписки и положения.</p>',
+        status: 'published',
+        template: 'documents',
+      },
+      {
+        slug: 'documents/rules',
+        title: 'Правила и стандарты',
+        content: '<h1>Правила и стандарты</h1><p>Кодекс этики, стандарты и внутренние правила СРО.</p>',
+        status: 'published',
+        template: 'documents',
+      },
+      // Новости (список)
+      {
+        slug: 'news',
+        title: 'Текущая деятельность',
+        content: '<h1>Текущая деятельность</h1><p>Актуальные новости, мероприятия и объявления.</p>',
+        status: 'published',
+        seoTitle: 'Текущая деятельность - СРО АУ',
+        seoDescription: 'Актуальные новости, мероприятия и объявления саморегулируемой организации арбитражных управляющих.',
+        template: 'news',
+        isCategoryMain: true,
+      },
+      // Мероприятия (список)
+      {
+        slug: 'events',
+        title: 'Мероприятия',
+        content: '<h1>Мероприятия</h1><p>Семинары, конференции, тренинги и другие события.</p>',
+        status: 'published',
+        seoTitle: 'Мероприятия - СРО АУ',
+        seoDescription: 'Актуальные мероприятия, семинары, конференции и тренинги для арбитражных управляющих.',
+        template: 'events',
+        isCategoryMain: true,
+      },
+      // Реестр (список)
+      {
+        slug: 'registry',
+        title: 'Реестр арбитражных управляющих',
+        content: '<h1>Реестр арбитражных управляющих</h1><p>Поиск арбитражных управляющих в реестре СРО.</p>',
+        status: 'published',
+        seoTitle: 'Реестр арбитражных управляющих - СРО АУ',
+        seoDescription: 'Поиск арбитражных управляющих в реестре СРО. Поиск по ФИО, ИНН, номеру в реестре.',
+        template: 'registry',
+        isCategoryMain: true,
+      },
+      // Контакты
+      {
+        slug: 'contacts',
+        title: 'Контакты',
+        content: '<h1>Контакты</h1><p>Адрес, телефон, email и часы работы.</p>',
+        status: 'published',
+        seoTitle: 'Контакты - СРО Арбитражных Управляющих',
+        seoDescription: 'Контактная информация СРО: адрес, телефон, email, часы работы.',
+        template: 'contacts',
+        isCategoryMain: true,
+      },
+      // Компенсационный фонд
+      {
+        slug: 'compensation-fund',
+        title: 'Компенсационный фонд',
+        content: '<h1>Компенсационный фонд</h1><p>Информация о размере фонда, реквизитах и документах.</p>',
+        status: 'published',
+        seoTitle: 'Компенсационный фонд - СРО АУ',
+        seoDescription: 'Информация о компенсационном фонде СРО: размер, реквизиты, документы.',
+        template: 'compensation_fund',
+        isCategoryMain: true,
+      },
+      // Аккредитация
+      {
+        slug: 'accreditation',
+        title: 'Аккредитация',
+        content: '<h1>Аккредитация</h1><p>Правила, процедура и список аккредитованных организаций.</p>',
+        status: 'published',
+        seoTitle: 'Аккредитация - СРО АУ',
+        seoDescription: 'Информация об аккредитации в СРО: правила, процедура, список аккредитованных организаций.',
+        template: 'accreditation',
+        isCategoryMain: true,
+      },
+      // Трудовая деятельность
+      {
+        slug: 'labor-activity',
+        title: 'Трудовая деятельность',
+        content: '<h1>Трудовая деятельность</h1><p>Информация о трудовой деятельности членов СРО.</p>',
+        status: 'published',
+        template: 'labor_activity',
+        isCategoryMain: true,
+      },
+      // Контроль
+      {
+        slug: 'control',
+        title: 'Контроль',
+        content: '<h1>Контроль</h1><p>Контроль и надзор за деятельностью членов СРО.</p>',
+        status: 'published',
+        template: 'control',
+        isCategoryMain: true,
+      },
+      // Проф. развитие
+      {
+        slug: 'professional-development',
+        title: 'Профессиональное развитие',
+        content: '<h1>Профессиональное развитие</h1><p>Информация о повышении квалификации.</p>',
+        status: 'published',
+        template: 'custom',
+        isCategoryMain: true,
+      },
+      // Политики/условия/реквизиты
+      {
+        slug: 'privacy',
+        title: 'Политика конфиденциальности',
+        content: '<h1>Политика конфиденциальности</h1><p>Порядок обработки персональных данных.</p>',
+        status: 'published',
+        template: 'default',
+      },
+      {
+        slug: 'terms',
+        title: 'Пользовательское соглашение',
+        content: '<h1>Пользовательское соглашение</h1><p>Условия использования сайта.</p>',
+        status: 'published',
+        template: 'default',
+      },
+      {
+        slug: 'requisites',
+        title: 'Реквизиты',
+        content: '<h1>Реквизиты</h1><p>Основные реквизиты организации.</p>',
+        status: 'published',
+        template: 'default',
+      },
+    ];
+
+    for (const pageData of pages) {
+      const existing = await pageModel.findOne({ slug: pageData.slug }).exec();
+      const now = new Date();
+      if (!existing) {
+        const createdBy = authorId || new Types.ObjectId();
+        const updatedBy = authorId || new Types.ObjectId();
+        const doc = new pageModel({
+          ...pageData,
+          status: pageData.status || 'published',
+          publishedAt: (pageData.status || 'published') === 'published' ? now : undefined,
+          createdBy,
+          updatedBy,
+        });
+        await doc.save();
+        console.log(`✅ Страница "${pageData.slug}" создана`);
+      } else {
+        await pageModel.updateOne(
+          { _id: existing._id },
+          {
+            $set: {
+              ...pageData,
+              status: pageData.status || existing.status || 'published',
+              publishedAt: (pageData.status || existing.status || 'published') === 'published' ? (existing.publishedAt || now) : existing.publishedAt,
+              updatedBy: authorId || new Types.ObjectId(),
+            },
+          }
+        ).exec();
+        console.log(`ℹ️ Страница "${pageData.slug}" обновлена`);
+      }
     }
 
     console.log('🎉 Заполнение тестовыми данными завершено!');

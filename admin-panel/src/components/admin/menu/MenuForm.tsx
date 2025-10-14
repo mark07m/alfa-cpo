@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { MenuItem, MenuFormData } from '@/types/admin';
+import { MenuItem, MenuFormData, Page, PageFilters } from '@/types/admin';
 import { Button } from '@/components/admin/ui/Button';
 import { Input } from '@/components/admin/ui/Input';
 import { Select } from '@/components/admin/ui/Select';
@@ -16,6 +16,7 @@ import {
   EyeIcon,
   EyeSlashIcon
 } from '@heroicons/react/24/outline';
+import { pagesService } from '@/services/admin/pages';
 
 const menuSchema = z.object({
   title: z.string().min(1, 'Название обязательно'),
@@ -36,12 +37,15 @@ interface MenuFormProps {
 
 export const MenuForm: React.FC<MenuFormProps> = ({ menuItem, onSuccess, onCancel }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availablePages, setAvailablePages] = useState<Page[]>([]);
+  const [loadingPages, setLoadingPages] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors, isDirty }
   } = useForm<MenuFormData>({
     resolver: zodResolver(menuSchema),
@@ -70,6 +74,22 @@ export const MenuForm: React.FC<MenuFormProps> = ({ menuItem, onSuccess, onCance
     }
   }, [menuItem, reset]);
 
+  useEffect(() => {
+    const loadPages = async () => {
+      setLoadingPages(true);
+      try {
+        const filters: PageFilters = { status: 'published', excludeMain: true } as any;
+        const { data } = await pagesService.getPages(filters, { page: 1, limit: 100 });
+        setAvailablePages(data);
+      } catch (e) {
+        setAvailablePages([]);
+      } finally {
+        setLoadingPages(false);
+      }
+    };
+    loadPages();
+  }, []);
+
   const onSubmit = async (data: MenuFormData) => {
     setIsSubmitting(true);
     try {
@@ -88,6 +108,18 @@ export const MenuForm: React.FC<MenuFormProps> = ({ menuItem, onSuccess, onCance
   };
 
   const isExternal = watch('isExternal');
+  const selectedPageId = watch('pageId');
+
+  useEffect(() => {
+    if (selectedPageId && !isExternal) {
+      const p = availablePages.find(p => p.id === selectedPageId);
+      if (p?.slug) {
+        const url = p.slug.startsWith('/') ? p.slug : `/${p.slug}`;
+        setValue('url', url, { shouldDirty: true });
+        setValue('isExternal', false, { shouldDirty: true });
+      }
+    }
+  }, [selectedPageId, isExternal, availablePages, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -103,6 +135,16 @@ export const MenuForm: React.FC<MenuFormProps> = ({ menuItem, onSuccess, onCance
             placeholder="Введите название пункта меню"
           />
           
+          <Select
+            label="Связать со страницей"
+            {...register('pageId')}
+            options={[
+              { value: '', label: loadingPages ? 'Загрузка...' : 'Не связывать' },
+              ...availablePages.map((p) => ({ value: p.id, label: `${p.title} (${p.slug})` }))
+            ]}
+            helperText="Только опубликованные страницы, кроме главных в своей категории"
+          />
+
           <Input
             label="URL"
             {...register('url')}

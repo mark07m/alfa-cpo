@@ -20,6 +20,14 @@ export class PagesService {
         throw new ConflictException('Страница с таким slug уже существует');
       }
 
+      // If this page is marked as main for its template, demote any existing main in that template
+      if (createPageDto.isCategoryMain && createPageDto.template) {
+        await this.pageModel.updateMany(
+          { template: createPageDto.template, isCategoryMain: true },
+          { $set: { isCategoryMain: false } }
+        ).exec();
+      }
+
       const page = new this.pageModel({
         ...createPageDto,
         createdBy: new Types.ObjectId(userId),
@@ -47,6 +55,7 @@ export class PagesService {
       limit = 10,
       sortBy = 'createdAt',
       sortOrder = 'desc',
+      isCategoryMain,
     } = query;
 
     const filter: any = {};
@@ -65,6 +74,10 @@ export class PagesService {
 
     if (template) {
       filter.template = template;
+    }
+
+    if (typeof isCategoryMain === 'boolean') {
+      filter.isCategoryMain = isCategoryMain;
     }
 
     if (publishedAtFrom || publishedAtTo) {
@@ -162,6 +175,17 @@ export class PagesService {
     // Если статус меняется на published, устанавливаем publishedAt
     if (updatePageDto.status === 'published' && !updatePageDto.publishedAt) {
       updateData.publishedAt = new Date();
+    }
+
+    // If set as main for its template, demote others in that template
+    if (updatePageDto.isCategoryMain === true) {
+      const template = updatePageDto.template || (await this.pageModel.findById(id).select('template').lean().exec())?.template;
+      if (template) {
+        await this.pageModel.updateMany(
+          { _id: { $ne: id }, template, isCategoryMain: true },
+          { $set: { isCategoryMain: false } }
+        ).exec();
+      }
     }
 
     const page = await this.pageModel

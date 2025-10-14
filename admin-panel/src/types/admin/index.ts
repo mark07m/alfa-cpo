@@ -339,7 +339,10 @@ export interface Page {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string[];
+  // UI alias for backend isCategoryMain
   isHomePage?: boolean;
+  // Backend-driven flag
+  isCategoryMain?: boolean;
   showInMenu?: boolean;
   menuOrder?: number;
   parentId?: string;
@@ -383,6 +386,8 @@ export interface PageFilters {
   author?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  // Exclude category main pages from dropdowns
+  excludeMain?: boolean;
 }
 
 export interface PageFormData {
@@ -395,7 +400,9 @@ export interface PageFormData {
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;
+  // UI alias for backend isCategoryMain
   isHomePage?: boolean;
+  isCategoryMain?: boolean;
   showInMenu?: boolean;
   menuOrder?: number;
   parentId?: string;

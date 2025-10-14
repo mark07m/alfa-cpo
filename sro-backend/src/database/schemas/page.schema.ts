@@ -36,6 +36,9 @@ export class Page {
   @Prop()
   template?: string;
 
+  @Prop({ default: false })
+  isCategoryMain?: boolean;
+
   @Prop({
     type: Map,
     of: MongooseSchema.Types.Mixed,
@@ -53,3 +56,9 @@ export class Page {
 }
 
 export const PageSchema = SchemaFactory.createForClass(Page);
+
+// Ensure only one main page per template (category)
+PageSchema.index(
+  { template: 1 },
+  { unique: true, partialFilterExpression: { isCategoryMain: true } }
+);

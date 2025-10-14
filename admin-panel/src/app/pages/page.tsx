@@ -28,7 +28,6 @@ import { AdminLayout } from '@/components/admin/layout/AdminLayout';
 
 export default function PagesPage() {
   const router = useRouter();
-  const [filters, setFilters] = useState<PageFilters>({});
   const [selectedPages, setSelectedPages] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -37,13 +36,16 @@ export default function PagesPage() {
     loading,
     error,
     pagination,
+    setPage,
     createPage,
     updatePage,
     deletePage,
     updatePageStatus,
     bulkUpdateStatus,
     bulkDeletePages,
-    fetchPages
+    fetchPages,
+    filters,
+    setFilters,
   } = usePages();
 
   useEffect(() => {
@@ -60,8 +62,7 @@ export default function PagesPage() {
   };
 
   const handlePageChange = (page: number) => {
-    // Update page in the hook
-    // This would typically be handled by the hook itself
+    setPage(page);
   };
 
   const handleSelectPage = (id: string, isSelected: boolean) => {
@@ -115,6 +116,14 @@ export default function PagesPage() {
       setSelectedPages([]);
     } catch (error) {
       console.error('Error bulk updating status:', error);
+    }
+  };
+
+  const handleToggleMain = async (page: Page) => {
+    try {
+      await updatePage(page.id, { isHomePage: !page.isHomePage });
+    } catch (error) {
+      console.error('Error toggling main flag:', error);
     }
   };
 
@@ -217,6 +226,15 @@ export default function PagesPage() {
       title: 'Действия',
       render: (value: unknown, page: Page) => (
         <div className="flex space-x-1">
+          <Button
+            variant={page.isHomePage ? 'outline' : 'outline'}
+            size="sm"
+            onClick={() => handleToggleMain(page)}
+            title={page.isHomePage ? 'Снять флаг главной' : 'Сделать главной'}
+            className="p-1"
+          >
+            <HomeIcon className={`h-4 w-4 ${page.isHomePage ? 'text-amber-600' : 'text-neutral-600'}`} />
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -338,6 +356,11 @@ export default function PagesPage() {
                   label="В меню"
                   checked={filters.showInMenu || false}
                   onChange={(e) => handleFilterChange('showInMenu', e.target.checked)}
+                />
+                <Checkbox
+                  label="Скрывать главные"
+                  checked={filters.excludeMain || false}
+                  onChange={(e) => handleFilterChange('excludeMain', e.target.checked)}
                 />
               </div>
             </div>

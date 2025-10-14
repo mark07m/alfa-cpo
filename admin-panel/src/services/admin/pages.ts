@@ -13,6 +13,8 @@ export const pagesService = {
       if (filters.template) params.append('template', filters.template);
       if (filters.dateFrom) params.append('publishedAtFrom', filters.dateFrom);
       if (filters.dateTo) params.append('publishedAtTo', filters.dateTo);
+      if (filters.isHomePage !== undefined) params.append('isCategoryMain', String(!!filters.isHomePage));
+      if (filters.excludeMain) params.append('isCategoryMain', 'false');
       if (pagination.page) params.append('page', pagination.page.toString());
       if (pagination.limit) params.append('limit', pagination.limit.toString());
       if (filters.sortBy) params.append('sortBy', filters.sortBy);
@@ -33,7 +35,9 @@ export const pagesService = {
       // Transform _id to id for frontend compatibility
       const transformedData = (response.data || []).map((page: any) => ({
         ...page,
-        id: page._id || page.id
+        id: page._id || page.id,
+        // Map backend flag to UI alias
+        isHomePage: page.isCategoryMain || page.isHomePage,
       }));
       
       return {
@@ -112,7 +116,9 @@ export const pagesService = {
       // Transform _id to id for frontend compatibility
       return {
         ...response.data,
-        id: (response.data as any)._id || response.data.id
+        id: (response.data as any)._id || response.data.id,
+        // Map backend main flag to UI checkbox state
+        isHomePage: (response.data as any).isCategoryMain || (response.data as any).isHomePage,
       };
     } catch (error: any) {
       console.error('Error fetching page:', error);
@@ -146,7 +152,8 @@ export const pagesService = {
         seoKeywords: data.seoKeywords ? data.seoKeywords.split(',').map(k => k.trim()) : [],
         template: data.template,
         metadata: data.customFields || {},
-        publishedAt: data.publishedAt ? new Date(data.publishedAt) : undefined
+        publishedAt: data.publishedAt ? new Date(data.publishedAt) : undefined,
+        isCategoryMain: Boolean(data.isCategoryMain ?? data.isHomePage)
       };
 
       const response = await apiService.post('/pages', createData) as ApiResponse<Page>;
@@ -179,6 +186,9 @@ export const pagesService = {
         updateData.seoKeywords = data.seoKeywords ? data.seoKeywords.split(',').map(k => k.trim()) : [];
       }
       if (data.template !== undefined) updateData.template = data.template;
+      if (data.isHomePage !== undefined || data.isCategoryMain !== undefined) {
+        updateData.isCategoryMain = Boolean(data.isCategoryMain ?? data.isHomePage);
+      }
       if (data.customFields !== undefined) updateData.metadata = data.customFields;
       if (data.publishedAt !== undefined) {
         updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : undefined;
@@ -191,7 +201,8 @@ export const pagesService = {
       // Transform _id to id for frontend compatibility
       return {
         ...response.data,
-        id: (response.data as any)._id || response.data.id
+        id: (response.data as any)._id || response.data.id,
+        isHomePage: (response.data as any).isCategoryMain || (response.data as any).isHomePage,
       };
     } catch (error: any) {
       console.error('Error updating page:', error);

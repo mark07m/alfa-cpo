@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum, IsString, IsDateString } from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsDateString, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class PageQueryDto {
@@ -37,4 +37,9 @@ export class PageQueryDto {
   @IsOptional()
   @IsEnum(['asc', 'desc'])
   sortOrder?: 'asc' | 'desc' = 'desc';
+
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  isCategoryMain?: boolean;
 }
