@@ -14,7 +14,8 @@ import {
   TrashIcon,
   CheckCircleIcon,
   ClockIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  StarIcon
 } from '@heroicons/react/24/outline'
 
 interface NewsListProps {
@@ -190,8 +191,13 @@ export function NewsList({
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-xs font-medium text-gray-900 truncate">
+                      <h3 className="text-xs font-medium text-gray-900 truncate flex items-center gap-1">
                         {newsItem.title}
+                        {newsItem.featured && (
+                          <span title="Важная новость" className="inline-flex items-center text-yellow-500">
+                            <StarIcon className="h-3 w-3" />
+                          </span>
+                        )}
                       </h3>
                       <p className="text-xs text-gray-500 mt-0.5 truncate">
                         {newsItem.excerpt}

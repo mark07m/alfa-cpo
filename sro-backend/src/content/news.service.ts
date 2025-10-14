@@ -25,6 +25,14 @@ export class NewsService {
       }
     }
 
+    // Ограничиваем количество опубликованных важных новостей (макс. 4)
+    if (createNewsDto.featured && createNewsDto.status === 'published') {
+      const featuredCount = await this.newsModel.countDocuments({ featured: true, status: 'published' });
+      if (featuredCount >= 4) {
+        throw new BadRequestException('Достигнут лимит важных новостей (макс. 4)');
+      }
+    }
+
     const news = new this.newsModel({
       ...createNewsDto,
       publishedAt: new Date(createNewsDto.publishedAt),
@@ -144,6 +152,23 @@ export class NewsService {
       }
     }
 
+    // Проверяем ограничение на количество опубликованных важных новостей
+    const existing = await this.newsModel.findById(id).select('featured status').lean();
+    if (!existing) {
+      throw new NotFoundException('Новость не найдена');
+    }
+
+    const nextFeatured = (updateNewsDto as any).featured !== undefined ? (updateNewsDto as any).featured : existing.featured;
+    const nextStatus = (updateNewsDto as any).status !== undefined ? (updateNewsDto as any).status : (existing as any).status;
+
+    // Если новость становится одновременно featured и published, проверяем лимит
+    if (nextFeatured && nextStatus === 'published' && !(existing.featured && (existing as any).status === 'published')) {
+      const featuredCount = await this.newsModel.countDocuments({ featured: true, status: 'published' });
+      if (featuredCount >= 4) {
+        throw new BadRequestException('Достигнут лимит важных новостей (макс. 4)');
+      }
+    }
+
     const updateData = {
       ...updateNewsDto,
       updatedBy: new Types.ObjectId(userId),
@@ -151,6 +176,11 @@ export class NewsService {
 
     if (updateNewsDto.publishedAt) {
       (updateData as any).publishedAt = new Date(updateNewsDto.publishedAt);
+    }
+
+    // Если статус становится "published" и дата публикации отсутствует — проставляем текущую дату
+    if (nextStatus === 'published' && !(updateData as any).publishedAt) {
+      (updateData as any).publishedAt = new Date();
     }
 
     const news = await this.newsModel
@@ -298,6 +328,19 @@ export class NewsService {
   async updateStatus(id: string, status: string, userId: string): Promise<News> {
     if (!Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Неверный ID новости');
+    }
+
+    // Если переводим новость в опубликованную, а она помечена как важная — проверяем лимит
+    const existing = await this.newsModel.findById(id).select('featured status').lean();
+    if (!existing) {
+      throw new NotFoundException('Новость не найдена');
+    }
+
+    if (status === 'published' && existing.status !== 'published' && existing.featured === true) {
+      const featuredCount = await this.newsModel.countDocuments({ featured: true, status: 'published' });
+      if (featuredCount >= 4) {
+        throw new BadRequestException('Достигнут лимит важных новостей (макс. 4)');
+      }
     }
 
     const updateData: any = {

@@ -21,6 +21,19 @@ export interface NewsService {
 }
 
 class NewsServiceImpl implements NewsService {
+  private sanitizePayload<T extends Record<string, any>>(obj: T): T {
+    const entries = Object.entries(obj).filter(([_, v]) => v !== undefined && v !== null)
+    return Object.fromEntries(entries) as T
+  }
+
+  private async getFeaturedPublishedCount(): Promise<number> {
+    try {
+      const response = await apiService.get<{ data: any[] } & { pagination?: any }>(`/news?featured=true&status=published&page=1&limit=1`)
+      return (response as any)?.pagination?.total ?? 0
+    } catch {
+      return 0
+    }
+  }
   async getNews(filters: NewsFilters & PaginationParams = { page: 1, limit: 10 }): Promise<ApiResponse<{ news: News[]; pagination: any }>> {
     try {
       const params = new URLSearchParams()
@@ -96,6 +109,7 @@ class NewsServiceImpl implements NewsService {
           updatedAt: new Date().toISOString()
         },
         imageUrl: newsItem.imageUrl,
+        featured: !!newsItem.featured,
         seoTitle: newsItem.seoTitle,
         seoDescription: newsItem.seoDescription,
         seoKeywords: Array.isArray(newsItem.seoKeywords) 
@@ -195,6 +209,7 @@ class NewsServiceImpl implements NewsService {
             updatedAt: new Date().toISOString()
           },
           imageUrl: newsItem.imageUrl,
+          featured: !!newsItem.featured,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
           seoKeywords: Array.isArray(newsItem.seoKeywords) 
@@ -240,21 +255,21 @@ class NewsServiceImpl implements NewsService {
   async createNews(newsData: Partial<News>): Promise<ApiResponse<News>> {
     try {
       // Transform frontend News data to backend CreateNewsDto format
-      const createData = {
+      const createData = this.sanitizePayload({
         title: newsData.title,
         content: newsData.content,
         excerpt: newsData.excerpt,
         publishedAt: newsData.publishedAt,
         category: newsData.category?.id !== 'default' ? newsData.category?.id : undefined,
         tags: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(tag => tag.trim()) : [],
-        featured: false, // Default value
+        featured: newsData.featured === true,
         imageUrl: newsData.imageUrl,
         cover: newsData.imageUrl, // Map imageUrl to cover
         status: newsData.status || 'draft',
         seoTitle: newsData.seoTitle,
         seoDescription: newsData.seoDescription,
         seoKeywords: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(keyword => keyword.trim()) : []
-      }
+      })
 
       const response = await apiService.post('/news', createData) as ApiResponse<News>
       
@@ -309,6 +324,7 @@ class NewsServiceImpl implements NewsService {
             updatedAt: new Date().toISOString()
           },
           imageUrl: newsItem.imageUrl,
+          featured: !!newsItem.featured,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
           seoKeywords: Array.isArray(newsItem.seoKeywords) 
@@ -329,10 +345,13 @@ class NewsServiceImpl implements NewsService {
       if (error.message === 'MOCK_MODE') {
         throw error // Re-throw to be caught by NewsServiceWithFallback
       }
+      const backendMessage = (error?.response?.data?.message && Array.isArray(error.response.data.message))
+        ? error.response.data.message.join(', ')
+        : (error?.response?.data?.message || error?.response?.data?.error || error?.message || 'Не удалось создать новость')
       return {
         success: false,
         data: null as any,
-        message: 'API unavailable'
+        message: backendMessage
       }
     }
   }
@@ -340,20 +359,41 @@ class NewsServiceImpl implements NewsService {
   async updateNews(id: string, newsData: Partial<News>): Promise<ApiResponse<News>> {
     try {
       // Transform frontend News data to backend UpdateNewsDto format
-      const updateData = {
+      const updateDataRaw = {
         title: newsData.title,
         content: newsData.content,
         excerpt: newsData.excerpt,
         publishedAt: newsData.publishedAt,
         category: newsData.category?.id !== 'default' ? newsData.category?.id : undefined,
         tags: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(tag => tag.trim()) : [],
-        featured: false, // Default value
+        featured: newsData.featured,
         imageUrl: newsData.imageUrl,
         cover: newsData.imageUrl, // Map imageUrl to cover
         status: newsData.status,
         seoTitle: newsData.seoTitle,
         seoDescription: newsData.seoDescription,
         seoKeywords: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(keyword => keyword.trim()) : []
+      }
+
+      const updateData = this.sanitizePayload(updateDataRaw)
+
+      // Client-side pre-check for featured limit to avoid backend 400
+      if (updateData.featured === true || updateData.status === 'published') {
+        try {
+          const existingResp = await apiService.get(`/news/${id}`) as ApiResponse<any>
+          const current: any = existingResp.data || {}
+          const nextFeatured = typeof updateData.featured === 'boolean' ? updateData.featured : !!current.featured
+          const nextStatus = updateData.status || current.status
+          const wasFeaturedPublished = !!current.featured && current.status === 'published'
+          if (nextFeatured && nextStatus === 'published' && !wasFeaturedPublished) {
+            const count = await this.getFeaturedPublishedCount()
+            if (count >= 4) {
+              return { success: false, data: null as any, message: 'Достигнут лимит важных новостей (макс. 4)' }
+            }
+          }
+        } catch {
+          // ignore pre-check errors; backend will validate
+        }
       }
 
       const response = await apiService.patch(`/news/${id}`, updateData) as ApiResponse<News>
@@ -409,6 +449,7 @@ class NewsServiceImpl implements NewsService {
             updatedAt: new Date().toISOString()
           },
           imageUrl: newsItem.imageUrl,
+          featured: !!newsItem.featured,
           seoTitle: newsItem.seoTitle,
           seoDescription: newsItem.seoDescription,
           seoKeywords: Array.isArray(newsItem.seoKeywords) 
@@ -429,10 +470,13 @@ class NewsServiceImpl implements NewsService {
       if (error.message === 'MOCK_MODE') {
         throw error // Re-throw to be caught by NewsServiceWithFallback
       }
+      const backendMessage = (error?.response?.data?.message && Array.isArray(error.response.data.message))
+        ? error.response.data.message.join(', ')
+        : (error?.response?.data?.message || error?.response?.data?.error || error?.message || 'Не удалось обновить новость')
       return {
         success: false,
         data: null as any,
-        message: 'API unavailable'
+        message: backendMessage
       }
     }
   }
@@ -480,10 +524,13 @@ class NewsServiceImpl implements NewsService {
       if (error.message === 'MOCK_MODE') {
         throw error // Re-throw to be caught by NewsServiceWithFallback
       }
+      const backendMessage = (error?.response?.data?.message && Array.isArray(error.response.data.message))
+        ? error.response.data.message.join(', ')
+        : (error?.response?.data?.message || error?.response?.data?.error || error?.message || 'Не удалось обновить статус новости')
       return {
         success: false,
         data: null as any,
-        message: 'API unavailable'
+        message: backendMessage
       }
     }
   }

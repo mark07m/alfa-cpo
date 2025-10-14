@@ -42,8 +42,13 @@ export default function NewsPage() {
     setFilters({ search: searchTerm })
   }
 
-  const handleFilterChange = (newFilters: Partial<NewsFiltersType>) => {
-    setFilters(newFilters)
+  const handleFilterChange = (newFilters: Partial<NewsFiltersType & { featured?: string }>) => {
+    // Преобразуем строковый featured в boolean
+    const mapped: any = { ...newFilters }
+    if (mapped.featured === 'true') mapped.featured = true
+    if (mapped.featured === 'false') mapped.featured = false
+    if (mapped.featured === '') mapped.featured = undefined
+    setFilters(mapped)
   }
 
   const handleSelectNews = (newsItem: News, selected: boolean) => {

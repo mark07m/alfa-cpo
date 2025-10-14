@@ -14,6 +14,7 @@ interface NewsFiltersProps {
     status: string
     dateFrom: string
     dateTo: string
+    featured?: string
   }
   categories: NewsCategory[]
   onFilterChange: (filters: Partial<NewsFiltersProps['filters']>) => void
@@ -41,7 +42,8 @@ export function NewsFilters({
       category: '',
       status: '',
       dateFrom: '',
-      dateTo: ''
+      dateTo: '',
+      featured: ''
     })
   }
 
@@ -105,6 +107,23 @@ export function NewsFilters({
           />
         </div>
 
+        {/* Важные */}
+        <div>
+          <label htmlFor="featured" className="block text-sm font-medium text-gray-700 mb-1">
+            Важные новости
+          </label>
+          <Select
+            id="featured"
+            value={filters.featured || ''}
+            onChange={(e) => handleFilterChange('featured', (e.target as HTMLSelectElement).value)}
+            options={[
+              { value: '', label: 'Все' },
+              { value: 'true', label: 'Только важные' },
+              { value: 'false', label: 'Не важные' }
+            ]}
+          />
+        </div>
+
         {/* Дата от */}
         <div>
           <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
@@ -150,6 +169,11 @@ export function NewsFilters({
             {filters.status && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 Статус: {filters.status === 'draft' ? 'Черновик' : filters.status === 'published' ? 'Опубликовано' : 'Архив'}
+              </span>
+            )}
+            {filters.featured && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                Важные: {filters.featured === 'true' ? 'Да' : 'Нет'}
               </span>
             )}
             {filters.dateFrom && (

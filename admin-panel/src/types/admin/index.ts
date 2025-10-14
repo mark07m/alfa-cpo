@@ -131,6 +131,7 @@ export interface News {
   updatedAt: string;
   author: User;
   imageUrl?: string;
+  featured?: boolean;
   seoTitle?: string;
   seoDescription?: string;
   seoKeywords?: string;

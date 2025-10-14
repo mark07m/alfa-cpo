@@ -27,11 +27,11 @@ interface UseNewsReturn {
   fetchNews: (newFilters?: NewsFilters & PaginationParams) => Promise<void>
   fetchNewsStats: () => Promise<void>
   fetchNewsItem: (id: string) => Promise<void>
-  createNews: (newsData: Partial<News>) => Promise<{ success: boolean; data?: News; error?: string }>
-  updateNews: (id: string, newsData: Partial<News>) => Promise<{ success: boolean; data?: News; error?: string }>
-  deleteNews: (id: string) => Promise<{ success: boolean; error?: string }>
-  bulkDeleteNews: (ids: string[]) => Promise<{ success: boolean; error?: string }>
-  updateNewsStatus: (id: string, status: News['status']) => Promise<{ success: boolean; data?: News; error?: string }>
+  createNews: (newsData: Partial<News>) => Promise<{ success: boolean; data?: News; error?: string; message?: string }>
+  updateNews: (id: string, newsData: Partial<News>) => Promise<{ success: boolean; data?: News; error?: string; message?: string }>
+  deleteNews: (id: string) => Promise<{ success: boolean; error?: string; message?: string }>
+  bulkDeleteNews: (ids: string[]) => Promise<{ success: boolean; error?: string; message?: string }>
+  updateNewsStatus: (id: string, status: News['status']) => Promise<{ success: boolean; data?: News; error?: string; message?: string }>
   
   // Методы для работы с категориями новостей
   fetchNewsCategories: () => Promise<void>
@@ -159,11 +159,11 @@ export function useNews(): UseNewsReturn {
         await fetchNews() // Обновляем список
         return { success: true, data: response.data }
       } else {
-        return { success: false, error: 'Не удалось создать новость' }
+        return { success: false, error: response?.message || 'Не удалось создать новость', message: response?.message }
       }
     } catch (err) {
       console.error('Error creating news:', err)
-      return { success: false, error: 'Ошибка при создании новости' }
+      return { success: false, error: err instanceof Error ? err.message : 'Ошибка при создании новости', message: err instanceof Error ? err.message : undefined }
     }
   }, [fetchNews])
 
@@ -180,11 +180,11 @@ export function useNews(): UseNewsReturn {
         }
         return { success: true, data: response.data }
       } else {
-        return { success: false, error: 'Не удалось обновить новость' }
+        return { success: false, error: response?.message || 'Не удалось обновить новость', message: response?.message }
       }
     } catch (err) {
       console.error('Error updating news:', err)
-      return { success: false, error: 'Ошибка при обновлении новости' }
+      return { success: false, error: err instanceof Error ? err.message : 'Ошибка при обновлении новости', message: err instanceof Error ? err.message : undefined }
     }
   }, [fetchNews, selectedNews])
 
@@ -240,11 +240,11 @@ export function useNews(): UseNewsReturn {
         }
         return { success: true, data: response.data }
       } else {
-        return { success: false, error: 'Не удалось обновить статус новости' }
+        return { success: false, error: response?.message || 'Не удалось обновить статус новости', message: response?.message }
       }
     } catch (err) {
       console.error('Error updating news status:', err)
-      return { success: false, error: 'Ошибка при обновлении статуса новости' }
+      return { success: false, error: err instanceof Error ? err.message : 'Ошибка при обновлении статуса новости', message: err instanceof Error ? err.message : undefined }
     }
   }, [fetchNews, selectedNews])
 

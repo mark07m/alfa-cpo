@@ -11,6 +11,7 @@ export default function NewsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [categories, setCategories] = useState<NewsCategory[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
+  const [featuredNews, setFeaturedNews] = useState<NewsItem[]>([])
   const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -36,7 +37,14 @@ export default function NewsPage() {
         if (res.success) setCategories(res.data)
       } catch {}
     }
+    const loadFeatured = async () => {
+      try {
+        const res = await newsService.featured(3)
+        if (res.success) setFeaturedNews(res.data)
+      } catch {}
+    }
     loadCategories()
+    loadFeatured()
   }, [])
 
   useEffect(() => {
@@ -53,7 +61,9 @@ export default function NewsPage() {
           sortOrder: 'desc',
         })
         if (res.success) {
-          setNews(res.data.data)
+          // Исключаем из "Все новости" те, что попали в "Важные"
+          const featuredIds = new Set(featuredNews.map(n => n.id))
+          setNews(res.data.data.filter(n => !featuredIds.has(n.id)))
           setTotalPages(res.data.pagination.totalPages)
           setTotalItems(res.data.pagination.total)
         }
@@ -103,7 +113,7 @@ export default function NewsPage() {
           news={news}
           loading={loading}
           onNewsClick={handleNewsClick}
-          showFeatured={false}
+          showFeatured={featuredNews.length > 0}
           showCategories={true}
           showPagination={true}
           currentPage={currentPage}

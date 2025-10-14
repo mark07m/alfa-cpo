@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import apiService from '@/services/admin/api'
 import { toAbsoluteFileUrl } from '@/lib/utils'
@@ -8,6 +8,7 @@ import { Input } from '@/components/admin/ui/Input'
 import { Textarea } from '@/components/admin/ui/Textarea'
 import { Select } from '@/components/admin/ui/Select'
 import { Button } from '@/components/admin/ui/Button'
+import { Checkbox } from '@/components/admin/ui/Checkbox'
 import { News, NewsCategory } from '@/types/admin'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -15,15 +16,16 @@ import { z } from 'zod'
 import { PhotoIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
 
 const newsSchema = z.object({
-  title: z.string().min(1, 'Заголовок обязателен').max(200, 'Заголовок слишком длинный'),
-  excerpt: z.string().min(1, 'Краткое описание обязательно').max(500, 'Описание слишком длинное'),
-  content: z.string().min(1, 'Содержание обязательно'),
+  title: z.string().min(3, 'Минимум 3 символа').max(200, 'Заголовок слишком длинный'),
+  excerpt: z.string().min(10, 'Минимум 10 символов').max(500, 'Описание слишком длинное'),
+  content: z.string().min(10, 'Минимум 10 символов'),
   categoryId: z.string().min(1, 'Выберите категорию'),
   status: z.enum(['draft', 'published', 'archived']),
   imageUrl: z.string().optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
-  seoKeywords: z.string().optional()
+  seoKeywords: z.string().optional(),
+  featured: z.boolean().optional()
 })
 
 type NewsFormData = z.infer<typeof newsSchema>
@@ -51,7 +53,9 @@ export function NewsForm({
     register,
     handleSubmit,
     setValue,
-    formState: { errors }
+    formState: { errors, dirtyFields },
+    getValues,
+    reset
   } = useForm<NewsFormData>({
     resolver: zodResolver(newsSchema),
     defaultValues: {
@@ -63,9 +67,29 @@ export function NewsForm({
       imageUrl: news?.imageUrl || '',
       seoTitle: news?.seoTitle || '',
       seoDescription: news?.seoDescription || '',
-      seoKeywords: news?.seoKeywords || ''
+      seoKeywords: news?.seoKeywords || '',
+      featured: !!news?.featured
     }
   })
+
+  // Синхронизируем форму с пришедшими данными новости
+  useEffect(() => {
+    if (news) {
+      reset({
+        title: news.title || '',
+        excerpt: news.excerpt || '',
+        content: news.content || '',
+        categoryId: news.category?.id || '',
+        status: news.status || 'draft',
+        imageUrl: news.imageUrl || '',
+        seoTitle: news.seoTitle || '',
+        seoDescription: news.seoDescription || '',
+        seoKeywords: news.seoKeywords || '',
+        featured: !!news.featured
+      })
+      setImagePreview(toAbsoluteFileUrl(news.imageUrl || ''))
+    }
+  }, [news, reset])
 
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,19 +112,22 @@ export function NewsForm({
       return
     }
 
-    const newsData: Partial<News> = {
-      title: data.title,
-      excerpt: data.excerpt,
-      content: data.content,
-      category: selectedCategory,
-      status: data.status,
-      imageUrl: data.imageUrl,
-      seoTitle: data.seoTitle,
-      seoDescription: data.seoDescription,
-      seoKeywords: data.seoKeywords
-    }
+    // Собираем только измененные поля, чтобы не триггерить валидации на неизменённых данных
+    const payload: Partial<News> = {}
+    const df: any = dirtyFields
 
-    onSubmit(newsData)
+    if (df.title) payload.title = data.title
+    if (df.excerpt) payload.excerpt = data.excerpt
+    if (df.content) payload.content = data.content
+    if (df.categoryId) payload.category = selectedCategory
+    if (df.status) payload.status = data.status
+    if (df.imageUrl) payload.imageUrl = data.imageUrl
+    if (df.seoTitle) payload.seoTitle = data.seoTitle
+    if (df.seoDescription) payload.seoDescription = data.seoDescription
+    if (df.seoKeywords) payload.seoKeywords = data.seoKeywords
+    if (df.featured) payload.featured = !!data.featured
+
+    onSubmit(payload)
   }
 
   const tabs = [
@@ -181,19 +208,28 @@ export function NewsForm({
               )}
             </div>
 
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                Статус
-              </label>
-              <Select
-                {...register('status')}
-                id="status"
-                options={[
-                  { value: 'draft', label: 'Черновик' },
-                  { value: 'published', label: 'Опубликовано' },
-                  { value: 'archived', label: 'Архив' }
-                ]}
-              />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                  Статус
+                </label>
+                <Select
+                  {...register('status')}
+                  id="status"
+                  options={[
+                    { value: 'draft', label: 'Черновик' },
+                    { value: 'published', label: 'Опубликовано' },
+                    { value: 'archived', label: 'Архив' }
+                  ]}
+                />
+              </div>
+              <div className="flex items-end">
+                <Checkbox
+                  {...register('featured')}
+                  label="Важная новость (показывать в блоке важных)"
+                  size="sm"
+                />
+              </div>
             </div>
           </div>
 
