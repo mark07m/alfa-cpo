@@ -348,7 +348,7 @@ class NewsServiceImpl implements NewsService {
         seoKeywords: newsData.seoKeywords ? newsData.seoKeywords.split(',').map(keyword => keyword.trim()) : []
       }
 
-      const response = await apiService.put(`/news/${id}`, updateData) as ApiResponse<News>
+      const response = await apiService.patch(`/news/${id}`, updateData) as ApiResponse<News>
       
       // Transform response back to frontend format
       if (response.data) {

@@ -13,54 +13,34 @@ export default function EditNewsPage() {
   const params = useParams()
   const newsId = params.id as string
   
-  const { updateNews, newsCategories, fetchNewsCategories } = useNews()
+  const { updateNews, fetchNewsItem, selectedNews, newsCategories, fetchNewsCategories } = useNews()
   const [news, setNews] = useState<News | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchNewsCategories()
-    // В реальном приложении здесь был бы запрос для получения новости по ID
-    // Пока используем моковые данные
-    const mockNews: News = {
-      id: newsId,
-      title: 'Новые требования к арбитражным управляющим в 2024 году',
-      content: 'Полный текст новости о новых требованиях...',
-      excerpt: 'С 1 января 2024 года вступают в силу новые требования к арбитражным управляющим...',
-      category: {
-        id: '1',
-        name: 'Законодательство',
-        slug: 'legislation',
-        color: '#3B82F6',
-        icon: 'document-text',
-        sortOrder: 1,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
-      },
-      status: 'published',
-      publishedAt: '2024-01-15T10:00:00Z',
-      createdAt: '2024-01-15T09:00:00Z',
-      updatedAt: '2024-01-15T09:00:00Z',
-      author: {
-        id: '1',
-        email: 'admin@sro-au.ru',
-        firstName: 'Администратор',
-        lastName: 'СРО',
-        role: 'super_admin' as const,
-        isActive: true,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
-      },
-      imageUrl: '/images/news-1.svg',
-      seoTitle: 'Новые требования к арбитражным управляющим 2024',
-      seoDescription: 'Обзор новых требований к арбитражным управляющим с 1 января 2024 года',
-      seoKeywords: 'арбитражные управляющие, требования, 2024, СРО'
+    let cancelled = false
+    const load = async () => {
+      setIsLoading(true)
+      try {
+        await fetchNewsCategories()
+        await fetchNewsItem(newsId)
+      } catch (e) {
+        setError('Не удалось загрузить новость')
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
     }
-    
-    setNews(mockNews)
-    setIsLoading(false)
-  }, [newsId])
+    load()
+    return () => { cancelled = true }
+  }, [newsId, fetchNewsCategories, fetchNewsItem])
+
+  useEffect(() => {
+    if (selectedNews) {
+      setNews(selectedNews)
+    }
+  }, [selectedNews])
 
   const handleSubmit = async (newsData: Partial<News>) => {
     setIsSubmitting(true)

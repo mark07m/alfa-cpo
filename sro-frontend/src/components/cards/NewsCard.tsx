@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
@@ -24,17 +24,20 @@ export default function NewsCard({
   defaultCover = "/assets/news_cover_beige.png"
 }: NewsCardProps) {
   const coverImage = cover || defaultCover;
+  const [useFallback, setUseFallback] = useState(false);
+  const resolvedSrc = useFallback ? defaultCover : coverImage;
 
   return (
     <Card className="hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-transparent hover:border-amber-200">
       {/* Обложка новости */}
       <div className="relative w-full h-48 bg-gradient-to-br from-beige-100 to-amber-50">
         <Image
-          src={coverImage}
+          src={resolvedSrc}
           alt={title}
           fill
           className="object-cover"
           loading="lazy"
+          onError={() => setUseFallback(true)}
         />
         {/* Декоративная рамка */}
         <div className="absolute inset-0 border-2 border-white/50"></div>

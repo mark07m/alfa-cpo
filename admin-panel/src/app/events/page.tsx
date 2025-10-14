@@ -10,11 +10,16 @@ import { useEvents } from '@/hooks/admin/useEvents'
 import { Event, EventFilters } from '@/types/admin'
 import { PlusIcon, FunnelIcon, CalendarIcon, ListBulletIcon } from '@heroicons/react/24/outline'
 import { ApiErrorBanner } from '@/components/admin/ui/ApiErrorBanner'
+import EventsCalendar from '@/components/admin/events/EventsCalendar'
 
 export default function EventsPage() {
   const [selectedEvents, setSelectedEvents] = useState<Event[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+  const [calendarYear, setCalendarYear] = useState<number>(new Date().getFullYear())
+  const [calendarMonthIndex, setCalendarMonthIndex] = useState<number>(new Date().getMonth())
+  const [calendarItems, setCalendarItems] = useState<any[]>([])
+  const [isCalendarLoading, setIsCalendarLoading] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
 
   const {
@@ -30,11 +35,42 @@ export default function EventsPage() {
     bulkDeleteEvents,
     setFilters,
     clearError
+  ,
+    getEventsCalendar
   } = useEvents()
 
   useEffect(() => {
     fetchEvents(filters)
   }, [filters, fetchEvents])
+
+  useEffect(() => {
+    if (viewMode !== 'calendar') return
+    let cancelled = false
+    const loadCalendar = async () => {
+      setIsCalendarLoading(true)
+      try {
+        const data = await getEventsCalendar(calendarYear, calendarMonthIndex + 1)
+        if (!cancelled) setCalendarItems(
+          (data as any[]).map((d: any) => ({
+            id: d.id || d._id || Math.random().toString(36).slice(2),
+            title: d.title,
+            startDate: d.startDate,
+            endDate: d.endDate,
+            location: d.location,
+            status: d.status,
+            featured: d.featured,
+            type: d.type
+          }))
+        )
+      } catch (e) {
+        if (!cancelled) setCalendarItems([])
+      } finally {
+        if (!cancelled) setIsCalendarLoading(false)
+      }
+    }
+    loadCalendar()
+    return () => { cancelled = true }
+  }, [viewMode, calendarYear, calendarMonthIndex, getEventsCalendar])
 
   const handleSearch = (searchTerm: string) => {
     setFilters({ search: searchTerm })
@@ -324,15 +360,21 @@ export default function EventsPage() {
             onPageChange={handlePageChange}
           />
         ) : (
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="text-center">
-              <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">Календарный вид</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Календарный вид мероприятий будет реализован в следующей версии
-              </p>
-            </div>
-          </div>
+          <EventsCalendar
+            items={calendarItems}
+            loading={isCalendarLoading}
+            year={calendarYear}
+            monthIndex={calendarMonthIndex}
+            onPrevMonth={() => setCalendarMonthIndex((m) => {
+              if (m === 0) { setCalendarYear((y) => y - 1); return 11 }
+              return m - 1
+            })}
+            onNextMonth={() => setCalendarMonthIndex((m) => {
+              if (m === 11) { setCalendarYear((y) => y + 1); return 0 }
+              return m + 1
+            })}
+            onToday={() => { const t = new Date(); setCalendarYear(t.getFullYear()); setCalendarMonthIndex(t.getMonth()) }}
+          />
         )}
       </div>
     </AdminLayout>

@@ -434,9 +434,11 @@ class ApiService {
     const formData = new FormData()
     formData.append('file', file)
 
+    const token = this.getToken()
     const response = await this.api!.post(endpoint, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     })
 

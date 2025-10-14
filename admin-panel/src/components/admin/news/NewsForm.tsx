@@ -2,6 +2,8 @@
 
 import React, { useState, useRef } from 'react'
 import Image from 'next/image'
+import apiService from '@/services/admin/api'
+import { toAbsoluteFileUrl } from '@/lib/utils'
 import { Input } from '@/components/admin/ui/Input'
 import { Textarea } from '@/components/admin/ui/Textarea'
 import { Select } from '@/components/admin/ui/Select'
@@ -42,7 +44,7 @@ export function NewsForm({
   isSubmitting = false
 }: NewsFormProps) {
   const [activeTab, setActiveTab] = useState<'content' | 'seo' | 'media'>('content')
-  const [imagePreview, setImagePreview] = useState<string | null>(news?.imageUrl || null)
+  const [imagePreview, setImagePreview] = useState<string | null>(toAbsoluteFileUrl(news?.imageUrl || ''))
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const {
@@ -66,17 +68,17 @@ export function NewsForm({
   })
 
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file) {
-      // В реальном приложении здесь была бы загрузка на сервер
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const result = e.target?.result as string
-        setImagePreview(result)
-        setValue('imageUrl', result)
-      }
-      reader.readAsDataURL(file)
+    if (!file) return
+    try {
+      const resp = await apiService.uploadFile(file, '/files/upload')
+      const url = (resp?.data as any)?.fileUrl || (resp as any)?.data?.url
+      const absolute = toAbsoluteFileUrl(url)
+      setImagePreview(absolute)
+      setValue('imageUrl', url)
+    } catch (e) {
+      // ignore; keep previous value
     }
   }
 

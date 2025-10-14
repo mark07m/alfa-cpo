@@ -180,7 +180,7 @@ export function getErrorMessage(error: unknown): string {
 
 // Build absolute URLs for files served from backend static '/uploads'
 export function getBackendBaseUrl(): string {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
+  const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
   return apiUrl.replace(/\/api\/?$/, '')
 }
 

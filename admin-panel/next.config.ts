@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
     // Отключаем оптимизацию изображений в режиме разработки для избежания ошибок
     unoptimized: process.env.NODE_ENV === 'development',
     // Разрешенные домены для внешних изображений
-    domains: [],
+    domains: ['localhost'],
     // Разрешенные форматы изображений
     formats: ['image/webp', 'image/avif'],
     // Настройки для статических изображений
@@ -28,6 +28,14 @@ const nextConfig: NextConfig = {
     // Разрешенные типы файлов
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: 'http://localhost:3001/uploads/:path*',
+      },
+    ]
   },
 };
 

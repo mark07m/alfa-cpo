@@ -3,7 +3,8 @@
 import Layout from '@/components/layout/Layout';
 import { EventsList, EventCalendar } from '@/components/events';
 import { Event, EventType, EventStatus, EventFilter as EventFilterType } from '@/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { eventsService } from '@/services/events';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -20,12 +21,7 @@ export default function EventsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [view, setView] = useState<'list' | 'calendar'>('list');
 
-  const eventTypes: EventType[] = [
-    { id: '1', name: 'Семинар', slug: 'seminar', order: 1, color: '#3B82F6' },
-    { id: '2', name: 'Конференция', slug: 'conference', order: 2, color: '#10B981' },
-    { id: '3', name: 'Тренинг', slug: 'training', order: 3, color: '#8B5CF6' },
-    { id: '4', name: 'Совещание', slug: 'meeting', order: 4, color: '#F59E0B' }
-  ];
+  const [eventTypes, setEventTypes] = useState<EventType[]>([])
 
   const eventStatuses: EventStatus[] = [
     { id: '1', name: 'Предстоящее', slug: 'upcoming', color: '#10B981' },
@@ -34,140 +30,9 @@ export default function EventsPage() {
     { id: '4', name: 'Отменено', slug: 'cancelled', color: '#EF4444' }
   ];
 
-  const events: Event[] = [
-    {
-      id: '1',
-      title: 'Семинар "Новеллы в законодательстве о банкротстве"',
-      description: 'Семинар для членов СРО по обсуждению последних изменений в законодательстве о несостоятельности.',
-      content: '<p>15 февраля 2024 года состоится семинар для членов СРО по обсуждению последних изменений в законодательстве о несостоятельности.</p><p>В программе семинара:</p><ul><li>Обзор изменений в ФЗ "О несостоятельности (банкротстве)"</li><li>Практические аспекты применения новых норм</li><li>Ответы на вопросы участников</li></ul>',
-      startDate: '2024-02-15T10:00:00Z',
-      endDate: '2024-02-15T16:00:00Z',
-      location: 'Конференц-зал СРО, г. Москва',
-      type: eventTypes[0],
-      status: eventStatuses[0],
-      maxParticipants: 50,
-      currentParticipants: 23,
-      registrationRequired: true,
-      registrationDeadline: '2024-02-10T18:00:00Z',
-      featured: true,
-      tags: ['семинар', 'обучение', 'законодательство'],
-      organizer: 'Администрация СРО',
-      contactEmail: 'events@sro-au.ru',
-      contactPhone: '+7 (495) 123-45-67',
-      price: 0,
-      currency: '₽',
-      requirements: 'Участники должны быть членами СРО',
-      agenda: [
-        { id: '1', time: '10:00', title: 'Регистрация участников', duration: 30 },
-        { id: '2', time: '10:30', title: 'Открытие семинара', speaker: 'Председатель СРО', duration: 15 },
-        { id: '3', time: '10:45', title: 'Обзор изменений в законодательстве', speaker: 'Юрист СРО', duration: 120 },
-        { id: '4', time: '13:00', title: 'Обед', duration: 60 },
-        { id: '5', time: '14:00', title: 'Практические аспекты применения', speaker: 'Эксперт', duration: 120 },
-        { id: '6', time: '16:00', title: 'Вопросы и ответы', duration: 30 }
-      ],
-      cover: '/assets/news_cover_beige.png'
-    },
-    {
-      id: '2',
-      title: 'Конференция "Современные тенденции в банкротстве"',
-      description: 'Ежегодная конференция для арбитражных управляющих по обсуждению актуальных вопросов развития института банкротства.',
-      startDate: '2024-03-20T09:00:00Z',
-      endDate: '2024-03-20T18:00:00Z',
-      location: 'Гостиница "Метрополь", г. Москва',
-      type: eventTypes[1],
-      status: eventStatuses[0],
-      maxParticipants: 200,
-      currentParticipants: 156,
-      registrationRequired: true,
-      registrationDeadline: '2024-03-15T18:00:00Z',
-      featured: true,
-      tags: ['конференция', 'банкротство', 'тенденции'],
-      organizer: 'СРО АУ',
-      contactEmail: 'conference@sro-au.ru',
-      contactPhone: '+7 (495) 123-45-67',
-      price: 5000,
-      currency: '₽',
-      requirements: 'Участники должны быть членами СРО',
-      cover: '/assets/news_cover_beige.png'
-    },
-    {
-      id: '3',
-      title: 'Тренинг "Эффективное управление процедурами банкротства"',
-      description: 'Практический тренинг по повышению квалификации арбитражных управляющих.',
-      startDate: '2024-02-28T14:00:00Z',
-      endDate: '2024-02-28T17:00:00Z',
-      location: 'Онлайн (Zoom)',
-      type: eventTypes[2],
-      status: eventStatuses[0],
-      maxParticipants: 30,
-      currentParticipants: 18,
-      registrationRequired: true,
-      registrationDeadline: '2024-02-25T18:00:00Z',
-      featured: false,
-      tags: ['тренинг', 'управление', 'практика'],
-      organizer: 'Центр повышения квалификации',
-      contactEmail: 'training@sro-au.ru',
-      price: 2000,
-      currency: '₽',
-      cover: '/assets/news_cover_beige.png'
-    },
-    {
-      id: '4',
-      title: 'Совещание по вопросам контроля деятельности членов СРО',
-      description: 'Внутреннее совещание для обсуждения вопросов контроля и надзора за деятельностью арбитражных управляющих.',
-      startDate: '2024-01-25T15:00:00Z',
-      endDate: '2024-01-25T17:00:00Z',
-      location: 'Офис СРО, г. Москва',
-      type: eventTypes[3],
-      status: eventStatuses[2],
-      maxParticipants: 20,
-      currentParticipants: 15,
-      registrationRequired: false,
-      featured: false,
-      tags: ['совещание', 'контроль', 'надзор'],
-      organizer: 'Администрация СРО',
-      cover: '/assets/news_cover_beige.png'
-    },
-    {
-      id: '5',
-      title: 'Курс повышения квалификации "Современные методы оценки имущества"',
-      description: '40-часовой курс повышения квалификации для арбитражных управляющих.',
-      startDate: '2024-04-01T09:00:00Z',
-      endDate: '2024-04-05T18:00:00Z',
-      location: 'Учебный центр СРО, г. Москва',
-      type: eventTypes[2],
-      status: eventStatuses[0],
-      maxParticipants: 25,
-      currentParticipants: 12,
-      registrationRequired: true,
-      registrationDeadline: '2024-03-25T18:00:00Z',
-      featured: false,
-      tags: ['курс', 'квалификация', 'оценка'],
-      organizer: 'Учебный центр СРО',
-      contactEmail: 'education@sro-au.ru',
-      price: 15000,
-      currency: '₽',
-      requirements: 'Стаж работы арбитражным управляющим не менее 2 лет',
-      cover: '/assets/news_cover_beige.png'
-    },
-    {
-      id: '6',
-      title: 'Вебинар "Изменения в налоговом законодательстве"',
-      description: 'Онлайн-вебинар по изменениям в налоговом законодательстве, влияющим на процедуры банкротства.',
-      startDate: '2024-02-10T16:00:00Z',
-      endDate: '2024-02-10T18:00:00Z',
-      location: 'Онлайн (YouTube)',
-      type: eventTypes[0],
-      status: eventStatuses[2],
-      maxParticipants: 100,
-      currentParticipants: 87,
-      registrationRequired: false,
-      featured: false,
-      tags: ['вебинар', 'налоги', 'онлайн'],
-      organizer: 'СРО АУ',
-      cover: '/assets/news_cover_beige.png'
-    }
-  ];
+  const [events, setEvents] = useState<Event[]>([])
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(false)
 
   const handleFiltersChange = (newFilters: EventFilterType) => {
     setFilters(newFilters);
@@ -196,6 +61,48 @@ export default function EventsPage() {
       dateTo: date.toISOString().split('T')[0]
     });
   };
+
+  useEffect(() => {
+    const loadTypes = async () => {
+      try {
+        const res = await eventsService.types()
+        if (res.success) setEventTypes(res.data || [])
+      } catch {}
+    }
+    loadTypes()
+  }, [])
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      setLoading(true)
+      try {
+        const res = await eventsService.list({
+          query: filters.query,
+          type: filters.type,
+          status: filters.status,
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+          location: filters.location,
+          featured: filters.featured,
+          registrationRequired: filters.registrationRequired,
+          page: currentPage,
+          limit: 9,
+          sortBy: 'startDate',
+          sortOrder: 'desc'
+        })
+        if (res.success) {
+          setEvents(res.data.data)
+          setTotalPages(res.data.pagination.totalPages)
+        }
+      } catch (e) {
+        setEvents([])
+        setTotalPages(1)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadEvents()
+  }, [filters, currentPage])
 
   return (
     <Layout
@@ -331,7 +238,7 @@ export default function EventsPage() {
             showFeatured={true}
             showPagination={true}
             currentPage={currentPage}
-            totalPages={Math.ceil(events.length / 9)}
+            totalPages={totalPages}
             onPageChange={handlePageChange}
           />
         ) : (

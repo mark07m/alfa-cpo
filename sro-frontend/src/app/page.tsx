@@ -1,4 +1,10 @@
+"use client";
 import Layout from '@/components/layout/Layout';
+import { useEffect, useState } from 'react'
+import { newsService } from '@/services/news'
+import { eventsService } from '@/services/events'
+import { settingsService } from '@/services/settings'
+import { registryService } from '@/services/registry'
 import { 
   HeroSection, 
   AboutPreview, 
@@ -9,6 +15,41 @@ import {
 } from '@/components/sections';
 
 export default function Home() {
+  const [latestNews, setLatestNews] = useState<any[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
+  const [settings, setSettings] = useState<any | null>(null)
+  const [registryStats, setRegistryStats] = useState<any | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const [newsRes, eventsRes, settingsRes, statsRes] = await Promise.all([
+          newsService.list({ status: 'published', page: 1, limit: 3, sortBy: 'publishedAt', sortOrder: 'desc' }),
+          eventsService.list({ page: 1, limit: 3, sortBy: 'startDate', sortOrder: 'desc' }),
+          settingsService.get(),
+          registryService.stats(),
+        ])
+        if (!cancelled) {
+          setLatestNews((newsRes.success ? newsRes.data.data : []).map((n: any) => ({
+            id: n.id,
+            title: n.title,
+            excerpt: n.excerpt || '',
+            cover: n.cover,
+            href: `/news/${n.id}`,
+          })))
+          setUpcomingEvents(eventsRes.success ? eventsRes.data.data : [])
+          setSettings(settingsRes.success ? settingsRes.data : null)
+          setRegistryStats(statsRes.success ? statsRes.data : null)
+        }
+      } catch (e) {
+        // swallow; defaults remain
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
   return (
     <Layout
       title="СРО Арбитражных Управляющих - Главная"
@@ -50,12 +91,16 @@ export default function Home() {
         <NewsSection
           title="Последние новости"
           allNewsHref="/news"
+          news={latestNews}
           defaultCover="/assets/news_cover_beige.png"
         />
       </div>
 
       {/* Association Info Section */}
-      <AssociationInfo />
+      <AssociationInfo
+        title={settings?.siteName || 'О нашей Ассоциации'}
+        description={settings?.siteDescription || undefined}
+      />
 
       {/* FAQ Section */}
       <FAQSection />

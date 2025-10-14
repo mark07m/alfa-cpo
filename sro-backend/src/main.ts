@@ -10,9 +10,14 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   
   // CORS
+  const corsOrigin = configService.get('app.corsOrigin');
+  const nodeEnv = configService.get('app.nodeEnv');
   app.enableCors({
-    origin: configService.get('app.corsOrigin'),
+    origin: nodeEnv === 'development' ? true : corsOrigin,
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization, X-Requested-With',
+    exposedHeaders: 'Content-Disposition',
   });
   
   // Global validation pipe
@@ -25,8 +30,8 @@ async function bootstrap() {
   // API prefix
   app.setGlobalPrefix(configService.get('app.apiPrefix') || 'api');
   
-  // Статические файлы
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  // Статические файлы — используем process.cwd() чтобы путь совпадал с тем, куда FilesService пишет файлы
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
   

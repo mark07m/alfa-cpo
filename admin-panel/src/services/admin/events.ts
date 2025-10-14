@@ -468,10 +468,19 @@ class EventsServiceImpl implements EventsService {
 
   async getEventsCalendar(year?: number, month?: number): Promise<ApiResponse<any[]>> {
     try {
+      // Backend expects startDate/endDate for calendar range. Compute month boundaries.
+      const now = new Date()
+      const targetYear = typeof year === 'number' ? year : now.getFullYear()
+      // month is 1-based if provided; convert to 0-based index for Date()
+      const targetMonthIndex = typeof month === 'number' ? Math.max(1, Math.min(12, month)) - 1 : now.getMonth()
+
+      const start = new Date(targetYear, targetMonthIndex, 1)
+      const end = new Date(targetYear, targetMonthIndex + 1, 0, 23, 59, 59, 999)
+
       const params = new URLSearchParams()
-      if (year) params.append('year', year.toString())
-      if (month) params.append('month', month.toString())
-      
+      params.append('startDate', start.toISOString())
+      params.append('endDate', end.toISOString())
+
       const response = await apiService.get(`/events/calendar?${params.toString()}`)
       return response
     } catch (error) {
