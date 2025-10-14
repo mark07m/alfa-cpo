@@ -7,6 +7,7 @@ interface UseNewsReturn {
   // Данные
   news: News[]
   newsCategories: NewsCategory[]
+  newsStats?: { total: number; published: number; draft: number; archived: number; byCategory: Array<{ id: string; name: string; count: number }> }
   selectedNews: News | null
   isLoading: boolean
   error: string | null
@@ -24,6 +25,7 @@ interface UseNewsReturn {
   
   // Методы для работы с новостями
   fetchNews: (newFilters?: NewsFilters & PaginationParams) => Promise<void>
+  fetchNewsStats: () => Promise<void>
   fetchNewsItem: (id: string) => Promise<void>
   createNews: (newsData: Partial<News>) => Promise<{ success: boolean; data?: News; error?: string }>
   updateNews: (id: string, newsData: Partial<News>) => Promise<{ success: boolean; data?: News; error?: string }>
@@ -51,6 +53,7 @@ interface UseNewsReturn {
 export function useNews(): UseNewsReturn {
   const [news, setNews] = useState<News[]>([])
   const [newsCategories, setNewsCategories] = useState<NewsCategory[]>([])
+  const [newsStats, setNewsStats] = useState<UseNewsReturn['newsStats']>()
   const [selectedNews, setSelectedNews] = useState<News | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -108,6 +111,17 @@ export function useNews(): UseNewsReturn {
       setIsLoading(false)
     }
   }, [filters, pagination?.page, pagination?.limit])
+
+  const fetchNewsStats = useCallback(async () => {
+    try {
+      const statsRes = await newsService.getStats()
+      if (statsRes && statsRes.success) {
+        setNewsStats(statsRes.data)
+      }
+    } catch (err) {
+      // ignore errors; stats are non-critical
+    }
+  }, [])
 
   const fetchNewsItem = useCallback(async (id: string) => {
     setIsLoading(true)
@@ -350,6 +364,7 @@ export function useNews(): UseNewsReturn {
     // Данные
     news,
     newsCategories,
+    newsStats,
     selectedNews,
     
     // Состояние загрузки
@@ -364,6 +379,7 @@ export function useNews(): UseNewsReturn {
     
     // Методы для работы с новостями
     fetchNews,
+    fetchNewsStats,
     fetchNewsItem,
     createNews,
     updateNews,

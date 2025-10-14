@@ -91,6 +91,8 @@ export interface NewsListProps {
   showPagination?: boolean;
   currentPage?: number;
   totalPages?: number;
+  totalItems?: number;
+  pageSize?: number;
   onPageChange?: (page: number) => void;
 }
 

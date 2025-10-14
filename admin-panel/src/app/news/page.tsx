@@ -19,11 +19,13 @@ export default function NewsPage() {
   const {
     news,
     newsCategories,
+    newsStats,
     isLoading,
     error,
     pagination,
     filters,
     fetchNews,
+    fetchNewsStats,
     deleteNews,
     updateNewsStatus,
     bulkDeleteNews,
@@ -33,7 +35,8 @@ export default function NewsPage() {
 
   useEffect(() => {
     fetchNews(filters)
-  }, [filters, fetchNews])
+    fetchNewsStats()
+  }, [filters, fetchNews, fetchNewsStats])
 
   const handleSearch = (searchTerm: string) => {
     setFilters({ search: searchTerm })
@@ -117,14 +120,21 @@ export default function NewsPage() {
   }
 
   const getStatusStats = () => {
-    const newsArray = news || []
-    const stats = {
-      total: newsArray.length,
-      published: newsArray.filter(n => n.status === 'published').length,
-      draft: newsArray.filter(n => n.status === 'draft').length,
-      archived: newsArray.filter(n => n.status === 'archived').length
+    // Use server-side stats when available for accuracy
+    if (newsStats) {
+      return {
+        total: newsStats.total,
+        published: newsStats.published,
+        draft: newsStats.draft,
+        archived: newsStats.archived,
+      }
     }
-    return stats
+    // Fallback to current page counts
+    const total = pagination?.total || 0
+    const published = news?.filter(n => n.status === 'published').length || 0
+    const draft = news?.filter(n => n.status === 'draft').length || 0
+    const archived = news?.filter(n => n.status === 'archived').length || 0
+    return { total, published, draft, archived }
   }
 
   const getCategoryStats = () => {
@@ -268,7 +278,10 @@ export default function NewsPage() {
           <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Новости по категориям</h3>
             <div className="space-y-3">
-              {getCategoryStats().map((category) => (
+              {(newsStats?.byCategory && newsStats.byCategory.length > 0
+                ? newsStats.byCategory.map((c, index) => ({ id: c.id, name: c.name, color: newsCategories.find(nc => nc.id === c.id)?.color || '#6B7280', count: c.count, uniqueKey: c.id || `category-${index}` }))
+                : getCategoryStats()
+              ).map((category) => (
                 <div key={category.uniqueKey} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div 

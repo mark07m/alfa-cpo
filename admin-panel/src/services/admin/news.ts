@@ -17,6 +17,7 @@ export interface NewsService {
   getPublicNews(category?: string): Promise<ApiResponse<News[]>>
   searchNews(query: string): Promise<ApiResponse<News[]>>
   getNewsByCategory(category: string): Promise<ApiResponse<News[]>>
+  getStats(): Promise<ApiResponse<{ total: number; published: number; draft: number; archived: number; byCategory: Array<{ id: string; name: string; count: number }> }>>
 }
 
 class NewsServiceImpl implements NewsService {
@@ -115,6 +116,10 @@ class NewsServiceImpl implements NewsService {
       if (error.message === 'MOCK_MODE') {
         throw error // Re-throw to be caught by NewsServiceWithFallback
       }
+      // Do NOT fallback to mocks on auth errors
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw error
+      }
       // Check if it's API unavailable error
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
@@ -209,6 +214,9 @@ class NewsServiceImpl implements NewsService {
       console.error('Failed to fetch news item:', error)
       if (error.message === 'MOCK_MODE') {
         throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw error
       }
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
@@ -505,6 +513,9 @@ class NewsServiceImpl implements NewsService {
       console.error('Failed to fetch news categories:', error)
       if (error.message === 'MOCK_MODE') {
         throw error // Re-throw to be caught by NewsServiceWithFallback
+      }
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        throw error
       }
       if (error.code === 'NETWORK_ERROR' || 
           error.message === 'Network Error' || 
@@ -884,6 +895,48 @@ class NewsServiceImpl implements NewsService {
       }
     }
   }
+
+  async getStats(): Promise<ApiResponse<{ total: number; published: number; draft: number; archived: number; byCategory: Array<{ id: string; name: string; count: number }> }>> {
+    try {
+      // Fetch minimal data to compute stats efficiently
+      const [allRes, publishedRes, draftRes, archivedRes, categoriesRes] = await Promise.all([
+        apiService.get<{ data: any[]; pagination: any }>(`/news?page=1&limit=1`),
+        apiService.get<{ data: any[]; pagination: any }>(`/news?status=published&page=1&limit=1`),
+        apiService.get<{ data: any[]; pagination: any }>(`/news?status=draft&page=1&limit=1`),
+        apiService.get<{ data: any[]; pagination: any }>(`/news?status=archived&page=1&limit=1`),
+        this.getNewsCategories(),
+      ])
+
+      const total = (allRes as any)?.pagination?.total ?? 0
+      const published = (publishedRes as any)?.pagination?.total ?? 0
+      const draft = (draftRes as any)?.pagination?.total ?? 0
+      const archived = (archivedRes as any)?.pagination?.total ?? 0
+      const categories = (categoriesRes?.data || []) as any[]
+
+      // Compute per-category counts with lightweight queries (page=1&limit=1 to read total)
+      const byCategory = await Promise.all(categories.map(async (cat: any) => {
+        const res = await apiService.get<{ data: any[]; pagination: any }>(`/news?category=${cat.id}&page=1&limit=1`)
+        const count = (res as any)?.pagination?.total ?? 0
+        return { id: cat.id, name: cat.name, count }
+      }))
+
+      return {
+        success: true,
+        data: { total, published, draft, archived, byCategory },
+      }
+    } catch (error: any) {
+      // Fallback: compute from mock data
+      const all = (mockNews || []) as any[]
+      const total = all.length
+      const published = all.filter(n => n.status === 'published').length
+      const draft = all.filter(n => n.status === 'draft').length
+      const archived = all.filter(n => n.status === 'archived').length
+      // Mock categories
+      const cats = (mockNewsCategories || []) as any[]
+      const byCategory = cats.map(c => ({ id: c.id, name: c.name, count: all.filter(n => n.category?.id === c.id).length }))
+      return { success: true, data: { total, published, draft, archived, byCategory } }
+    }
+  }
 }
 
 // Моковые данные для демонстрации
@@ -1073,6 +1126,21 @@ class NewsServiceWithFallback implements NewsService {
         success: true,
         data: categoryResults
       }
+    }
+  }
+
+  async getStats(): Promise<ApiResponse<{ total: number; published: number; draft: number; archived: number; byCategory: Array<{ id: string; name: string; count: number }> }>> {
+    try {
+      return await this.impl.getStats()
+    } catch (error) {
+      const all = (mockNews || []) as any[]
+      const total = all.length
+      const published = all.filter(n => n.status === 'published').length
+      const draft = all.filter(n => n.status === 'draft').length
+      const archived = all.filter(n => n.status === 'archived').length
+      const cats = (mockNewsCategories || []) as any[]
+      const byCategory = cats.map(c => ({ id: c.id, name: c.name, count: all.filter(n => n.category?.id === c.id).length }))
+      return { success: true, data: { total, published, draft, archived, byCategory } }
     }
   }
 }

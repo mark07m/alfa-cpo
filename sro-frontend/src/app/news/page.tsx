@@ -12,6 +12,7 @@ export default function NewsPage() {
   const [categories, setCategories] = useState<NewsCategory[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
   const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const [loading, setLoading] = useState(false)
 
   const handleFiltersChange = (newFilters: NewsFilterType) => {
@@ -54,6 +55,7 @@ export default function NewsPage() {
         if (res.success) {
           setNews(res.data.data)
           setTotalPages(res.data.pagination.totalPages)
+          setTotalItems(res.data.pagination.total)
         }
       } catch {
         setNews([])
@@ -101,11 +103,13 @@ export default function NewsPage() {
           news={news}
           loading={loading}
           onNewsClick={handleNewsClick}
-          showFeatured={true}
+          showFeatured={false}
           showCategories={true}
           showPagination={true}
           currentPage={currentPage}
           totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={9}
           onPageChange={handlePageChange}
         />
       </div>

@@ -24,10 +24,12 @@ export default function NewsList({
   showPagination = true,
   currentPage = 1,
   totalPages = 1,
+  totalItems,
+  pageSize,
   onPageChange
 }: NewsListProps) {
   const featuredNews = news.filter(item => item.featured);
-  const regularNews = news.filter(item => !item.featured);
+  const gridNews = showFeatured ? news.filter(item => !item.featured) : news;
 
   const handleNewsClick = (newsItem: NewsItem) => {
     if (onNewsClick) {
@@ -117,13 +119,13 @@ export default function NewsList({
                 {showFeatured && featuredNews.length > 0 ? 'Все новости' : 'Новости'}
               </h2>
               <span className="text-sm text-neutral-600">
-                Найдено: {news.length} новостей
+                Показано: {gridNews.length} из {totalItems ?? news.length}
               </span>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {regularNews.map((item) => (
+              {gridNews.map((item) => (
                 <NewsCard
                   key={item.id}
                   news={item}
