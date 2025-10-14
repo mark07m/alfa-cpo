@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface WysiwygEditorProps {
@@ -19,12 +19,21 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
   disabled = false
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const pendingSyncRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value;
     }
   }, [value]);
+
+  // Ensure visual editor is hydrated when toggling back from HTML mode
+  useEffect(() => {
+    if (!isHtmlMode && editorRef.current) {
+      editorRef.current.innerHTML = value || '';
+    }
+  }, [isHtmlMode]);
 
   const handleInput = () => {
     if (editorRef.current) {
@@ -57,6 +66,35 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
     editorRef.current?.focus();
   };
 
+  const decodeHtml = (str: string) => {
+    const el = document.createElement('textarea');
+    el.innerHTML = str;
+    return el.value;
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (isHtmlMode) return; // no-op in HTML mode
+    const html = e.clipboardData?.getData('text/html');
+    const text = e.clipboardData?.getData('text/plain') || '';
+
+    if (html || /&lt;|&gt;|<[^>]+>/.test(text)) {
+      e.preventDefault();
+      const toInsert = html || decodeHtml(text);
+      document.execCommand('insertHTML', false, toInsert);
+      onChange(editorRef.current?.innerHTML || '');
+    }
+  };
+
+  // When switching to HTML mode, sync the latest visual DOM content to the controlled value
+  useEffect(() => {
+    if (isHtmlMode && pendingSyncRef.current !== null) {
+      const nextValue = pendingSyncRef.current;
+      pendingSyncRef.current = null;
+      // Defer to avoid updating parent during render of this component
+      queueMicrotask(() => onChange(nextValue));
+    }
+  }, [isHtmlMode, onChange]);
+
   return (
     <div className={cn('w-full', className)}>
       {/* Toolbar */}
@@ -64,7 +102,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('bold')}
-          className="px-2 py-1 text-sm font-bold hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm font-bold hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Жирный"
         >
           B
@@ -72,7 +111,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('italic')}
-          className="px-2 py-1 text-sm italic hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm italic hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Курсив"
         >
           I
@@ -80,7 +120,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('underline')}
-          className="px-2 py-1 text-sm underline hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm underline hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Подчеркнутый"
         >
           U
@@ -89,7 +130,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('insertUnorderedList')}
-          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Маркированный список"
         >
           • Список
@@ -97,7 +139,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('insertOrderedList')}
-          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Нумерованный список"
         >
           1. Список
@@ -106,7 +149,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('justifyLeft')}
-          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Выровнять по левому краю"
         >
           ←
@@ -114,7 +158,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('justifyCenter')}
-          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Выровнять по центру"
         >
           ↔
@@ -122,7 +167,8 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('justifyRight')}
-          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Выровнять по правому краю"
         >
           →
@@ -131,27 +177,95 @@ export const WysiwygEditor: React.FC<WysiwygEditorProps> = ({
         <button
           type="button"
           onClick={() => execCommand('removeFormat')}
-          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          disabled={disabled || isHtmlMode}
+          className={cn('px-2 py-1 text-sm hover:bg-neutral-200 rounded', (disabled || isHtmlMode) && 'opacity-50 cursor-not-allowed')}
           title="Убрать форматирование"
         >
           Очистить
         </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (disabled || isHtmlMode) return;
+            const html = prompt('Вставьте HTML');
+            if (html) {
+              document.execCommand('insertHTML', false, html);
+              onChange(editorRef.current?.innerHTML || '');
+              editorRef.current?.focus();
+            }
+          }}
+          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          title="Вставить HTML"
+        >
+          HTML
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (disabled || isHtmlMode) return;
+            document.execCommand('insertHorizontalRule');
+            onChange(editorRef.current?.innerHTML || '');
+            editorRef.current?.focus();
+          }}
+          className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+          title="Разделитель"
+        >
+          ─
+        </button>
+
+        <div className="ml-auto flex items-center gap-1">
+          <span className="text-xs text-neutral-600">Режим:</span>
+          <button
+            type="button"
+            onClick={() => {
+              if (!isHtmlMode) {
+                // Visual -> HTML: capture current DOM, then toggle
+                pendingSyncRef.current = editorRef.current?.innerHTML || '';
+                setIsHtmlMode(true);
+              } else {
+                // HTML -> Visual
+                setIsHtmlMode(false);
+              }
+            }}
+            className="px-2 py-1 text-sm hover:bg-neutral-200 rounded"
+            title={isHtmlMode ? 'Переключить на визуальный режим' : 'Переключить на HTML режим'}
+          >
+            {isHtmlMode ? 'Визуально' : 'HTML'}
+          </button>
+        </div>
       </div>
       
       {/* Editor */}
-      <div
-        ref={editorRef}
-        contentEditable={!disabled}
-        onInput={handleInput}
-        onKeyDown={handleKeyDown}
-        className={cn(
-          'min-h-[200px] p-3 border border-neutral-300 border-t-0 rounded-b-md focus:outline-none focus:ring-2 focus:ring-beige-500 focus:border-beige-500',
-          disabled && 'bg-neutral-100 cursor-not-allowed'
-        )}
-        style={{ minHeight: '200px' }}
-        data-placeholder={placeholder}
-        suppressContentEditableWarning
-      />
+      {!isHtmlMode ? (
+        <div
+          ref={editorRef}
+          contentEditable={!disabled}
+          onInput={handleInput}
+          onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
+          className={cn(
+            'w-full min-h-[200px] p-3 border border-neutral-300 border-t-0 rounded-b-md focus:outline-none focus:ring-2 focus:ring-beige-500 focus:border-beige-500',
+            disabled && 'bg-neutral-100 cursor-not-allowed'
+          )}
+          style={{ minHeight: '200px' }}
+          data-placeholder={placeholder}
+          suppressContentEditableWarning
+        />
+      ) : (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={cn(
+            'w-full min-h-[200px] p-3 border border-neutral-300 border-t-0 rounded-b-md focus:outline-none focus:ring-2 focus:ring-beige-500 focus:border-beige-500 font-mono text-sm',
+            disabled && 'bg-neutral-100 cursor-not-allowed'
+          )}
+          style={{ minHeight: '200px' }}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+      )}
       
       {/* Placeholder */}
       {!value && (
