@@ -1,3 +1,4 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import { 
@@ -10,12 +11,32 @@ import {
   CogIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react'
+import { pagesService } from '@/services/pages'
+import type { PageData } from '@/services/pages'
 
 export default function StructurePage() {
+  const [page, setPage] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await pagesService.getBySlug('about/structure')
+        if (!cancelled && res.success) setPage(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const title = page?.seoTitle || 'Структура - СРО Арбитражных Управляющих'
+  const description = page?.seoDescription || 'Организационная структура управления саморегулируемой организации арбитражных управляющих.'
+
   return (
     <Layout
-      title="Структура - СРО Арбитражных Управляющих"
-      description="Организационная структура управления саморегулируемой организации арбитражных управляющих."
+      title={title}
+      description={description}
       keywords="структура, СРО, арбитражные управляющие, управление, органы, комитеты"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -29,15 +50,18 @@ export default function StructurePage() {
           </p>
         </div>
 
-        {/* Organizational Chart */}
-        <Card className="mb-12">
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
-              Схема управления
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-8">
+        {/* Organizational Chart or CMS content */}
+        {page?.content ? (
+          <div dangerouslySetInnerHTML={{ __html: page.content }} />
+        ) : (
+          <Card className="mb-12">
+            <CardHeader>
+              <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
+                Схема управления
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-8">
               {/* General Assembly */}
               <div className="text-center">
                 <Card className="max-w-md mx-auto bg-beige-50 border-beige-200">
@@ -108,11 +132,13 @@ export default function StructurePage() {
                   </Card>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Management Bodies */}
+        {page?.content ? null : (
+        <>
         <Card className="mb-12">
           <CardHeader>
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
@@ -221,7 +247,6 @@ export default function StructurePage() {
           </CardContent>
         </Card>
 
-        {/* Committees Details */}
         <Card className="mb-12">
           <CardHeader>
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
@@ -345,7 +370,6 @@ export default function StructurePage() {
           </CardContent>
         </Card>
 
-        {/* Administrative Structure */}
         <Card className="mb-12">
           <CardHeader>
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
@@ -429,7 +453,6 @@ export default function StructurePage() {
           </CardContent>
         </Card>
 
-        {/* Decision Making Process */}
         <Card>
           <CardHeader>
             <h2 className="text-2xl font-semibold text-neutral-900 mb-6">
@@ -464,6 +487,8 @@ export default function StructurePage() {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
       </div>
     </Layout>
   );

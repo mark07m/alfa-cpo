@@ -1,7 +1,11 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useEffect, useState } from 'react'
+import { settingsService } from '@/services/settings'
+import type { SiteSettings } from '@/types'
 import { 
   MapPinIcon, 
   PhoneIcon, 
@@ -11,6 +15,20 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function ContactsPage() {
+  const [settings, setSettings] = useState<SiteSettings | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await settingsService.get()
+        if (!cancelled && res.success) setSettings(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
   return (
     <Layout
       title="Контакты - СРО Арбитражных Управляющих"
@@ -45,8 +63,12 @@ export default function ContactsPage() {
                     <div>
                       <h3 className="font-semibold text-neutral-900 mb-1">Адрес</h3>
                       <p className="text-neutral-700">
-                        101000, г. Москва, ул. Тверская, д. 12, стр. 1<br />
-                        Бизнес-центр "Тверской", офис 501
+                        {settings?.address || (
+                          <>
+                            101000, г. Москва, ул. Тверская, д. 12, стр. 1<br />
+                            Бизнес-центр "Тверской", офис 501
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -56,8 +78,11 @@ export default function ContactsPage() {
                     <div>
                       <h3 className="font-semibold text-neutral-900 mb-1">Телефон</h3>
                       <p className="text-neutral-700">
-                        <a href="tel:+74951234567" className="hover:text-beige-600 transition-colors">
-                          +7 (495) 123-45-67
+                        <a
+                          href={`tel:${(settings?.contactPhone || '+7 (495) 123-45-67').replace(/[^+\d]/g, '')}`}
+                          className="hover:text-beige-600 transition-colors"
+                        >
+                          {settings?.contactPhone || '+7 (495) 123-45-67'}
                         </a>
                       </p>
                     </div>
@@ -68,8 +93,11 @@ export default function ContactsPage() {
                     <div>
                       <h3 className="font-semibold text-neutral-900 mb-1">Email</h3>
                       <p className="text-neutral-700">
-                        <a href="mailto:info@sro-au.ru" className="hover:text-beige-600 transition-colors">
-                          info@sro-au.ru
+                        <a
+                          href={`mailto:${settings?.contactEmail || 'info@sro-au.ru'}`}
+                          className="hover:text-beige-600 transition-colors"
+                        >
+                          {settings?.contactEmail || 'info@sro-au.ru'}
                         </a>
                       </p>
                     </div>
@@ -80,8 +108,12 @@ export default function ContactsPage() {
                     <div>
                       <h3 className="font-semibold text-neutral-900 mb-1">Часы работы</h3>
                       <p className="text-neutral-700">
-                        Понедельник - Пятница: 9:00 - 18:00<br />
-                        Суббота - Воскресенье: выходной
+                        {settings?.workingHours || (
+                          <>
+                            Понедельник - Пятница: 9:00 - 18:00<br />
+                            Суббота - Воскресенье: выходной
+                          </>
+                        )}
                       </p>
                     </div>
                   </div>

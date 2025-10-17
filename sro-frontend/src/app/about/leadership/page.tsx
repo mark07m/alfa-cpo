@@ -1,12 +1,33 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import { UserGroupIcon, AcademicCapIcon, BriefcaseIcon, StarIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react'
+import { pagesService } from '@/services/pages'
+import type { PageData } from '@/services/pages'
 
 export default function LeadershipPage() {
+  const [page, setPage] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await pagesService.getBySlug('about/leadership')
+        if (!cancelled && res.success) setPage(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const title = page?.seoTitle || 'Руководство - СРО Арбитражных Управляющих'
+  const description = page?.seoDescription || 'Информация о руководящих органах саморегулируемой организации арбитражных управляющих: правление, президент, комитеты.'
+
   return (
     <Layout
-      title="Руководство - СРО Арбитражных Управляющих"
-      description="Информация о руководящих органах саморегулируемой организации арбитражных управляющих: правление, президент, комитеты."
+      title={title}
+      description={description}
       keywords="руководство, СРО, арбитражные управляющие, правление, президент, комитеты"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -20,50 +41,56 @@ export default function LeadershipPage() {
           </p>
         </div>
 
-        {/* President Section */}
-        <Card className="mb-12">
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-6 flex items-center">
-              <StarIcon className="h-8 w-8 text-beige-600 mr-3" />
-              Президент Ассоциации
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-1">
-                <div className="bg-neutral-100 rounded-lg p-6 text-center">
-                  <div className="w-32 h-32 bg-beige-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <UserGroupIcon className="h-16 w-16 text-beige-600" />
+        {/* President Section or CMS content */}
+        {page?.content ? (
+          <div dangerouslySetInnerHTML={{ __html: page.content }} />
+        ) : (
+          <Card className="mb-12">
+            <CardHeader>
+              <h2 className="text-2xl font-semibold text-neutral-900 mb-6 flex items-center">
+                <StarIcon className="h-8 w-8 text-beige-600 mr-3" />
+                Президент Ассоциации
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1">
+                  <div className="bg-neutral-100 rounded-lg p-6 text-center">
+                    <div className="w-32 h-32 bg-beige-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <UserGroupIcon className="h-16 w-16 text-beige-600" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-neutral-900 mb-2">
+                      Иванов Иван Иванович
+                    </h3>
+                    <p className="text-beige-600 font-medium">Президент СРО АУ</p>
                   </div>
-                  <h3 className="text-xl font-semibold text-neutral-900 mb-2">
-                    Иванов Иван Иванович
-                  </h3>
-                  <p className="text-beige-600 font-medium">Президент СРО АУ</p>
+                </div>
+                <div className="lg:col-span-2">
+                  <div className="prose">
+                    <h4 className="text-lg font-semibold text-neutral-900 mb-4">Образование и опыт</h4>
+                    <ul className="list-disc pl-6 mb-4 space-y-2">
+                      <li>Высшее юридическое образование (МГУ им. М.В. Ломоносова, 1995)</li>
+                      <li>Кандидат юридических наук по специальности "Гражданское право"</li>
+                      <li>Опыт работы арбитражным управляющим более 20 лет</li>
+                      <li>Член СРО с 2014 года</li>
+                    </ul>
+                    
+                    <h4 className="text-lg font-semibold text-neutral-900 mb-4">Профессиональные достижения</h4>
+                    <ul className="list-disc pl-6 mb-4 space-y-2">
+                      <li>Автор более 50 научных публикаций по вопросам банкротства</li>
+                      <li>Участник разработки федеральных стандартов деятельности арбитражных управляющих</li>
+                      <li>Эксперт по вопросам несостоятельности (банкротства)</li>
+                      <li>Награжден почетными грамотами Минэкономразвития России</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
-              <div className="lg:col-span-2">
-                <div className="prose">
-                  <h4 className="text-lg font-semibold text-neutral-900 mb-4">Образование и опыт</h4>
-                  <ul className="list-disc pl-6 mb-4 space-y-2">
-                    <li>Высшее юридическое образование (МГУ им. М.В. Ломоносова, 1995)</li>
-                    <li>Кандидат юридических наук по специальности "Гражданское право"</li>
-                    <li>Опыт работы арбитражным управляющим более 20 лет</li>
-                    <li>Член СРО с 2014 года</li>
-                  </ul>
-                  
-                  <h4 className="text-lg font-semibold text-neutral-900 mb-4">Профессиональные достижения</h4>
-                  <ul className="list-disc pl-6 mb-4 space-y-2">
-                    <li>Автор более 50 научных публикаций по вопросам банкротства</li>
-                    <li>Участник разработки федеральных стандартов деятельности арбитражных управляющих</li>
-                    <li>Эксперт по вопросам несостоятельности (банкротства)</li>
-                    <li>Награжден почетными грамотами Минэкономразвития России</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
+        {page?.content ? null : (
+        <>
         {/* Board of Directors */}
         <Card className="mb-12">
           <CardHeader>
@@ -142,7 +169,7 @@ export default function LeadershipPage() {
             </div>
           </CardContent>
         </Card>
-
+        
         {/* Committees */}
         <Card className="mb-12">
           <CardHeader>
@@ -227,7 +254,7 @@ export default function LeadershipPage() {
             </div>
           </CardContent>
         </Card>
-
+        
         {/* Contact Information */}
         <Card>
           <CardHeader>
@@ -268,6 +295,8 @@ export default function LeadershipPage() {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
       </div>
     </Layout>
   );

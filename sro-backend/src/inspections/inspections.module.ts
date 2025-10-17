@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { InspectionsService } from './inspections.service';
 import { InspectionsController } from './inspections.controller';
+import { PublicInspectionsController } from './public-inspections.controller';
 import { Inspection, InspectionSchema } from '@/database/schemas/inspection.schema';
 
 @Module({
@@ -10,7 +11,7 @@ import { Inspection, InspectionSchema } from '@/database/schemas/inspection.sche
       { name: Inspection.name, schema: InspectionSchema },
     ]),
   ],
-  controllers: [InspectionsController],
+  controllers: [InspectionsController, PublicInspectionsController],
   providers: [InspectionsService],
   exports: [InspectionsService],
 })

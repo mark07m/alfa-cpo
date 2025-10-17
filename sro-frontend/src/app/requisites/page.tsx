@@ -1,3 +1,4 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -7,13 +8,49 @@ import {
   BanknotesIcon,
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react'
+import { pagesService } from '@/services/pages'
+import type { PageData } from '@/services/pages'
 
 export default function RequisitesPage() {
+  const [page, setPage] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await pagesService.getBySlug('requisites')
+        if (!cancelled && res.success) setPage(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const title = page?.seoTitle || 'Реквизиты - СРО Арбитражных Управляющих'
+  const description = page?.seoDescription || 'Банковские реквизиты и регистрационные данные саморегулируемой организации арбитражных управляющих.'
+  const keywords = Array.isArray(page?.seoKeywords) ? page?.seoKeywords.join(', ') : 'реквизиты, банковские реквизиты, СРО, ОГРН, ИНН, КПП'
+
+  if (page?.content) {
+    return (
+      <Layout title={title} description={description} keywords={keywords}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-neutral-900 mb-6">
+              {page.title}
+            </h1>
+          </div>
+          <div className="prose" dangerouslySetInnerHTML={{ __html: page.content }} />
+        </div>
+      </Layout>
+    )
+  }
+
   return (
     <Layout
-      title="Реквизиты - СРО Арбитражных Управляющих"
-      description="Банковские реквизиты и регистрационные данные саморегулируемой организации арбитражных управляющих."
-      keywords="реквизиты, банковские реквизиты, СРО, ОГРН, ИНН, КПП"
+      title={title}
+      description={description}
+      keywords={keywords}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}

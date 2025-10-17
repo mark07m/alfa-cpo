@@ -1,3 +1,4 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -12,8 +13,24 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react'
+import { pagesService } from '@/services/pages'
+import type { PageData } from '@/services/pages'
 
 export default function ProfessionalDevelopmentPage() {
+  const [page, setPage] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await pagesService.getBySlug('professional-development')
+        if (!cancelled && res.success) setPage(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
   const upcomingEvents = [
     {
       id: 1,
@@ -79,15 +96,15 @@ export default function ProfessionalDevelopmentPage() {
 
   return (
     <Layout
-      title="Повышение уровня профессиональной подготовки - СРО АУ"
-      description="Программы повышения квалификации, семинары, конференции и обучающие мероприятия для арбитражных управляющих."
-      keywords="повышение квалификации, обучение, семинары, конференции, арбитражные управляющие"
+      title={page?.seoTitle || 'Повышение уровня профессиональной подготовки - СРО АУ'}
+      description={page?.seoDescription || 'Программы повышения квалификации, семинары, конференции и обучающие мероприятия для арбитражных управляющих.'}
+      keywords={(Array.isArray(page?.seoKeywords) ? page?.seoKeywords.join(', ') : undefined) || 'повышение квалификации, обучение, семинары, конференции, арбитражные управляющие'}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-neutral-900 mb-6">
-            Повышение уровня профессиональной подготовки
+            {page?.title || 'Повышение уровня профессиональной подготовки'}
           </h1>
           <p className="text-xl text-neutral-700 max-w-3xl mx-auto">
             Программы повышения квалификации, семинары, конференции и обучающие мероприятия 
@@ -95,37 +112,50 @@ export default function ProfessionalDevelopmentPage() {
           </p>
         </div>
 
-        {/* Policy Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Политика повышения квалификации
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="prose">
-              <p className="mb-4">
-                Саморегулируемая организация арбитражных управляющих обеспечивает 
-                повышение квалификации своих членов в соответствии с требованиями 
-                федерального законодательства.
-              </p>
-              <p className="mb-4">
-                Каждый член СРО обязан проходить повышение квалификации не реже 
-                одного раза в три года в объеме не менее 40 часов.
-              </p>
-              <h3 className="text-lg font-semibold text-neutral-900 mb-3">
-                Формы повышения квалификации:
-              </h3>
-              <ul className="list-disc pl-6 mb-4">
-                <li>Очные семинары и конференции</li>
-                <li>Онлайн-курсы и вебинары</li>
-                <li>Практические занятия и мастер-классы</li>
-                <li>Самостоятельное изучение материалов</li>
-                <li>Участие в профессиональных форумах</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Policy Section (CMS-first) */}
+        {page?.content ? (
+          <Card className="mb-8">
+            <CardHeader>
+              <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
+                {page?.title || 'Политика повышения квалификации'}
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <div className="prose" dangerouslySetInnerHTML={{ __html: page.content }} />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-8">
+            <CardHeader>
+              <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
+                Политика повышения квалификации
+              </h2>
+            </CardHeader>
+            <CardContent>
+              <div className="prose">
+                <p className="mb-4">
+                  Саморегулируемая организация арбитражных управляющих обеспечивает 
+                  повышение квалификации своих членов в соответствии с требованиями 
+                  федерального законодательства.
+                </p>
+                <p className="mb-4">
+                  Каждый член СРО обязан проходить повышение квалификации не реже 
+                  одного раза в три года в объеме не менее 40 часов.
+                </p>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-3">
+                  Формы повышения квалификации:
+                </h3>
+                <ul className="list-disc pl-6 mb-4">
+                  <li>Очные семинары и конференции</li>
+                  <li>Онлайн-курсы и вебинары</li>
+                  <li>Практические занятия и мастер-классы</li>
+                  <li>Самостоятельное изучение материалов</li>
+                  <li>Участие в профессиональных форумах</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Upcoming Events */}
         <Card className="mb-8">

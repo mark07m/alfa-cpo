@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import InspectionSchedule, { InspectionItem } from './InspectionSchedule';
 import InspectionResults, { InspectionResult } from './InspectionResults';
 import DisciplinaryMeasures, { DisciplinaryMeasure } from './DisciplinaryMeasures';
 import InformationUpdate, { InformationItem } from './InformationUpdate';
+import { inspectionsService } from '@/services/inspections';
+import { disciplinaryMeasuresService } from '@/services/disciplinaryMeasures';
 import { 
   ShieldCheckIcon, 
   CalendarIcon,
@@ -29,8 +31,46 @@ export default function ControlPage({
 }: ControlPageProps) {
   const [activeTab, setActiveTab] = useState<'schedule' | 'results' | 'disciplinary' | 'information'>('schedule');
 
-  // Mock data for inspections
-  const inspections: InspectionItem[] = [
+  // Helpers
+  const formatDate = (iso?: string): string => {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString('ru-RU');
+    } catch {
+      return String(iso);
+    }
+  };
+
+  const toRuType = (type?: string) => (type === 'planned' ? 'Плановая' : 'Внеплановая');
+  const toRuStatus = (status?: string) => {
+    switch (status) {
+      case 'scheduled':
+        return 'Запланирована';
+      case 'in_progress':
+        return 'В процессе';
+      case 'completed':
+        return 'Завершена';
+      case 'cancelled':
+        return 'Отменена';
+      default:
+        return 'Запланирована';
+    }
+  };
+  const toRuResult = (result?: string) => {
+    switch (result) {
+      case 'passed':
+        return 'Нарушений не выявлено';
+      case 'failed':
+        return 'Выявлены нарушения';
+      case 'needs_improvement':
+        return 'Требует доработки';
+      default:
+        return 'Требует доработки';
+    }
+  };
+
+  // Data state with sensible fallbacks
+  const [inspections, setInspections] = useState<InspectionItem[]>([
     {
       id: 1,
       manager: 'Иванов И.И.',
@@ -69,10 +109,10 @@ export default function ControlPage({
       status: 'Завершена',
       inspector: 'Морозов М.М.'
     }
-  ];
+  ]);
 
-  // Mock data for inspection results
-  const inspectionResults: InspectionResult[] = [
+  // Results
+  const [inspectionResults, setInspectionResults] = useState<InspectionResult[]>([
     {
       id: 1,
       manager: 'Козлов К.К.',
@@ -115,10 +155,10 @@ export default function ControlPage({
       ],
       inspector: 'Новиков Н.Н.'
     }
-  ];
+  ]);
 
-  // Mock data for disciplinary measures
-  const disciplinaryMeasures: DisciplinaryMeasure[] = [
+  // Disciplinary measures
+  const [disciplinaryMeasures, setDisciplinaryMeasures] = useState<DisciplinaryMeasure[]>([
     {
       id: 1,
       manager: 'Морозов М.М.',
@@ -162,10 +202,10 @@ export default function ControlPage({
       endDate: '01.11.2023',
       document: true
     }
-  ];
+  ]);
 
   // Mock data for information updates
-  const informationItems: InformationItem[] = [
+  const [informationItems] = useState<InformationItem[]>([
     {
       id: 1,
       name: 'Устав СРО',
@@ -224,7 +264,101 @@ export default function ControlPage({
       responsible: 'Бухгалтерия',
       nextUpdate: '31.12.2024'
     }
-  ];
+  ]);
+
+  // Stats
+  const [overallStats, setOverallStats] = useState<{ total: number; passed: number; failed: number; measuresTotal: number }>(
+    { total: 48, passed: 42, failed: 6, measuresTotal: 3 }
+  );
+
+  // Load live data
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const [listRes, measuresRes, insStatsRes, measStatsRes] = await Promise.allSettled([
+          inspectionsService.list({ page: 1, limit: 1000, sortBy: 'scheduledDate', sortOrder: 'desc' }),
+          disciplinaryMeasuresService.list({ page: 1, limit: 1000, sortBy: 'date', sortOrder: 'desc' }),
+          inspectionsService.statistics(),
+          disciplinaryMeasuresService.statistics(),
+        ]);
+
+        if (listRes.status === 'fulfilled' && listRes.value.success) {
+          const data = listRes.value.data.data || [];
+          const mappedSchedule: InspectionItem[] = data.map((i: any, idx: number) => ({
+            id: idx + 1,
+            manager: i.managerName || '—',
+            region: i.managerRegion || '—',
+            date: formatDate(i.scheduledDate),
+            type: toRuType(i.type) as any,
+            status: toRuStatus(i.status) as any,
+            inspector: i.inspector,
+            notes: i.notes,
+          }));
+
+          const mappedResults: InspectionResult[] = data.map((i: any, idx: number) => ({
+            id: idx + 1,
+            manager: i.managerName || '—',
+            date: formatDate(i.completedDate || i.scheduledDate),
+            type: toRuType(i.type) as any,
+            result: toRuResult(i.result) as any,
+            status: (i.status || 'in_progress') as any,
+            report: (i.documentsCount || 0) > 0,
+            violations: i.violations || [],
+            recommendations: i.recommendations || [],
+            inspector: i.inspector,
+            nextInspection: undefined,
+          }));
+
+          if (!cancelled) {
+            setInspections(mappedSchedule);
+            setInspectionResults(mappedResults);
+          }
+        }
+
+        if (measuresRes.status === 'fulfilled' && measuresRes.value.success) {
+          const ms = measuresRes.value.data.data || [];
+          const mappedMeasures: DisciplinaryMeasure[] = ms.map((m: any, idx: number) => ({
+            id: idx + 1,
+            manager: m.managerName || '—',
+            date: formatDate(m.date),
+            measure: m.type === 'warning' ? 'Предупреждение'
+              : m.type === 'reprimand' ? 'Выговор'
+              : m.type === 'exclusion' ? 'Исключение из СРО'
+              : m.type === 'suspension' ? 'Временное приостановление'
+              : 'Предупреждение',
+            reason: m.reason,
+            status: m.status === 'active' ? 'active' : (m.status === 'cancelled' ? 'cancelled' : 'completed'),
+            endDate: undefined,
+            document: !!m.decisionNumber,
+            appeal: m.appealStatus && m.appealStatus !== 'none' ? true : false,
+            appealDate: m.appealDate ? formatDate(m.appealDate) : undefined,
+            appealResult: m.appealDecision,
+          }));
+          if (!cancelled) setDisciplinaryMeasures(mappedMeasures);
+        }
+
+        const nextStats = { ...overallStats };
+        if (insStatsRes.status === 'fulfilled' && insStatsRes.value.success) {
+          const s: any = insStatsRes.value.data || {};
+          if (typeof s.total === 'number') nextStats.total = s.total;
+          if (typeof s.passed === 'number') nextStats.passed = s.passed;
+          if (typeof s.failed === 'number') nextStats.failed = s.failed;
+        }
+        if (measStatsRes.status === 'fulfilled' && measStatsRes.value.success) {
+          const ds: any = measStatsRes.value.data || {};
+          if (typeof ds.total === 'number') nextStats.measuresTotal = ds.total;
+        }
+        if (!cancelled) setOverallStats(nextStats);
+      } catch {
+        // swallow; UI has sensible defaults
+      }
+    };
+
+    load();
+    return () => { cancelled = true };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleExport = () => {
     // Mock export functionality
@@ -365,7 +499,7 @@ export default function ControlPage({
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                 Проверок в год
               </h3>
-              <p className="text-2xl font-bold text-beige-700">48</p>
+              <p className="text-2xl font-bold text-beige-700">{overallStats.total}</p>
             </CardContent>
           </Card>
 
@@ -375,7 +509,7 @@ export default function ControlPage({
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                 Без нарушений
               </h3>
-              <p className="text-2xl font-bold text-green-700">42</p>
+              <p className="text-2xl font-bold text-green-700">{overallStats.passed}</p>
             </CardContent>
           </Card>
 
@@ -385,7 +519,7 @@ export default function ControlPage({
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                 С нарушениями
               </h3>
-              <p className="text-2xl font-bold text-red-700">6</p>
+              <p className="text-2xl font-bold text-red-700">{overallStats.failed}</p>
             </CardContent>
           </Card>
 
@@ -395,7 +529,7 @@ export default function ControlPage({
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                 Дисциплинарных мер
               </h3>
-              <p className="text-2xl font-bold text-beige-700">3</p>
+              <p className="text-2xl font-bold text-beige-700">{overallStats.measuresTotal}</p>
             </CardContent>
           </Card>
         </div>

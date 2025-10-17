@@ -6,7 +6,7 @@ class FrontendApiClient {
   private api: AxiosInstance
 
   constructor() {
-    this.api = axios.create({ baseURL: API_BASE_URL, timeout: 10000 })
+    this.api = axios.create({ baseURL: API_BASE_URL, timeout: 10000, withCredentials: true })
   }
 
   async get<T>(path: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {

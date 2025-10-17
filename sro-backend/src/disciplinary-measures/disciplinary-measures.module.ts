@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DisciplinaryMeasuresService } from './disciplinary-measures.service';
 import { DisciplinaryMeasuresController } from './disciplinary-measures.controller';
+import { PublicDisciplinaryMeasuresController } from './public-disciplinary-measures.controller';
 import { DisciplinaryMeasure, DisciplinaryMeasureSchema } from '@/database/schemas/disciplinary-measure.schema';
 
 @Module({
@@ -10,7 +11,7 @@ import { DisciplinaryMeasure, DisciplinaryMeasureSchema } from '@/database/schem
       { name: DisciplinaryMeasure.name, schema: DisciplinaryMeasureSchema },
     ]),
   ],
-  controllers: [DisciplinaryMeasuresController],
+  controllers: [DisciplinaryMeasuresController, PublicDisciplinaryMeasuresController],
   providers: [DisciplinaryMeasuresService],
   exports: [DisciplinaryMeasuresService],
 })

@@ -12,10 +12,25 @@ import {
   ExclamationTriangleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { pagesService } from '@/services/pages'
+import type { PageData } from '@/services/pages'
 
 export default function LaborActivityPage() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [page, setPage] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await pagesService.getBySlug('labor-activity')
+        if (!cancelled && res.success) setPage(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
 
   const documents: Document[] = [
     {
@@ -92,34 +107,34 @@ export default function LaborActivityPage() {
     }
   ];
 
-  const handleDownload = (document: Document) => {
-    const link = document.createElement('a');
-    link.href = document.fileUrl;
-    link.download = document.title;
-    document.body.appendChild(link);
+  const handleDownload = (doc: Document) => {
+    const link = window.document.createElement('a');
+    link.href = doc.fileUrl;
+    link.download = doc.title;
+    window.document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    window.document.body.removeChild(link);
   };
 
-  const handlePrint = (document: Document) => {
-    window.open(document.fileUrl, '_blank');
+  const handlePrint = (doc: Document) => {
+    window.open(doc.fileUrl, '_blank');
   };
 
-  const handlePreview = (document: Document) => {
-    setSelectedDocument(document);
+  const handlePreview = (doc: Document) => {
+    setSelectedDocument(doc);
   };
 
   return (
     <Layout
-      title="Трудовая деятельность - СРО АУ"
-      description="Информация о трудовой деятельности арбитражных управляющих: требования, документы, процедуры."
-      keywords="трудовая деятельность, арбитражные управляющие, стаж, документы"
+      title={page?.seoTitle || 'Трудовая деятельность - СРО АУ'}
+      description={page?.seoDescription || 'Информация о трудовой деятельности арбитражных управляющих: требования, документы, процедуры.'}
+      keywords={(Array.isArray(page?.seoKeywords) ? page?.seoKeywords.join(', ') : undefined) || 'трудовая деятельность, арбитражные управляющие, стаж, документы'}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-neutral-900 mb-6">
-            Трудовая деятельность арбитражных управляющих
+            {page?.title || 'Трудовая деятельность арбитражных управляющих'}
           </h1>
           <p className="text-xl text-neutral-700 max-w-3xl mx-auto">
             Информация о требованиях к трудовой деятельности арбитражных управляющих, 
@@ -145,155 +160,86 @@ export default function LaborActivityPage() {
         </Card>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-                  Требования к трудовой деятельности
-                </h2>
-              </CardHeader>
-              <CardContent>
-                <div className="prose">
-                  <p className="mb-4">
-                    В соответствии с Федеральным законом "О несостоятельности (банкротстве)" 
-                    арбитражные управляющие обязаны размещать сведения о своей трудовой деятельности 
-                    в федеральном реестре.
-                  </p>
-                  <p className="mb-4">
-                    Данные сведения включают информацию о местах работы, должностях, периодах 
-                    трудовой деятельности и иных сведениях, необходимых для подтверждения 
-                    профессионального опыта.
-                  </p>
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-3">
-                    Обязательные сведения для размещения:
-                  </h3>
-                  <ul className="list-disc pl-6 mb-4">
-                    <li>Места работы за последние 5 лет</li>
-                    <li>Занимаемые должности и периоды работы</li>
-                    <li>Образование и квалификация</li>
-                    <li>Профессиональный опыт в сфере банкротства</li>
-                    <li>Участие в процедурах несостоятельности</li>
-                    <li>Дополнительное образование и повышение квалификации</li>
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardContent className="text-center">
-                <BriefcaseIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                  Минимальный стаж
-                </h3>
-                <p className="text-2xl font-bold text-beige-700 mb-2">5 лет</p>
-                <p className="text-sm text-neutral-600">в сфере банкротства</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="text-center">
-                <CalendarIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                  Срок обновления
-                </h3>
-                <p className="text-neutral-600">Ежемесячно</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="text-center">
-                <DocumentTextIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                  Документы
-                </h3>
-                <p className="text-sm text-neutral-600 mb-3">
-                  Инструкция по размещению
-                </p>
-                <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
-                  Скачать PDF
-                </button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Procedure Steps */}
-        <Card className="mb-12">
-          <CardHeader>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
-              Порядок размещения сведений
-            </h2>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Этапы процедуры
-                </h3>
-                <ol className="space-y-4">
-                  <li className="flex items-start">
-                    <span className="bg-beige-100 text-beige-800 text-sm font-medium px-3 py-1 rounded-full mr-4 mt-0.5 flex-shrink-0">1</span>
-                    <div>
-                      <p className="font-medium text-neutral-900">Подготовка документов</p>
-                      <p className="text-sm text-neutral-600">Сбор справок о трудовой деятельности, копий трудовых книжек, дипломов</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-beige-100 text-beige-800 text-sm font-medium px-3 py-1 rounded-full mr-4 mt-0.5 flex-shrink-0">2</span>
-                    <div>
-                      <p className="font-medium text-neutral-900">Заполнение формы</p>
-                      <p className="text-sm text-neutral-600">Внесение сведений в электронную форму федерального реестра</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-beige-100 text-beige-800 text-sm font-medium px-3 py-1 rounded-full mr-4 mt-0.5 flex-shrink-0">3</span>
-                    <div>
-                      <p className="font-medium text-neutral-900">Проверка данных</p>
-                      <p className="text-sm text-neutral-600">Верификация поданных сведений уполномоченными органами</p>
-                    </div>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="bg-beige-100 text-beige-800 text-sm font-medium px-3 py-1 rounded-full mr-4 mt-0.5 flex-shrink-0">4</span>
-                    <div>
-                      <p className="font-medium text-neutral-900">Публикация</p>
-                      <p className="text-sm text-neutral-600">Размещение сведений в открытом доступе</p>
-                    </div>
-                  </li>
-                </ol>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Необходимые документы
-                </h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start">
-                    <DocumentTextIcon className="h-5 w-5 text-beige-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-700">Копия трудовой книжки (заверенная)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <DocumentTextIcon className="h-5 w-5 text-beige-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-700">Справки с мест работы</span>
-                  </li>
-                  <li className="flex items-start">
-                    <DocumentTextIcon className="h-5 w-5 text-beige-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-700">Документы об образовании</span>
-                  </li>
-                  <li className="flex items-start">
-                    <DocumentTextIcon className="h-5 w-5 text-beige-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-700">Сертификаты о повышении квалификации</span>
-                  </li>
-                  <li className="flex items-start">
-                    <DocumentTextIcon className="h-5 w-5 text-beige-600 mr-3 mt-0.5 flex-shrink-0" />
-                    <span className="text-neutral-700">Справка об отсутствии судимости</span>
-                  </li>
-                </ul>
-              </div>
+        {page?.content ? (
+          <div className="prose mb-12" dangerouslySetInnerHTML={{ __html: page.content }} />
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <h2 className="text-2xl font-semibold text-neutral-900 mb-4">
+                    {page?.title || 'Требования к трудовой деятельности'}
+                  </h2>
+                </CardHeader>
+                <CardContent>
+                  <div className="prose">
+                    <p className="mb-4">
+                      В соответствии с Федеральным законом "О несостоятельности (банкротстве)" 
+                      арбитражные управляющие обязаны размещать сведения о своей трудовой деятельности 
+                      в федеральном реестре.
+                    </p>
+                    <p className="mb-4">
+                      Данные сведения включают информацию о местах работы, должностях, периодах 
+                      трудовой деятельности и иных сведениях, необходимых для подтверждения 
+                      профессионального опыта.
+                    </p>
+                    <h3 className="text-lg font-semibold text-neutral-900 mb-3">
+                      Обязательные сведения для размещения:
+                    </h3>
+                    <ul className="list-disc pl-6 mb-4">
+                      <li>Места работы за последние 5 лет</li>
+                      <li>Занимаемые должности и периоды работы</li>
+                      <li>Образование и квалификация</li>
+                      <li>Профессиональный опыт в сфере банкротства</li>
+                      <li>Участие в процедурах несостоятельности</li>
+                      <li>Дополнительное образование и повышение квалификации</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="space-y-6">
+              <Card>
+                <CardContent className="text-center">
+                  <BriefcaseIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    Минимальный стаж
+                  </h3>
+                  <p className="text-2xl font-bold text-beige-700 mb-2">5 лет</p>
+                  <p className="text-sm text-neutral-600">в сфере банкротства</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="text-center">
+                  <CalendarIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    Срок обновления
+                  </h3>
+                  <p className="text-neutral-600">Ежемесячно</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="text-center">
+                  <DocumentTextIcon className="h-12 w-12 text-beige-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                    Документы
+                  </h3>
+                  <p className="text-sm text-neutral-600 mb-3">
+                    Инструкция по размещению
+                  </p>
+                  <button className="text-beige-600 hover:text-beige-700 text-sm font-medium">
+                    Скачать PDF
+                  </button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Procedure Steps removed to avoid duplication with CMS content */}
 
         {/* Federal Registry Info */}
         <Card className="mb-12">

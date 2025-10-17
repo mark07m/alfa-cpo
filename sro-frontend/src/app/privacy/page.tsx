@@ -1,13 +1,49 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import { ShieldCheckIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState } from 'react'
+import { pagesService } from '@/services/pages'
+import type { PageData } from '@/services/pages'
 
 export default function PrivacyPolicyPage() {
+  const [page, setPage] = useState<PageData | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await pagesService.getBySlug('privacy')
+        if (!cancelled && res.success) setPage(res.data)
+      } catch {}
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const title = page?.seoTitle || 'Политика конфиденциальности - СРО Арбитражных Управляющих'
+  const description = page?.seoDescription || 'Политика конфиденциальности и обработки персональных данных саморегулируемой организации арбитражных управляющих.'
+  const keywords = Array.isArray(page?.seoKeywords) ? page?.seoKeywords.join(', ') : 'политика конфиденциальности, персональные данные, СРО, обработка данных'
+
+  if (page?.content) {
+    return (
+      <Layout title={title} description={description} keywords={keywords}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center mb-12">
+            <ShieldCheckIcon className="h-16 w-16 text-beige-600 mx-auto mb-6" />
+            <h1 className="text-4xl font-bold text-neutral-900 mb-6">{page.title}</h1>
+          </div>
+          <div className="prose prose-neutral max-w-none" dangerouslySetInnerHTML={{ __html: page.content }} />
+        </div>
+      </Layout>
+    )
+  }
+
   return (
     <Layout
-      title="Политика конфиденциальности - СРО Арбитражных Управляющих"
-      description="Политика конфиденциальности и обработки персональных данных саморегулируемой организации арбитражных управляющих."
-      keywords="политика конфиденциальности, персональные данные, СРО, обработка данных"
+      title={title}
+      description={description}
+      keywords={keywords}
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Hero Section */}
