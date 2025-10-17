@@ -15,6 +15,7 @@ import {
   MagnifyingGlassMinusIcon,
   MagnifyingGlassPlusIcon
 } from '@heroicons/react/24/outline';
+import { documentsService } from '@/services/documents';
 
 const DocumentViewer: React.FC<DocumentViewerProps> = ({
   document,
@@ -36,13 +37,13 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   }, [document]);
 
   const handleDownload = () => {
-    // Создаем временную ссылку для скачивания
-    const link = document.createElement('a');
-    link.href = document.fileUrl;
+    const url = documentsService.getDownloadUrl(document.id)
+    const link = window.document.createElement('a');
+    link.href = url;
     link.download = document.title;
-    document.body.appendChild(link);
+    window.document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    window.document.body.removeChild(link);
   };
 
   const handlePrint = () => {
@@ -213,28 +214,10 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
             </div>
           ) : (
             <div className="p-4">
-              <div 
-                className="bg-white shadow-lg mx-auto"
-                style={{ 
-                  transform: `scale(${scale})`,
-                  transformOrigin: 'top center',
-                  width: 'fit-content'
-                }}
-              >
-                {/* Здесь будет встроенный PDF viewer или iframe */}
-                <div className="w-[800px] h-[1000px] border border-neutral-300 flex items-center justify-center bg-white">
-                  <div className="text-center text-neutral-500">
-                    <DocumentArrowDownIcon className="h-16 w-16 mx-auto mb-4" />
-                    <p className="text-lg font-medium mb-2">Предварительный просмотр PDF</p>
-                    <p className="text-sm mb-4">
-                      Страница {currentPage} из {totalPages}
-                    </p>
-                    <p className="text-xs">
-                      Для полного просмотра скачайте документ
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <iframe
+                src={documentsService.getPreviewUrl(document.id)}
+                className="w-[1000px] h-[1200px] border border-neutral-300 bg-white mx-auto block"
+              />
             </div>
           )}
         </div>

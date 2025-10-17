@@ -1,11 +1,21 @@
 import { apiService } from './api'
 import { Document, DocumentCategory, DocumentFilters, DocumentUpload, DocumentVersion, PaginationParams, ApiResponse, PaginationResponse } from '@/types/admin'
 
+// Payload accepted by backend for document update
+type UpdateDocumentPayload = {
+  title?: string
+  description?: string
+  category?: string
+  isPublic?: boolean
+  tags?: string[]
+  version?: string
+}
+
 export interface DocumentsService {
   getDocuments(filters?: DocumentFilters & PaginationParams): Promise<ApiResponse<{ documents: Document[]; pagination: any }>>
   getDocument(id: string): Promise<ApiResponse<Document>>
   createDocument(documentData: Partial<Document>): Promise<ApiResponse<Document>>
-  updateDocument(id: string, documentData: Partial<Document>): Promise<ApiResponse<Document>>
+  updateDocument(id: string, documentData: Partial<UpdateDocumentPayload>): Promise<ApiResponse<Document>>
   deleteDocument(id: string): Promise<ApiResponse<void>>
   bulkDeleteDocuments(ids: string[]): Promise<ApiResponse<void>>
   uploadDocument(uploadData: DocumentUpload, onProgress?: (percent: number) => void): Promise<ApiResponse<Document>>
@@ -161,10 +171,10 @@ class DocumentsServiceImpl implements DocumentsService {
     }
   }
 
-  async updateDocument(id: string, documentData: Partial<Document>): Promise<ApiResponse<Document>> {
+  async updateDocument(id: string, documentData: Partial<UpdateDocumentPayload>): Promise<ApiResponse<Document>> {
     try {
-      const response = await apiService.put(`/documents/${id}`, documentData)
-      return response.data
+      const response = await apiService.patch(`/documents/${id}`, documentData)
+      return response
     } catch (error) {
       console.error('Failed to update document:', error)
       return {

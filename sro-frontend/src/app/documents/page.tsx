@@ -1,5 +1,8 @@
+"use client";
 import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
+import { useEffect, useMemo, useState } from 'react';
+import { documentsService } from '@/services/documents';
 import { 
   DocumentTextIcon, 
   ScaleIcon, 
@@ -9,6 +12,33 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function DocumentsPage() {
+  const [categoryStats, setCategoryStats] = useState<Array<{ value: string; label: string; count: number }>>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    documentsService.categories()
+      .then((res) => {
+        if (!mounted) return
+        setCategoryStats(Array.isArray(res.data) ? res.data : [])
+      })
+      .catch(() => {
+        if (!mounted) return
+        setError('Не удалось загрузить статистику документов')
+      })
+      .finally(() => {
+        if (!mounted) return
+        setLoading(false)
+      })
+    return () => { mounted = false }
+  }, [])
+
+  const regulatoryCount = useMemo(() => categoryStats.find(c => c.value === 'regulatory')?.count || 0, [categoryStats])
+  const rulesCount = useMemo(() => categoryStats.find(c => c.value === 'rules')?.count || 0, [categoryStats])
+  const reportsCount = useMemo(() => categoryStats.find(c => c.value === 'reports')?.count || 0, [categoryStats])
+
   return (
     <Layout
       title="Документы - СРО Арбитражных Управляющих"
@@ -187,7 +217,7 @@ export default function DocumentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               <div className="text-center">
                 <div className="w-20 h-20 bg-gradient-to-br from-beige-100 to-beige-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                  <span className="text-3xl font-bold text-beige-700">12</span>
+                  <span className="text-3xl font-bold text-beige-700">{loading ? '…' : regulatoryCount}</span>
                 </div>
                 <h3 className="font-semibold text-neutral-900 mb-2">Учредительные документы</h3>
                 <p className="text-sm text-neutral-600">Устав, свидетельства, выписки</p>
@@ -195,7 +225,7 @@ export default function DocumentsPage() {
 
               <div className="text-center">
                 <div className="w-20 h-20 bg-gradient-to-br from-beige-100 to-beige-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                  <span className="text-3xl font-bold text-beige-700">8</span>
+                  <span className="text-3xl font-bold text-beige-700">{loading ? '…' : rulesCount}</span>
                 </div>
                 <h3 className="font-semibold text-neutral-900 mb-2">Правила деятельности</h3>
                 <p className="text-sm text-neutral-600">Стандарты и кодексы</p>
@@ -203,7 +233,7 @@ export default function DocumentsPage() {
 
               <div className="text-center">
                 <div className="w-20 h-20 bg-gradient-to-br from-beige-100 to-beige-200 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                  <span className="text-3xl font-bold text-beige-700">15</span>
+                  <span className="text-3xl font-bold text-beige-700">{loading ? '…' : reportsCount}</span>
                 </div>
                 <h3 className="font-semibold text-neutral-900 mb-2">Формы и бланки</h3>
                 <p className="text-sm text-neutral-600">Шаблоны документов</p>
@@ -221,7 +251,7 @@ export default function DocumentsPage() {
             <div className="mt-8 pt-6 border-t border-neutral-200">
               <div className="flex items-center justify-center text-sm text-neutral-600">
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
-                <span>Последнее обновление: 01.12.2023</span>
+                <span>{error ? error : 'Статистика загружается автоматически'}</span>
               </div>
             </div>
           </CardContent>

@@ -14,10 +14,14 @@ import {
   DocumentArrowDownIcon,
   PrinterIcon
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { documentsService } from '@/services/documents';
 
 export default function ProfessionalRulesPage() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const rules: DocumentRule[] = [
     {
@@ -145,35 +149,42 @@ export default function ProfessionalRulesPage() {
     }
   ];
 
-  // Преобразуем правила в документы для DocumentList
-  const documents: Document[] = rules.map(rule => ({
-    id: rule.id,
-    title: rule.name,
-    description: rule.description,
-    category: 'rules' as const,
-    fileUrl: rule.fileUrl,
-    fileSize: parseInt(rule.size.replace(/[^\d]/g, '')) * 1024, // Примерное преобразование
-    fileType: 'pdf',
-    uploadedAt: rule.lastUpdated,
-    updatedAt: rule.lastUpdated,
-    version: rule.version
-  }));
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    documentsService.listPublic({ category: 'rules', sortBy: 'uploadedAt', sortOrder: 'desc', limit: 100 })
+      .then((res) => {
+        if (!mounted) return
+        setDocuments(res.data?.data || [])
+      })
+      .catch(() => {
+        if (!mounted) return
+        setError('Не удалось загрузить документы')
+      })
+      .finally(() => {
+        if (!mounted) return
+        setLoading(false)
+      })
+    return () => { mounted = false }
+  }, [])
 
-  const handleDownload = (document: Document) => {
-    const link = document.createElement('a');
-    link.href = document.fileUrl;
-    link.download = document.title;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = (doc: Document) => {
+    const url = documentsService.getDownloadUrl(doc.id)
+    const a = window.document.createElement('a')
+    a.href = url
+    a.download = doc.title
+    window.document.body.appendChild(a)
+    a.click()
+    window.document.body.removeChild(a)
   };
 
-  const handlePrint = (document: Document) => {
-    window.open(document.fileUrl, '_blank');
+  const handlePrint = (doc: Document) => {
+    const url = documentsService.getPreviewUrl(doc.id)
+    window.open(url, '_blank')
   };
 
-  const handlePreview = (document: Document) => {
-    setSelectedDocument(document);
+  const handlePreview = (doc: Document) => {
+    setSelectedDocument(doc);
   };
 
   return (

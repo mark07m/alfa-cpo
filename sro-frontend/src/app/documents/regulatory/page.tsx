@@ -14,158 +14,53 @@ import {
   FolderIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { documentsService } from '@/services/documents';
 
 export default function RegulatoryDocumentsPage() {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [viewMode, setViewMode] = useState<'categories' | 'list'>('categories');
+  const [documents, setDocuments] = useState<Document[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const documentCategories: DocumentCategoryType[] = [
-    {
-      id: 'founding',
-      name: 'Учредительные документы',
-      description: 'Устав, свидетельства о регистрации, выписки из реестра',
-      order: 1,
-      documents: [
-        {
-          id: '1',
-          title: 'Устав СРО Арбитражных Управляющих',
-          description: 'Устав саморегулируемой организации арбитражных управляющих, редакция от 15.03.2023',
-          category: 'regulatory',
-          fileUrl: '/documents/ustav-sro-au.pdf',
-          fileSize: 250880,
-          fileType: 'pdf',
-          uploadedAt: '2023-03-15T00:00:00Z',
-          updatedAt: '2023-03-15T00:00:00Z',
-          version: '1.2'
-        },
-        {
-          id: '2',
-          title: 'Свидетельство о государственной регистрации',
-          description: 'Свидетельство о государственной регистрации юридического лица',
-          category: 'regulatory',
-          fileUrl: '/documents/svidetelstvo-registracii.pdf',
-          fileSize: 159744,
-          fileType: 'pdf',
-          uploadedAt: '2014-01-10T00:00:00Z',
-          updatedAt: '2014-01-10T00:00:00Z'
-        },
-        {
-          id: '3',
-          title: 'Свидетельство о постановке на налоговый учет',
-          description: 'Свидетельство о постановке на учет в налоговом органе',
-          category: 'regulatory',
-          fileUrl: '/documents/svidetelstvo-nalog.pdf',
-          fileSize: 91136,
-          fileType: 'pdf',
-          uploadedAt: '2014-01-10T00:00:00Z',
-          updatedAt: '2014-01-10T00:00:00Z'
-        },
-        {
-          id: '4',
-          title: 'Выписка из реестра СРО АУ',
-          description: 'Выписка из единого государственного реестра саморегулируемых организаций',
-          category: 'regulatory',
-          fileUrl: '/documents/vypiska-reestr.pdf',
-          fileSize: 1258291,
-          fileType: 'pdf',
-          uploadedAt: '2023-12-01T00:00:00Z',
-          updatedAt: '2023-12-01T00:00:00Z'
-        }
-      ]
-    },
-    {
-      id: 'internal',
-      name: 'Внутренние документы',
-      description: 'Положения, приказы, политики организации',
-      order: 2,
-      documents: [
-        {
-          id: '5',
-          title: 'Положение о компенсационном фонде',
-          description: 'Положение о порядке формирования и использования компенсационного фонда',
-          category: 'regulatory',
-          fileUrl: '/documents/polozhenie-kompensacionnyj-fond.pdf',
-          fileSize: 182272,
-          fileType: 'pdf',
-          uploadedAt: '2023-05-20T00:00:00Z',
-          updatedAt: '2023-05-20T00:00:00Z'
-        },
-        {
-          id: '6',
-          title: 'Положение о дисциплинарной ответственности',
-          description: 'Положение о порядке применения мер дисциплинарного воздействия',
-          category: 'regulatory',
-          fileUrl: '/documents/polozhenie-disciplinarnaya.pdf',
-          fileSize: 239616,
-          fileType: 'pdf',
-          uploadedAt: '2023-08-15T00:00:00Z',
-          updatedAt: '2023-08-15T00:00:00Z'
-        },
-        {
-          id: '7',
-          title: 'Политика обработки персональных данных',
-          description: 'Политика в отношении обработки персональных данных',
-          category: 'regulatory',
-          fileUrl: '/documents/politika-personalnye-dannye.pdf',
-          fileSize: 171008,
-          fileType: 'pdf',
-          uploadedAt: '2023-09-01T00:00:00Z',
-          updatedAt: '2023-09-01T00:00:00Z'
-        }
-      ]
-    },
-    {
-      id: 'regulatory',
-      name: 'Нормативные акты',
-      description: 'Федеральные законы и подзаконные акты',
-      order: 3,
-      documents: [
-        {
-          id: '8',
-          title: 'ФЗ "О несостоятельности (банкротстве)"',
-          description: 'Федеральный закон от 26.10.2002 № 127-ФЗ "О несостоятельности (банкротстве)"',
-          category: 'regulatory',
-          fileUrl: '/documents/fz-o-bankrotstve.pdf',
-          fileSize: 2202009,
-          fileType: 'pdf',
-          uploadedAt: '2002-10-26T00:00:00Z',
-          updatedAt: '2023-01-01T00:00:00Z'
-        },
-        {
-          id: '9',
-          title: 'Приказ Минэкономразвития о требованиях к СРО',
-          description: 'Приказ Минэкономразвития России от 15.12.2022 № 1234',
-          category: 'regulatory',
-          fileUrl: '/documents/prikaz-minekonomrazvitiya.pdf',
-          fileSize: 466944,
-          fileType: 'pdf',
-          uploadedAt: '2022-12-15T00:00:00Z',
-          updatedAt: '2022-12-15T00:00:00Z'
-        }
-      ]
-    }
-  ];
+  useEffect(() => {
+    let mounted = true
+    setLoading(true)
+    documentsService.listPublic({ category: 'regulatory', sortBy: 'uploadedAt', sortOrder: 'desc', limit: 100 })
+      .then((res) => {
+        if (!mounted) return
+        const data = res.data?.data || []
+        setDocuments(data)
+      })
+      .catch(() => {
+        if (!mounted) return
+        setError('Не удалось загрузить документы')
+      })
+      .finally(() => {
+        if (!mounted) return
+        setLoading(false)
+      })
+    return () => { mounted = false }
+  }, [])
 
-  // Получаем все документы для списка
-  const allDocuments = documentCategories.flatMap(category => category.documents);
-
-  const handleDownload = (document: Document) => {
-    // Создаем временную ссылку для скачивания
-    const link = document.createElement('a');
-    link.href = document.fileUrl;
-    link.download = document.title;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = (doc: Document) => {
+    const url = documentsService.getDownloadUrl(doc.id)
+    const a = window.document.createElement('a')
+    a.href = url
+    a.download = doc.title
+    window.document.body.appendChild(a)
+    a.click()
+    window.document.body.removeChild(a)
   };
 
-  const handlePrint = (document: Document) => {
-    window.open(document.fileUrl, '_blank');
+  const handlePrint = (doc: Document) => {
+    const url = documentsService.getPreviewUrl(doc.id)
+    window.open(url, '_blank')
   };
 
-  const handlePreview = (document: Document) => {
-    setSelectedDocument(document);
+  const handlePreview = (doc: Document) => {
+    setSelectedDocument(doc);
   };
 
   return (
@@ -235,21 +130,18 @@ export default function RegulatoryDocumentsPage() {
         {/* Document Display */}
         {viewMode === 'categories' ? (
           <div className="space-y-8">
-            {documentCategories.map((category) => (
-              <DocumentCategory
-                key={category.id}
-                category={category}
-                onDownload={handleDownload}
-                onPrint={handlePrint}
-                onPreview={handlePreview}
-                defaultExpanded={true}
-                showDocumentCount={true}
-              />
-            ))}
+            <DocumentCategory
+              category={{ id: 'regulatory', name: 'Нормативные документы', description: 'Учредительные, внутренние и нормативные акты', order: 1, documents }}
+              onDownload={handleDownload}
+              onPrint={handlePrint}
+              onPreview={handlePreview}
+              defaultExpanded={true}
+              showDocumentCount={true}
+            />
           </div>
         ) : (
           <DocumentList
-            documents={allDocuments}
+            documents={documents}
             onDownload={handleDownload}
             onPrint={handlePrint}
             onPreview={handlePreview}
@@ -266,7 +158,7 @@ export default function RegulatoryDocumentsPage() {
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                 Всего документов
               </h3>
-              <p className="text-2xl font-bold text-beige-700">12</p>
+              <p className="text-2xl font-bold text-beige-700">{documents.length}</p>
             </CardContent>
           </Card>
 
@@ -276,7 +168,7 @@ export default function RegulatoryDocumentsPage() {
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                 Последнее обновление
               </h3>
-              <p className="text-neutral-600">01.12.2023</p>
+              <p className="text-neutral-600">{documents[0]?.uploadedAt ? new Date(documents[0].uploadedAt).toLocaleDateString('ru-RU') : '-'}</p>
             </CardContent>
           </Card>
 

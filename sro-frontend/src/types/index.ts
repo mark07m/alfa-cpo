@@ -289,6 +289,8 @@ export interface CompensationFund {
     accountNumber: string;
     bik: string;
     correspondentAccount: string;
+    inn: string;
+    kpp: string;
   };
   documents: Document[];
 }

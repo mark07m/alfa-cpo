@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { documentsService } from '@/services/admin/documents'
 import { Document, DocumentCategory, DocumentFilters, DocumentUpload, DocumentVersion, PaginationParams, ApiResponse } from '@/types/admin'
+
+type UpdateDocumentPayload = {
+  title?: string
+  description?: string
+  category?: string
+  isPublic?: boolean
+  tags?: string[]
+  version?: string
+}
 import { mockDocuments, mockDocumentCategories } from '@/data/mockData'
 
 interface UseDocumentsReturn {
@@ -31,7 +40,7 @@ interface UseDocumentsReturn {
   fetchDocuments: (newFilters?: DocumentFilters & PaginationParams) => Promise<void>
   fetchDocument: (id: string) => Promise<void>
   createDocument: (documentData: Partial<Document>) => Promise<{ success: boolean; data?: Document; error?: string }>
-  updateDocument: (id: string, documentData: Partial<Document>) => Promise<{ success: boolean; data?: Document; error?: string }>
+  updateDocument: (id: string, documentData: Partial<UpdateDocumentPayload>) => Promise<{ success: boolean; data?: Document; error?: string }>
   deleteDocument: (id: string) => Promise<{ success: boolean; error?: string }>
   bulkDeleteDocuments: (ids: string[]) => Promise<{ success: boolean; error?: string }>
   uploadDocument: (uploadData: DocumentUpload, onProgress?: (percent: number) => void) => Promise<{ success: boolean; data?: Document; error?: string }>
@@ -168,7 +177,7 @@ export function useDocuments(): UseDocumentsReturn {
     }
   }, [fetchDocuments])
 
-  const updateDocument = useCallback(async (id: string, documentData: Partial<Document>) => {
+  const updateDocument = useCallback(async (id: string, documentData: Partial<UpdateDocumentPayload>) => {
     setError(null)
     
     try {
@@ -259,16 +268,16 @@ export function useDocuments(): UseDocumentsReturn {
       
       // Создаем ссылку для скачивания
       const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
+      const link = window.document.createElement('a')
       link.href = url
       
       // Получаем имя файла из документа
-      const document = documents.find(d => d.id === id)
-      link.download = document?.originalName || `document-${id}`
+      const docItem = documents.find(d => d.id === id)
+      link.download = docItem?.originalName || `document-${id}`
       
-      document.body.appendChild(link)
+      window.document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
+      window.document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Error downloading document:', err)

@@ -72,7 +72,7 @@ export default function EditDocumentPage() {
         tags
       })
       if (result.success) {
-        router.push(`/documents/${selectedDocument.id}`)
+        router.push(`/documents`)
       }
     } finally {
       setSaving(false)
