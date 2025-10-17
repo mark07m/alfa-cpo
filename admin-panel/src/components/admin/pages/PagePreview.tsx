@@ -13,6 +13,7 @@ import {
   LinkIcon,
   HomeIcon
 } from '@heroicons/react/24/outline';
+import SanitizedHtml from '@/components/admin/ui/sanitizers/SanitizedHtml';
 
 interface PagePreviewProps {
   page: Page;
@@ -135,7 +136,7 @@ export const PagePreview: React.FC<PagePreviewProps> = ({ page }) => {
           )}
           
           <div className="prose max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: page.content }} />
+            <SanitizedHtml html={page.content} />
           </div>
         </CardContent>
       </Card>

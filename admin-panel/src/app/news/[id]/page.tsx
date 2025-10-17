@@ -14,6 +14,7 @@ import {
   ClockIcon,
   ArchiveBoxIcon
 } from '@heroicons/react/24/outline'
+import SanitizedHtml from '@/components/admin/ui/sanitizers/SanitizedHtml'
 
 export default function NewsPreviewPage() {
   const params = useParams()
@@ -216,7 +217,7 @@ export default function NewsPreviewPage() {
 
           {/* Содержание */}
           <div className="prose prose-lg max-w-none">
-            <div dangerouslySetInnerHTML={{ __html: news.content }} />
+            <SanitizedHtml html={news.content} />
           </div>
 
           {/* SEO информация */}

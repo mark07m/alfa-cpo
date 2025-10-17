@@ -20,6 +20,7 @@ import {
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import Image from 'next/image'
+import SanitizedHtml from '@/components/admin/ui/sanitizers/SanitizedHtml'
 
 export default function EventViewPage() {
   const router = useRouter()
@@ -223,10 +224,7 @@ export default function EventViewPage() {
             {selectedEvent.content && (
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Подробное описание</h3>
-                <div 
-                  className="text-gray-700 leading-relaxed prose max-w-none"
-                  dangerouslySetInnerHTML={{ __html: selectedEvent.content }}
-                />
+                <SanitizedHtml html={selectedEvent.content} className="text-gray-700 leading-relaxed prose max-w-none" />
               </div>
             )}
 

@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import { CalendarIcon, ChartBarIcon, TrophyIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react'
+import SanitizedHtml from '@/components/common/SanitizedHtml'
 import { pagesService } from '@/services/pages'
 import type { PageData } from '@/services/pages'
 
@@ -43,7 +44,7 @@ export default function HistoryPage() {
 
         {/* Timeline from CMS or fallback */}
         {page?.content ? (
-          <div dangerouslySetInnerHTML={{ __html: page.content }} />
+          <SanitizedHtml html={page.content} className="prose" />
         ) : (
           <div className="mb-12">
             <h2 className="text-2xl font-semibold text-neutral-900 mb-8 text-center">

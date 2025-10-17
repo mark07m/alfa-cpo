@@ -13,6 +13,7 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
+import SanitizedHtml from '@/components/common/SanitizedHtml'
 import { pagesService } from '@/services/pages'
 import type { PageData } from '@/services/pages'
 
@@ -161,7 +162,7 @@ export default function LaborActivityPage() {
 
         {/* Main Content */}
         {page?.content ? (
-          <div className="prose mb-12" dangerouslySetInnerHTML={{ __html: page.content }} />
+          <SanitizedHtml html={page.content} className="prose mb-12" />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
             <div className="lg:col-span-2">

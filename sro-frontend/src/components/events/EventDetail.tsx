@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
+import SanitizedHtml from '@/components/common/SanitizedHtml';
 import Button from '@/components/ui/Button';
 import EventCard from './EventCard';
 import { EventDetailProps } from '@/types';
@@ -260,10 +261,7 @@ export default function EventDetail({
 
           {/* Основной текст */}
           {event.content && (
-            <div 
-              className="prose prose-lg max-w-none mb-8"
-              dangerouslySetInnerHTML={{ __html: event.content }}
-            />
+            <SanitizedHtml html={event.content} className="prose prose-lg max-w-none mb-8" />
           )}
 
           {/* Программа мероприятия */}

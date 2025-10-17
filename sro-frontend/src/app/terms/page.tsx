@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import { DocumentTextIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react'
+import { SanitizedHtml } from '@/components/common'
 import { pagesService } from '@/services/pages'
 import type { PageData } from '@/services/pages'
 
@@ -33,7 +34,7 @@ export default function TermsOfUsePage() {
             <DocumentTextIcon className="h-16 w-16 text-beige-600 mx-auto mb-6" />
             <h1 className="text-4xl font-bold text-neutral-900 mb-6">{page.title}</h1>
           </div>
-          <div className="prose prose-neutral max-w-none" dangerouslySetInnerHTML={{ __html: page.content }} />
+          <SanitizedHtml html={page.content} className="prose prose-neutral max-w-none" />
         </div>
       </Layout>
     )

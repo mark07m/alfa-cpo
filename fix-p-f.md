@@ -52,55 +52,55 @@
 ---
 
 ### Что нужно исправить (по пунктам, по файлам)
-Подход: заменить прямую вставку HTML на унифицированный компонент `SafeHtml` со встроенной санитизацией.
+Подход: заменить прямую вставку HTML на унифицированный компонент `SafeHtml` со встроенной санитизацией. — выполнено (реализован `SanitizedHtml`).
 
 1) О нас — `src/app/about/page.tsx`
    - Было: `dangerouslySetInnerHTML={{ __html: page.content }}`
-   - Стало: обернуть в `<SafeHtml html={page.content} className="prose" />`
+   - Стало: обернуть в `<SafeHtml html={page.content} className="prose" />` — выполнено
 
 2) История — `src/app/about/history/page.tsx`
    - Было: `dangerouslySetInnerHTML={{ __html: page.content }}`
-   - Стало: `<SafeHtml html={page.content} className="prose" />`
+   - Стало: `<SafeHtml html={page.content} className="prose" />` — выполнено
 
 3) Руководство — `src/app/about/leadership/page.tsx`
    - Было: `dangerouslySetInnerHTML={{ __html: page.content }}`
-   - Стало: `<SafeHtml html={page.content} className="prose" />`
+   - Стало: `<SafeHtml html={page.content} className="prose" />` — выполнено
 
 4) Структура — `src/app/about/structure/page.tsx`
    - Было: `dangerouslySetInnerHTML={{ __html: page.content }}`
-   - Стало: `<SafeHtml html={page.content} className="prose" />`
+   - Стало: `<SafeHtml html={page.content} className="prose" />` — выполнено
 
 5) Аккредитация — `src/app/accreditation/page.tsx`
    - Было: `<div className="prose" dangerouslySetInnerHTML={{ __html: page.content }} />`
-   - Стало: `<SafeHtml html={page.content} className="prose" />`
+   - Стало: `<SafeHtml html={page.content} className="prose" />` — выполнено
 
 6) Контроль — `src/app/control/page.tsx`
    - Было: `<div className="prose" dangerouslySetInnerHTML={{ __html: page?.content || '' }} />`
-   - Стало: `<SafeHtml html={page?.content || ''} className="prose" />`
+   - Стало: `<SafeHtml html={page?.content || ''} className="prose" />` — в планах
 
 7) Трудовая деятельность — `src/app/labor-activity/page.tsx`
    - Было: `<div className="prose mb-12" dangerouslySetInnerHTML={{ __html: page.content }} />`
-   - Стало: `<SafeHtml html={page.content} className="prose mb-12" />`
+   - Стало: `<SafeHtml html={page.content} className="prose mb-12" />` — выполнено
 
 8) Политика конфиденциальности — `src/app/privacy/page.tsx`
    - Было: `<div className="prose prose-neutral max-w-none" dangerouslySetInnerHTML={{ __html: page.content }} />`
-   - Стало: `<SafeHtml html={page.content} className="prose prose-neutral max-w-none" />`
+   - Стало: `<SafeHtml html={page.content} className="prose prose-neutral max-w-none" />` — выполнено
 
 9) Условия использования — `src/app/terms/page.tsx`
    - Было: `<div className="prose prose-neutral max-w-none" dangerouslySetInnerHTML={{ __html: page.content }} />`
-   - Стало: `<SafeHtml html={page.content} className="prose prose-neutral max-w-none" />`
+   - Стало: `<SafeHtml html={page.content} className="prose prose-neutral max-w-none" />` — выполнено
 
 10) Реквизиты — `src/app/requisites/page.tsx`
     - Было: `<div className="prose" dangerouslySetInnerHTML={{ __html: page.content }} />`
-    - Стало: `<SafeHtml html={page.content} className="prose" />`
+    - Стало: `<SafeHtml html={page.content} className="prose" />` — выполнено
 
 11) Новость (детальная) — `src/components/news/NewsDetail.tsx`
     - Было: `<div className="prose ..." dangerouslySetInnerHTML={{ __html: news.content }} />`
-    - Стало: `<SafeHtml html={news.content} className="prose prose-lg max-w-none mb-8" />`
+    - Стало: `<SafeHtml html={news.content} className="prose prose-lg max-w-none mb-8" />` — выполнено
 
 12) Мероприятие (детальная) — `src/components/events/EventDetail.tsx`
     - Было: `<div className="prose ..." dangerouslySetInnerHTML={{ __html: event.content }} />`
-    - Стало: `<SafeHtml html={event.content} className="prose prose-lg max-w-none mb-8" />`
+    - Стало: `<SafeHtml html={event.content} className="prose prose-lg max-w-none mb-8" />` — выполнено
 
 Дополнительно: везде, где контент статичен (не из CMS), следует писать его в JSX, а не генерировать HTML строкой.
 

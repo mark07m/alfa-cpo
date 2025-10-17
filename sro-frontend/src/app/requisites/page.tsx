@@ -9,6 +9,7 @@ import {
   ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react'
+import SanitizedHtml from '@/components/common/SanitizedHtml'
 import { pagesService } from '@/services/pages'
 import type { PageData } from '@/services/pages'
 
@@ -40,7 +41,7 @@ export default function RequisitesPage() {
               {page.title}
             </h1>
           </div>
-          <div className="prose" dangerouslySetInnerHTML={{ __html: page.content }} />
+          <SanitizedHtml html={page.content} className="prose" />
         </div>
       </Layout>
     )

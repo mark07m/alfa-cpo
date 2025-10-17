@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
+import SanitizedHtml from '@/components/common/SanitizedHtml';
 import Button from '@/components/ui/Button';
 import NewsCard from './NewsCard';
 import { NewsDetailProps } from '@/types';
@@ -182,10 +183,7 @@ export default function NewsDetail({
           </div>
 
           {/* Основной текст */}
-          <div 
-            className="prose prose-lg max-w-none mb-8"
-            dangerouslySetInnerHTML={{ __html: news.content }}
-          />
+          <SanitizedHtml html={news.content} className="prose prose-lg max-w-none mb-8" />
 
           {/* Теги */}
           {news.tags && news.tags.length > 0 && (

@@ -12,6 +12,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
+import SanitizedHtml from '@/components/common/SanitizedHtml'
 import { pagesService } from '@/services/pages'
 import type { PageData } from '@/services/pages'
 import { accreditedOrganizationsService, type AccreditedOrganizationItem, type AccreditedOrganizationStats } from '@/services/accreditedOrganizations'
@@ -199,7 +200,7 @@ export default function AccreditationPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           <div className="lg:col-span-2">
             {page?.content ? (
-              <div className="prose" dangerouslySetInnerHTML={{ __html: page.content }} />
+              <SanitizedHtml html={page.content} className="prose" />
             ) : (
               <Card>
                 <CardHeader>

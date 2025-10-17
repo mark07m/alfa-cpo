@@ -3,6 +3,7 @@ import Layout from '@/components/layout/Layout';
 import Card, { CardContent, CardHeader } from '@/components/ui/Card';
 import { BuildingOfficeIcon, UserGroupIcon, CalendarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react'
+import SanitizedHtml from '@/components/common/SanitizedHtml'
 import { pagesService } from '@/services/pages'
 import type { PageData } from '@/services/pages'
 
@@ -47,7 +48,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 gap-8 mb-12">
           <div className="lg:col-span-2">
             {page?.content ? (
-              <div dangerouslySetInnerHTML={{ __html: page.content }} />
+              <SanitizedHtml html={page.content} className="prose" />
             ) : (
               <Card>
                 <CardHeader>
